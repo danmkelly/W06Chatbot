@@ -384,27 +384,26 @@ body {
 <script>
 // ============================================================
 // LLM CONFIGURATION
-// Set your API key and endpoint below. Leave blank to use
-// the built-in rule-based engine as a fallback.
+// Set your API key below. Leave blank to use the built-in
+// rule-based engine as a fallback (works offline).
 //
-// Groq (free tier, fast, OpenAI-compatible):
-//   LLM_KEY = "gsk_your-key-here"
-//   LLM_URL = "https://api.groq.com/openai/v1/chat/completions"
-//   LLM_MODEL = "llama-3.1-8b-instant"
+// DeepSeek (cheap, OpenAI-compatible, what opencode uses):
+//   Sign up at platform.deepseek.com -> API Keys
+//   LLM_KEY = "sk-your-deepseek-key"
+//   LLM_URL = "https://api.deepseek.com/v1/chat/completions"
+//   LLM_MODEL = "deepseek-chat"
 //
-// OpenAI:
-//   LLM_KEY = "sk-your-key-here"
-//   LLM_URL = "https://api.openai.com/v1/chat/completions"
-//   LLM_MODEL = "gpt-4o-mini"
-//
-// Together.ai (free trial credits):
-//   LLM_KEY = "your-key-here"
-//   LLM_URL = "https://api.together.xyz/v1/chat/completions"
-//   LLM_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+// Other providers (all OpenAI-compatible):
+//   Groq (free tier):     LLM_URL = "https://api.groq.com/openai/v1/chat/completions"
+//     LLM_MODEL = "llama-3.1-8b-instant"
+//   OpenAI:                LLM_URL = "https://api.openai.com/v1/chat/completions"
+//     LLM_MODEL = "gpt-4o-mini"
+//   Together.ai:           LLM_URL = "https://api.together.xyz/v1/chat/completions"
+//     LLM_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
 // ============================================================
 const LLM_KEY = "";
-const LLM_URL = "";
-const LLM_MODEL = "";
+const LLM_URL = "https://api.deepseek.com/v1/chat/completions";
+const LLM_MODEL = "deepseek-chat";
 
 // === Conversation history (for LLM context) ===
 let conversationHistory = [];
