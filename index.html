@@ -219,8 +219,8 @@ body {
   overflow-y: auto;
   padding: 16px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
   align-content: start;
   max-height: calc(100vh - 320px);
 }
@@ -234,67 +234,57 @@ body {
 }
 .picks-empty-icon { font-size: 2rem; margin-bottom: 8px; }
 
-.product-card {
+.artist-card {
   background: #FCFAF5;
   border-radius: 6px;
-  overflow: hidden;
+  padding: 12px;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
   border: 1px solid #EEE8DA;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
-.product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-.product-card-img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  background: #E8E0D0;
-  display: block;
+.artist-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.artist-card-rank {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--subtle);
+  min-width: 20px;
 }
-.product-card-body { padding: 10px; flex: 1; display: flex; flex-direction: column; }
-.product-card-artist {
-  font-size: 0.72rem;
+.artist-card-info { flex: 1; }
+.artist-card-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.artist-card-tags {
+  font-size: 0.65rem;
+  color: var(--subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.artist-card-tag {
+  background: #EEE8DA;
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.artist-card-match {
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 2px;
-  line-height: 1.2;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  white-space: nowrap;
 }
-.product-card-title {
-  font-size: 0.78rem;
-  color: var(--ink);
-  line-height: 1.25;
-  margin-bottom: 6px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.product-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
-}
-.product-card-price {
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--ink);
-}
-.product-card-format {
-  font-size: 0.6rem;
-  background: var(--ink);
+.artist-card-badge {
+  font-size: 0.55rem;
+  background: #D44C2F;
   color: #fff;
   padding: 2px 6px;
   border-radius: 3px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 /* Footer */
@@ -312,21 +302,12 @@ body {
 
 /* Mobile */
 @media (max-width: 860px) {
-  .main-wrap {
-    grid-template-columns: 1fr;
-  }
-  .picks-panel {
-    order: 3;
-    max-height: none;
-  }
-  .picks-grid {
-    grid-template-columns: 1fr 1fr 1fr;
-    max-height: 360px;
-  }
+  .main-wrap { grid-template-columns: 1fr; }
+  .picks-panel { order: 3; max-height: none; }
+  .picks-grid { max-height: 360px; }
   .chat-messages { min-height: 360px; max-height: 400px; }
 }
 @media (max-width: 500px) {
-  .picks-grid { grid-template-columns: 1fr 1fr; }
   .header-inner { padding: 10px 14px; }
   .main-wrap { padding: 12px; }
   .logo { font-size: 1.3rem; }
@@ -346,7 +327,6 @@ body {
 
 <div class="main-wrap">
 
-  <!-- Chat Panel -->
   <div class="chat-panel" id="chatPanel">
     <div class="chat-header">
       <div class="chat-avatar">B</div>
@@ -362,7 +342,6 @@ body {
     </div>
   </div>
 
-  <!-- Picks Panel -->
   <div class="picks-panel" id="picksPanel">
     <div class="picks-header">
       &#9835; Bob's Picks <span class="picks-count" id="picksCount">0</span>
@@ -370,7 +349,7 @@ body {
     <div class="picks-grid" id="picksGrid">
       <div class="picks-empty">
         <div class="picks-empty-icon">&#128218;</div>
-        <p>Tell Bob what you're after and his suggestions will appear right here.</p>
+        <p>Tell Bob what you're into and he'll suggest similar artists right here.</p>
       </div>
     </div>
   </div>
@@ -378,36 +357,28 @@ body {
 </div>
 
 <footer class="footer">
-  Powered by <a href="https://spindizzyrecords.com" target="_blank">Spindizzy</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a> &amp; <a href="https://www.last.fm" target="_blank">Last.fm</a> &bull; 32 Market Arcade, Dublin
+  Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a> &bull; 32 Market Arcade, Dublin
   <span style="margin-left:8px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your new DeepSeek API key (leave blank to disable LLM):',localStorage.getItem('rr_llm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_llm_key',ck);localStorage.setItem('rr_llm_url','https://api.deepseek.com/v1/chat/completions');localStorage.setItem('rr_llm_model','deepseek-chat')}else{localStorage.removeItem('rr_llm_key');localStorage.removeItem('rr_llm_url');localStorage.removeItem('rr_llm_model')}location.reload()}">LLM key</span>
-  <span style="margin-left:6px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your Discogs token:',localStorage.getItem('rr_dgs_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_dgs_key',ck)}else{localStorage.removeItem('rr_dgs_key')}location.reload()}">Discogs</span>
-  <span style="margin-left:6px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your Last.fm API key (free at last.fm/api):',localStorage.getItem('rr_lfm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_lfm_key',ck)}else{localStorage.removeItem('rr_lfm_key')}location.reload()}">Last.fm</span>
+  <span style="margin-left:6px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your Last.fm API key (free at last.fm/api):',localStorage.getItem('rr_lfm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_lfm_key',ck)}else{localStorage.removeItem('rr_lfm_key')}location.reload()}">Last.fm key</span>
 </footer>
 
 <script src="config.js"></script>
 <script>
-// === LLM key setup (for hosted deployment where config.js is not deployed) ===
 (function() {
   if (typeof LLM_KEY === "undefined") window.LLM_KEY = "";
   if (typeof LLM_URL === "undefined") window.LLM_URL = "";
   if (typeof LLM_MODEL === "undefined") window.LLM_MODEL = "";
-  if (typeof DGS_KEY === "undefined") window.DGS_KEY = "";
   if (typeof LFM_KEY === "undefined") window.LFM_KEY = "";
 
-  // If config.js didn't provide keys, try localStorage
   if (!LLM_KEY && localStorage.getItem("rr_llm_key")) {
     LLM_KEY = localStorage.getItem("rr_llm_key");
     LLM_URL = localStorage.getItem("rr_llm_url") || "https://api.deepseek.com/v1/chat/completions";
     LLM_MODEL = localStorage.getItem("rr_llm_model") || "deepseek-chat";
   }
-  if (!DGS_KEY && localStorage.getItem("rr_dgs_key")) {
-    DGS_KEY = localStorage.getItem("rr_dgs_key");
-  }
   if (!LFM_KEY && localStorage.getItem("rr_lfm_key")) {
     LFM_KEY = localStorage.getItem("rr_lfm_key");
   }
 
-  // Prompt for key on first visit (no config.js, no localStorage)
   if (!LLM_KEY) {
     setTimeout(function() {
       var key = prompt(
@@ -429,249 +400,14 @@ body {
       }
     }, 500);
   }
-  // If key came from localStorage but models are undefined, set defaults
   if (LLM_KEY && !LLM_URL) LLM_URL = "https://api.deepseek.com/v1/chat/completions";
   if (LLM_KEY && !LLM_MODEL) LLM_MODEL = "deepseek-chat";
 })();
 
-// === Conversation history (for LLM context) ===
-let conversationHistory = [];
-
-// === Build a rich catalogue listing for the LLM system prompt ===
-function buildCatalogueListing() {
-  var lines = ["SPINDIZZY RECORDS CURRENT STOCK (" + catalogue.length + " items in our catalogue right now):"];
-  catalogue.forEach(function(p) {
-    var genreStr = p.genres.slice(0, 3).join("/");
-    lines.push("- " + p.artist + " | " + p.title + " | " + p.format + " | EUR " + p.price + " | " + genreStr + " | " + p.era);
-  });
-  return lines.join("\n");
-}
-
-// === Build music knowledge for the LLM (artist connections, genre context) ===
-function buildMusicKnowledge() {
-  return [
-    "YOUR MUSIC KNOWLEDGE (you know far more than just what's in our shop):",
-    "",
-    "You have deep knowledge across all genres and eras. Here are reference points, but think beyond them:",
-    "",
-    "Key artist connections and stories:",
-    "- Kim Deal: bassist/vocalist in Pixies (Surfer Rosa, Doolittle), then formed The Breeders (Last Splash, Pod), side project The Amps (Pacer). Also worked with Guided By Voices.",
-    "- Radiohead: evolved from 90s alt-rock (The Bends, OK Computer) to experimental/electronic (Kid A, Amnesiac) to later masterworks (In Rainbows, A Moon Shaped Pool). Thom Yorke's solo work (The Eraser, Anima) and Atoms for Peace side project. Jonny Greenwood's film scores.",
-    "- Joy Division: Unknown Pleasures (1979) and Closer (1980) defined post-punk. After Ian Curtis died, remaining members formed New Order, pioneering dance-rock fusion through the 80s/90s.",
-    "- 90s Alternative: Nirvana, Pearl Jam, Smashing Pumpkins, Pavement, Sonic Youth, My Bloody Valentine, Slowdive, Ride, The Verve, Portishead, Massive Attack, Bjork, PJ Harvey, Beck.",
-    "- Classic Rock: Led Zeppelin, Pink Floyd, The Beatles, The Rolling Stones, The Who, David Bowie, Bob Dylan, Neil Young, Jimi Hendrix, The Doors, Fleetwood Mac, Queen.",
-    "- Soul/Funk/Disco: Marvin Gaye, Stevie Wonder, Aretha Franklin, James Brown, Parliament/Funkadelic, Curtis Mayfield, Chic, Earth Wind & Fire, Prince, Sly & The Family Stone.",
-    "- Hip-Hop: 2Pac, Biggie, Nas, Jay-Z, Wu-Tang Clan, A Tribe Called Quest, OutKast, Kendrick Lamar, MF DOOM, J Dilla, The Roots, Public Enemy.",
-    "- Electronic: Aphex Twin, Boards of Canada, Kraftwerk, Daft Punk, Brian Eno, Four Tet, Burial, Flying Lotus, Autechre, The Chemical Brothers, Orbital.",
-    "- Jazz essentials: Miles Davis (Kind of Blue, Bitches Brew), John Coltrane (A Love Supreme), Herbie Hancock (Head Hunters, Maiden Voyage), Thelonious Monk, Charles Mingus, Bill Evans, Chet Baker, Art Blakey.",
-    "- Irish music: Damien Dempsey, Glen Hansard/The Frames, U2, Thin Lizzy, My Bloody Valentine, Fontaines D.C., Sinead O'Connor, Van Morrison, The Pogues, Hozier.",
-    "",
-    "You can discuss ANY artist, ANY album, ANY era. The catalogue below is just what we happen to have on the shelf right now, not the limit of your knowledge.",
-    "",
-    "Shop context (use naturally, don't lead with it):",
-    "- R&R Records, 32 Market Arcade, Dublin. Independent shop est. 2005.",
-    "- Free shipping in Ireland on orders over EUR 75. Worldwide delivery.",
-    "- We love Record Store Day, limited pressings, coloured vinyl.",
-    "- Spindizzy Records is our main supplier catalogue."
-  ].join("\n");
-}
-
-// === Build recent release context for the LLM ===
-function buildRecentContext() {
-  var today = new Date();
-  var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  var dateStr = today.getDate() + " " + monthNames[today.getMonth()] + " " + today.getFullYear();
-  var newItems = catalogue.filter(function(p) {
-    var t = (p.title + " " + p.genres.join(" ")).toLowerCase();
-    return t.indexOf("2026") > -1 || t.indexOf("reissue") > -1;
-  });
-  var lines = ["TODAY'S DATE: " + dateStr];
-  lines.push("");
-  lines.push("RECENT & UPCOMING RELEASES (from our catalogue, newest first):");
-  if (newItems.length > 0) {
-    newItems.slice(0, 12).forEach(function(p) {
-      lines.push("- " + p.artist + " - " + p.title + " (" + p.format + ", EUR " + p.price + ")");
-    });
-  }
-  lines.push("");
-  lines.push("NOTE: New releases drop every Friday. Use your general music knowledge to discuss recent albums broadly. Only claim something is IN STOCK if it appears in the FULL CATALOGUE below.");
-  return lines.join("\n");
-}
-
-// === Call the LLM with rich context ===
-async function callLLM(userMessage, searchResult, lastfmEnrichment) {
-  if (!LLM_KEY || !LLM_URL || !LLM_MODEL) return null;
-
-  var systemPrompt = [
-    "You are Bob, a music guru who happens to work at Round & Round Records, a beloved independent record shop in Dublin, Ireland (est. 2005). Your primary identity is MUSIC EXPERT. You live and breathe music: you follow new releases, you know band histories inside out, you have strong opinions, you read the music press, you go to gigs. The shop is your day job because you love connecting people with great records, not the other way around.",
-    "",
-    "YOUR PERSONALITY:",
-    "- Warm, passionate, the kind of person who can talk for an hour about why a certain B-side is underrated.",
-    "- Dublin/Irish flavour: use 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic' naturally but sparingly.",
-    "- Opinions matter. 'Best album of last month? For my money, it's gotta be...' With reasons.",
-    "- Enthusiasm is infectious. If someone mentions a band you love, get excited: 'Ah no way, you're into them? Deadly! You know they recorded that in...'",
-    "- Be a walking music encyclopedia. The customer came for expertise. Give it to them generously.",
-    "- Never corporate. Never robotic. You're having a chat about music, not reading a script.",
-    "",
-    "YOUR DEFAULT STANCE: MUSIC GURU FIRST",
-    "- Lead with your knowledge. Dive into the conversation. Share stories, context, opinions.",
-    "- Reference ANY artist, ANY album, ANY era. Your knowledge spans the entire history of recorded music.",
-    "- Discuss releases not in the shop. Say 'Ah we don't stock that one at the moment unfortunately, but...' then keep the conversation going with your knowledge.",
-    "- If you don't know something: be honest, say 'That's a great question actually, I'd want to check that properly...' and share what you do know.",
-    "- Think broadly. Connect dots. 'If you like X, you'd probably love Y because...'",
-    "",
-    "SECONDARY: IF YOU WANT TO MENTION OUR STOCK",
-    "- Only when it feels natural: 'Actually, we've got a gorgeous pressing of that on the shelf right now...'",
-    "- IF search results are provided below, casually mention 1-2 of the best matches. Don't list everything.",
-    "- Point to 'Bob's Picks on the right' for the full list. Don't repeat it in chat.",
-    "- NEVER claim an album is in stock unless it appears in the STOCK LIST below. That's the only thing you must be strict about.",
-    "",
-    "WHEN SOMEONE SAYS THEY LIKE AN ARTIST (taste statement):",
-    "- This is a conversation opener, not a search query. Share your knowledge about that artist: their best albums, their history, who they influenced, who they were influenced by, similar artists.",
-    "- Then broaden out: 'If you're into X, you'd probably love Y and Z because...' Give reasons. Connect dots.",
-    "- Mentioning stock is optional and organic, not required. The Picks panel has already shown them the artist's albums.",
-    "",
-    "CONVERSATION RULES:",
-    "- Keep it warm and natural. 2-6 sentences usually, but go long if the story deserves it.",
-    "- No em dashes. Use commas, colons, or full stops.",
-    "- Don't lead with the catalogue. Lead with music. Let the stock mention be organic, not forced.",
-    "- If the search results include items from DIFFERENT genres (taste/recommendation query), discuss the breadth: 'I've pulled some from the same world...'",
-    "",
-    buildRecentContext(),
-    "",
-    buildMusicKnowledge(),
-    "",
-    "STOCK LIST (what's actually on our shelves - for reference only, don't lead with this):",
-    buildCatalogueListing(),
-    "",
-    lastfmEnrichment || "",
-    lastfmEnrichment ? "" : "",
-    searchResult && searchResult.results && searchResult.results.length > 0
-      ? (searchResult.isTaste
-          ? "THIS IS A TASTE STATEMENT. The customer said they like an artist. SEARCH RESULTS (" + searchResult.results.length + " items, showing the artist's albums + genre-related picks):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nIMPORTANT: Share your music knowledge about this artist and similar artists. Mention 2-3 similar acts they might like. Only mention 1-2 stock items organically if it fits. The Picks panel already shows everything."
-          : "SEARCH RESULTS (" + searchResult.results.length + " matches on our shelves):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nIf it feels natural, mention 1-2 of these in your response.")
-      : "NO MATCHES on our shelves for this query. Share your general music knowledge freely. If you think of related artists we might stock, check the STOCK LIST above."
-  ].join("\n");
-
-  var messages = [{ role: "system", content: systemPrompt }];
-  for (var i = 0; i < conversationHistory.length; i++) {
-    messages.push(conversationHistory[i]);
-  }
-  messages.push({ role: "user", content: userMessage });
-
-  try {
-    console.log("[Bob] Calling LLM with model:", LLM_MODEL, "msg length:", userMessage.length);
-    var resp = await fetch(LLM_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + LLM_KEY },
-      body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.85, max_tokens: 500 })
-    });
-    if (!resp.ok) {
-      var errText = await resp.text();
-      console.error("[Bob] LLM API error:", resp.status, errText.slice(0, 200));
-      throw new Error("API error: " + resp.status);
-    }
-    var data = await resp.json();
-    var reply = data.choices[0].message.content.trim();
-    console.log("[Bob] LLM reply:", reply.slice(0, 150));
-    conversationHistory.push({ role: "user", content: userMessage });
-    conversationHistory.push({ role: "assistant", content: reply });
-    if (conversationHistory.length > 12) conversationHistory = conversationHistory.slice(-12);
-    return reply;
-  } catch (e) {
-    console.warn("[Bob] LLM call failed, falling back to rule-based:", e.message);
-    return null;
-  }
-}
-
-// === Catalogue: real Spindizzy Records products ===
-const catalogue = [
-  { artist:"Radiohead", title:"OK Computer", price:"31.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Radiohead-OKComputer-LP.jpg", genres:["rock","alternative","indie"], era:"90s", url:"https://spindizzyrecords.com/products/radiohead-ok-computer" },
-  { artist:"Radiohead", title:"Kid A", price:"29.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Radiohead-KidA-LP.jpg", genres:["rock","alternative","electronic","experimental"], era:"00s", url:"https://spindizzyrecords.com/products/radiohead-kid-a" },
-  { artist:"Radiohead", title:"The Bends", price:"31.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Radiohead-TheBends-LP.jpg", genres:["rock","alternative","indie"], era:"90s", url:"https://spindizzyrecords.com/products/radiohead-the-bends" },
-  { artist:"Radiohead", title:"Hail To The Thief", price:"29.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Radiohead-HailToTheThief-LP.jpg", genres:["rock","alternative","electronic"], era:"00s", url:"https://spindizzyrecords.com/products/radiohead-hail-to-the-thief" },
-  { artist:"Radiohead", title:"A Moon Shaped Pool", price:"31.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Radiohead-AMoonShapedPool-LP.jpg", genres:["rock","alternative"], era:"10s", url:"https://spindizzyrecords.com/products/radiohead-a-moon-shaped-pool" },
-  { artist:"Radiohead", title:"King Of Limbs", price:"31.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Radiohead-KingOfLimbs-LP.jpg", genres:["rock","alternative","electronic"], era:"10s", url:"https://spindizzyrecords.com/products/radiohead-king-of-limbs" },
-  { artist:"Radiohead", title:"Pablo Honey", price:"29.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Radiohead-PabloHoney-LP.jpg", genres:["rock","alternative","indie"], era:"90s", url:"https://spindizzyrecords.com/products/radiohead-pablo-honey" },
-  { artist:"Dinosaur Jr.", title:"There Near", price:"14.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/dinojr.therenear.JAG480-LP.mock.c1.v1.png", genres:["rock","alternative","indie"], era:"20s", url:"https://spindizzyrecords.com/products/dinosaur-jr-there-near" },
-  { artist:"Fat Dog", title:"Cancel Me (I'm Tired)", price:"13.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/FATDOG_LPX_MockUp_fin.png", genres:["electronic","dance","indie"], era:"20s", url:"https://spindizzyrecords.com/products/fat-dog-cancel-me-im-tired" },
-  { artist:"LOS CAMPESINOS!", title:"Hold On Now, Youngster... (2026 Reissue)", price:"15.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/FOR_20260629_1707_161125_519_v_5061041821943_003.jpg", genres:["indie","rock","alternative"], era:"00s", url:"https://spindizzyrecords.com/products/los-campesinos-hold-on-now-youngster-2026-reissue" },
-  { artist:"Blondshell", title:"Violins", price:"12.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/INT_20260624_1452_135753_853_p_FRONT_COVER_dup1_001.jpg", genres:["rock","alternative","indie"], era:"20s", url:"https://spindizzyrecords.com/products/blondshell-violins" },
-  { artist:"beabadoobee", title:"Pylon", price:"15.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/INT_20260624_1147_105222_245_v_5060257966189_002.png", genres:["indie","pop","rock"], era:"20s", url:"https://spindizzyrecords.com/products/beabadoobee-pylon" },
-  { artist:"Joy Division", title:"ETERNAL (Live)", price:"155.99", format:"Vinyl Boxset", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/1_614.png", genres:["rock","post-punk","alternative"], era:"70s", url:"https://spindizzyrecords.com/products/joy-division-eternal-live" },
-  { artist:"HAYLEY WILLIAMS", title:"Ego Death At A Bachelorette Party", price:"44.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Hayley_Williams_-_Ego_Death_At_A_Bachelorette_Party_-_2LP_Highlighter_Yellow_Colour_Vinyl_-_2025.jpg", genres:["pop","rock","alternative"], era:"20s", url:"https://spindizzyrecords.com/products/hayley-williams-ego-death-at-a-bachelorette-partysigned-edition" },
-  { artist:"BRANDON FLOWERS", title:"Thrasher", price:"14.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/BF_Thrasher_Indie_LP_PS_2.png", genres:["rock","alternative","indie"], era:"20s", url:"https://spindizzyrecords.com/products/brandon-flowers-thrasher" },
-  { artist:"Sam Smith", title:"Hazel Eyes", price:"14.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Sam-Smith-Hazel-Eyes-1LP-Alt-Art_Transparent-Vinyl-00602488167055-HMV_Indies.png", genres:["pop","soul"], era:"20s", url:"https://spindizzyrecords.com/products/sam-smith-hazel-eyes" },
-  { artist:"Bananarama", title:"True Confessions (40th Anniversary Edition)", price:"8.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/INT_20260629_1035_094159_450_v_5061017258872_004.png", genres:["pop","80s","synthpop"], era:"80s", url:"https://spindizzyrecords.com/products/bananarama-true-confessions-40th-anniversary-edition" },
-  { artist:"Herbie Hancock", title:"Maiden Voyage (Blue Note Essentials)", price:"23.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/MaidenVoyageEssentialsSeriesLP.png", genres:["jazz"], era:"60s", url:"https://spindizzyrecords.com/products/herbie-hancock-maiden-voyage-blue-note-essentials" },
-  { artist:"Chet Baker", title:"Chet Baker Sings (Blue Note Essentials)", price:"23.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/chet_baker.png", genres:["jazz","vocal"], era:"50s", url:"https://spindizzyrecords.com/products/chet-baker-chet-baker-sings-blue-note-essentials" },
-  { artist:"Art Blakey & The Jazz Messengers", title:"Moanin' (Blue Note Essentials)", price:"23.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/MoaninArtBlakeyEssentialVinylSeries.png", genres:["jazz"], era:"50s", url:"https://spindizzyrecords.com/products/art-blakey-the-jazz-messengers-moanin-blue-note-essentials" },
-  { artist:"Horace Silver", title:"Song For My Father (Blue Note Essentials)", price:"23.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Untitled-1_1.png", genres:["jazz"], era:"60s", url:"https://spindizzyrecords.com/products/horace-silver-song-for-my-father-blue-note-essentials" },
-  { artist:"AFI", title:"Decemberunderground", price:"34.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/AFI.png", genres:["rock","punk","alternative"], era:"00s", url:"https://spindizzyrecords.com/products/afi-decemberunderground" },
-  { artist:"BABYMETAL", title:"Metal Forth", price:"44.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/image_64d66ca0-ed18-45c8-b5ca-fb6e18898bd2.jpg", genres:["metal","rock"], era:"20s", url:"https://spindizzyrecords.com/products/babymetal-metal-forth" },
-  { artist:"Simple Minds", title:"Once Upon A Time (2026 Reissue)", price:"30.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/image_ca7c2576-3833-4fd9-a2a9-48bc032b35cf.jpg", genres:["rock","80s","pop"], era:"80s", url:"https://spindizzyrecords.com/products/simple-minds-once-upon-a-time-2026-reissue" },
-  { artist:"Camel", title:"The Snow Goose (The Thousand Club)", price:"40.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Snow_Goose_Front_2.png", genres:["rock","progressive","70s"], era:"70s", url:"https://spindizzyrecords.com/products/camel-the-snow-goose-the-thousand-club" },
-  { artist:"EMERSON LAKE & PALMER", title:"In The Hot Seat (2CD Deluxe Edition)", price:"16.99", format:"CD", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/54ae01f38238f019e0b5578e97b67bc3_960x_crop_center_17e37162-66ce-4faf-9f27-8f63f769b098.jpg", genres:["rock","progressive","70s"], era:"90s", url:"https://spindizzyrecords.com/products/emerson-lake-palmer-in-the-hot-seat-2cd-deluxe-edition" },
-  { artist:"Leaf Hound", title:"Growers Of Mushroom (The Thousand Club)", price:"40.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Leaf_Hound_Grower_Of_Mushrooms_1LP_Exploded_281_29.png", genres:["rock","hard rock","70s"], era:"70s", url:"https://spindizzyrecords.com/products/leaf-hound-growers-of-mushroom-the-thousand-club" },
-  { artist:"Damien Dempsey", title:"Holywell", price:"13.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/DAM-Bundle-06.png", genres:["folk","irish","rock"], era:"20s", url:"https://spindizzyrecords.com/products/damien-dempsey-holywell" },
-  { artist:"Glen Hansard", title:"Don't Settle (Vol. 2 - Transmissions West)", price:"14.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Glen-Hansard-Dont-Settle-Vol-2.png", genres:["folk","irish","rock","indie"], era:"20s", url:"https://spindizzyrecords.com/products/glen-hansard-don-t-settle-vol-2-transmissions-west" },
-  { artist:"Beth Orton", title:"The Ground Above", price:"15.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/e4b1c7b8eb68e71c92e79b1e837608cb.jpg", genres:["folk","indie","electronic"], era:"20s", url:"https://spindizzyrecords.com/products/beth-orton-the-ground-above" },
-  { artist:"Dead Pioneers", title:"Wagon Burner", price:"28.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Dead_Pioneers_-_Wagon_Burner_-_LP_Crystal_Clear_Vinyl_-_2026.jpg", genres:["punk","rock","alternative"], era:"20s", url:"https://spindizzyrecords.com/products/dead-pioneers-wagon-burner-lp-crystal-clear-vinyl" },
-  { artist:"Morrissey", title:"Deluxe Notre-Dame", price:"25.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/4bc4d59863ff76828b2cad71218183c1.jpg", genres:["rock","alternative","indie"], era:"20s", url:"https://spindizzyrecords.com/products/morrissey-deluxe-notre-dame" },
-  { artist:"STUART DEABILL, NICKY WELLER & STEVE ROWLAND", title:"In the Shadow of the Sun: Paul Weller & The Nineties", price:"66.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/b74964f85c997f2710b29efdb59b1fb3.jpg", genres:["rock","book"], era:"90s", url:"https://spindizzyrecords.com/products/stuart-deabill-nicky-weller-steve-rowland-in-the-shadow-of-the-sun-paul-weller-the-nineties" },
-  { artist:"10CC", title:"The Original Soundtrack (2023 Reissue)", price:"22.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/products/10cc_-_The_Original_Soundtrack_-_2023_Reissue.jpg", genres:["rock","pop","70s"], era:"70s", url:"https://spindizzyrecords.com/products/10cc-the-original-soundtrack-2023-reissue" },
-  { artist:"13TH FLOOR ELEVATORS", title:"Bull Of The Woods (Reissue)", price:"26.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/13THFLOORELEVATORS-BullOfTheWoods_Reissue_-LP-Half-SpeedRemasterBlackVinyl1.webp", genres:["rock","psychedelic","garage","60s"], era:"60s", url:"https://spindizzyrecords.com/products/13th-floor-elevators-bull-of-the-woods-reissue" },
-  { artist:"36 CRAZYFISTS", title:"A Snow Capped Romance (Repress)", price:"28.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/36_Crazyfists_-_A_Snow_Capped_Romance_-_2026_Music_On_Vinyl_Repress.jpg", genres:["metal","rock","hardcore"], era:"00s", url:"https://spindizzyrecords.com/products/36-crazyfists-a-snow-capped-romance-repress" },
-  { artist:"2 BROTHERS ON THE 4TH FLOOR", title:"The Very Best Of (30th Anniversary Edition)", price:"35.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/2_Brothers_On_The_4th_Floor_-_The_Very_Best_Of__30th_Anniversary_Edition__-_2LP_180g_Transparent_Vinyl_-_2026_Music_On_Vinyl_Reissue.jpg", genres:["electronic","dance","90s"], era:"90s", url:"https://spindizzyrecords.com/products/2-brothers-on-the-4th-floor-the-very-best-of-30th-anniversary-edition" },
-  { artist:"4 TUNE FAIRYTALES", title:"Fantasies (Reissue)", price:"36.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/4_Tune_Fairytales_-_Fantasies_-_LP_Deluxe_180g_Translucent_Blue_Marbled_Vinyl_-_2025_Music_On_Vinyl_Reissue.jpg", genres:["electronic","dance","90s","trance"], era:"90s", url:"https://spindizzyrecords.com/products/4-tune-fairytales-fantasies-reissue" },
-  { artist:"49TH & MAIN", title:"Happy Tears", price:"12.99", format:"CD", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/49th_and_Main_-_Happy_Tears_-_CD_Digipack_-_2025.jpg", genres:["pop","electronic","indie","irish"], era:"20s", url:"https://spindizzyrecords.com/products/49th-main-happy-tears" },
-  { artist:"2Pac", title:"The Best Of 2Pac", price:"36.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/2Pac-BestOf-LP.jpg", genres:["hip-hop","rap","90s"], era:"90s", url:"https://spindizzyrecords.com/products/2pac-the-best-of-2pac" },
-  { artist:"JOEY BADASS", title:"2000", price:"34.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/JoeyBadass-2000-LP.jpg", genres:["hip-hop","rap"], era:"20s", url:"https://spindizzyrecords.com/products/2000" },
-  { artist:"1UP TEE", title:"Childhood Trauma", price:"42.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/1Up_Tee_-_Childhood_Trauma_-_2025.jpg", genres:["hip-hop","rap"], era:"20s", url:"https://spindizzyrecords.com/products/1up-tee-childhood-trauma" },
-  { artist:"The Breeders", title:"Last Splash", price:"26.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Breeders-LastSplash-LP.jpg", genres:["rock","alternative","indie","90s"], era:"90s", url:"https://spindizzyrecords.com/search?q=breeders+last+splash" },
-  { artist:"The Breeders", title:"Pod", price:"24.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Breeders-Pod-LP.jpg", genres:["rock","alternative","indie","90s"], era:"90s", url:"https://spindizzyrecords.com/search?q=breeders+pod" },
-  { artist:"Pixies", title:"Doolittle", price:"29.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Pixies-Doolittle-LP.jpg", genres:["rock","alternative","indie","80s"], era:"80s", url:"https://spindizzyrecords.com/search?q=pixies+doolittle" },
-  { artist:"Pixies", title:"Surfer Rosa", price:"29.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Pixies-SurferRosa-LP.jpg", genres:["rock","alternative","indie","80s"], era:"80s", url:"https://spindizzyrecords.com/search?q=pixies+surfer+rosa" },
-  { artist:"The Amps", title:"Pacer", price:"22.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Amps-Pacer-LP.jpg", genres:["rock","alternative","indie","90s"], era:"90s", url:"https://spindizzyrecords.com/search?q=amps+pacer" },
-  { artist:"Adult DVD", title:"Adult DVD", price:"15.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/424_MAIN.png", genres:["indie","rock","alternative"], era:"20s", url:"https://spindizzyrecords.com/products/adult-dvd-adult-dvd" },
-  { artist:"Makeshift Art Bar", title:"Marionette EP", price:"25.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/5b35830d2c8d82b23a8524d402715d82.jpg", genres:["indie","rock","alternative"], era:"20s", url:"https://spindizzyrecords.com/products/makeshift-art-bar-marionette-ep" },
-  { artist:"JJEROME87", title:"The Canyon - Dinked Edition #406", price:"30.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/a5010ff46e647287ebfc55921d425f8d.png", genres:["electronic","indie"], era:"20s", url:"https://spindizzyrecords.com/products/jjerome87-the-canyon-dinked-edition-406" },
-  { artist:"(SWEET OKAY) SUPERSISTER", title:"Spiral Staircase Sass (Reissue)", price:"28.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Sweet_Okay_Supersister_-_Spiral_Staircase_Sass_-_LP_180g_Crystal_Clear_Vinyl_-_2024_Music_On_Vinyl_Reissue.jpg", genres:["rock","progressive","experimental","70s","jazz"], era:"70s", url:"https://spindizzyrecords.com/products/sweet-okay-supersister-spiral-staircase-sass-reissue" },
-  { artist:"(SUN RA PRESENTS...) THE QUALITIES", title:"It's Christmas Time b/w Happy New Year To You!", price:"19.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Sun_Ra_Presents_The_Qualities_-_It_s_Christmas_Time_b-w_Happy_New_Year_To_You_-_7-inch_Vinyl_-_2025_Strut_Records_Reissue.jpg", genres:["jazz","soul","60s"], era:"60s", url:"https://spindizzyrecords.com/products/sun-ra-presents-the-qualities-its-christmas-time-b-w-happy-new-year-to-you-strut-reissue" },
-  { artist:"\"THE ROCKY HORROR PICTURE SHOW\" ORIGINAL CAST", title:"The Rocky Horror Picture Show (50th Anniversary Edition)", price:"29.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Rocky_Horror_Picture_Show__50th_Anniversary_Edition__-_Original_Cast_Recording_-_LP_Red_and_Gold_Colour-in-Colour_Effect_Vinyl_-_2025_Reissue.jpg", genres:["soundtrack","rock","70s"], era:"70s", url:"https://spindizzyrecords.com/products/the-rocky-horror-picture-show-original-cast-the-rocky-horror-picture-show-50th-anniversary-edition" },
-  { artist:"101 STRINGS", title:"Astro-Sounds From Beyond The Year 2000", price:"19.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/products/101Strings-AstroSounds-2.jpg", genres:["electronic","experimental","60s"], era:"60s", url:"https://spindizzyrecords.com/products/101-strings-astro-sounds-from-beyond-the-year-2000" }
-];
-
-// === Special knowledge mappings ===
-const knowledge = {
-  "kim deal": {
-    response: "Ah, Kim Deal! Absolute legend. After the Pixies she formed <strong>The Breeders</strong>, and their album <em>Last Splash</em> with 'Cannonball' is an all-timer. She also had a side project called <strong>The Amps</strong> for a spell. Let me show you what I can find...",
-    searches: ["The Breeders", "The Amps", "Pixies"]
-  },
-  "post-punk": {
-    searches: ["Joy Division", "Siouxsie", "The Cure", "Gang of Four", "Wire"]
-  },
-  "shoegaze": {
-    searches: ["My Bloody Valentine", "Slowdive", "Ride", "Lush"]
-  },
-  "britpop": {
-    searches: ["Blur", "Oasis", "Pulp", "Suede", "Elastica"]
-  },
-  "trip-hop": {
-    searches: ["Massive Attack", "Portishead", "Tricky", "DJ Shadow"]
-  },
-  "irish": {
-    searches: ["Damien Dempsey", "Glen Hansard", "49TH", "Fontaines", "U2", "Thin Lizzy", "My Bloody Valentine"]
-  },
-  "grunge": {
-    searches: ["Nirvana", "Pearl Jam", "Soundgarden", "Alice in Chains", "Mudhoney"]
-  }
-};
-
 // === State ===
+let conversationHistory = [];
 let picks = [];
 let lastQuery = "";
-let lastSearchResults = [];
 
 // === DOM ===
 const chatMessages = document.getElementById('chatMessages');
@@ -720,182 +456,24 @@ function quickAsk(text) {
   sendMessage();
 }
 
-// === Pick management ===
-function getImageUrl(product, size) {
-  if (!product.img) return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#E8E0D0" width="200" height="200"/><text x="100" y="110" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#999">No Image</text></svg>');
-  var url = product.img;
-  if (url.includes('cdn.shopify.com') && !url.includes('width=')) {
-    url = url.replace(/(\.[a-zA-Z]+)(\?|$)/, '_200x200$2');
-  }
-  if (url.includes('cdn.shopify.com') && url.includes('width=')) {
-    url = url.replace(/width=\d+/, 'width=200');
-  }
-  return url;
-}
-
-function addPick(product) {
-  if (picks.find(p => p.artist === product.artist && p.title === product.title)) return;
-  picks.push(product);
-  renderPicks();
-}
-
-function addPicks(products) {
-  products.forEach(function(p) { addPick(p); });
-  renderPicks();
-}
-
-function renderPicks() {
-  picksGrid.innerHTML = '';
-  picksCount.textContent = picks.length;
-  if (picks.length === 0) {
-    picksGrid.innerHTML = '<div class="picks-empty"><div class="picks-empty-icon">&#128218;</div><p>Tell Bob what you\'re after and his suggestions will appear right here.</p></div>';
-    return;
-  }
-  picks.forEach(function(p) {
-    var card = document.createElement('div');
-    card.className = 'product-card';
-    card.onclick = function() { window.open(p.url, '_blank'); };
-    card.innerHTML =
-      '<img class="product-card-img" src="' + getImageUrl(p) + '" alt="' + p.title + '" loading="lazy" onerror="this.src=\'data:image/svg+xml,' + encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#E8E0D0\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"110\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#999\\">No Image</text></svg>') + '\'">' +
-      '<div class="product-card-body">' +
-        '<div class="product-card-artist">' + p.artist + (p.source === "discogs" ? ' <span style="font-size:0.6rem;background:#FF6B00;color:#fff;padding:1px 5px;border-radius:3px;margin-left:3px;">Discogs</span>' : '') + '</div>' +
-        '<div class="product-card-title">' + p.title + '</div>' +
-        '<div class="product-card-footer">' +
-          '<span class="product-card-price">' + (p.price === "check site" ? "Discogs" : "&euro;" + p.price) + '</span>' +
-          '<span class="product-card-format">' + p.format + '</span>' +
-        '</div>' +
-      '</div>';
-    picksGrid.appendChild(card);
-  });
-}
-
-// === Search ===
-// === Smart search: tokenize natural language into search terms ===
-var STOP_WORDS = ["i","me","my","we","our","you","your","he","she","it","they","them","a","an","the","is","are","was","were","be","been","have","has","had","do","does","did","can","could","will","would","should","may","might","shall","to","of","in","for","on","with","at","by","from","about","as","into","through","during","before","after","above","below","up","down","out","off","over","under","again","further","then","once","here","there","when","where","why","how","all","both","each","few","more","most","other","some","such","no","nor","not","only","own","same","so","than","too","very","just","really","like","love","want","looking","find","help","know","think","search","need","please","what","else","any","got","get","that","this","these","those","which"];
-
-function extractSearchTerms(text) {
-  var clean = text.toLowerCase().replace(/[.,!?;:'"()]/g, " ");
-  var words = clean.split(/\s+/).filter(function(w) { return w.length > 1 && STOP_WORDS.indexOf(w) === -1; });
-  // Also try bigrams for multi-word artist names
-  var bigrams = [];
-  for (var i = 0; i < words.length - 1; i++) {
-    bigrams.push(words[i] + " " + words[i + 1]);
-  }
-  var terms = words.concat(bigrams);
-  // Prioritize longer terms (more specific) and deduplicate
-  var seen = {};
-  var unique = [];
-  terms.forEach(function(t) {
-    if (!seen[t]) { seen[t] = true; unique.push(t); }
-  });
-  unique.sort(function(a, b) { return b.length - a.length; });
-  return unique;
-}
-
-function searchCatalogue(query) {
-  var terms = extractSearchTerms(query);
-  var results = [];
-  catalogue.forEach(function(p) {
-    var score = 0;
-    var a = p.artist.toLowerCase();
-    var t = p.title.toLowerCase();
-    var g = p.genres.join(" ").toLowerCase();
-    var matched = {};
-    terms.forEach(function(term) {
-      if (matched[term]) return;
-      if (a.indexOf(term) > -1) { score += 20; matched[term] = true; }
-      if (t.indexOf(term) > -1) { score += 5; matched[term] = true; }
-      if (g.indexOf(term) > -1) { score += 3; matched[term] = true; }
-      if (p.era === term || (term === "80s" && p.era === "80s") || (term === "90s" && p.era === "90s") || (term === "70s" && p.era === "70s") || (term === "60s" && p.era === "60s") || (term === "00s" && p.era === "00s") || (term === "10s" && p.era === "10s") || (term === "20s" && p.era === "20s")) { score += 4; matched[term] = true; }
-    });
-    if (score > 0) results.push({ product: p, score: score });
-  });
-  results.sort(function(a, b) { return b.score - a.score; });
-  return results.slice(0, 8).map(function(r) { return r.product; });
-}
-
-// === Check if query is a recommendation/adjacency request ===
-function isRecommendationQuery(text) {
-  var t = text.toLowerCase();
-  return /what else|similar to|like (them|this|that)|recommend|suggest|what (other|else)|bands like|artists like|if i like|into.*what else/.test(t);
-}
-
-// === Detect taste statements: "I like X", "I love X", "I'm into X" ===
-function isTasteStatement(text) {
-  var t = text.toLowerCase().replace(/[.,!?]/g, "").trim();
-  return /^(i|we) (really |absolutely |kinda |sort of |kinda |pretty )?(like|love|enjoy|adore|rate|dig|fancy|into) /i.test(t) ||
-         /^(my|our) favo(u?)rite (band|artist|group|music|sound|genre|style|album) is /i.test(t) ||
-         /^(i'm|i am|we're|we are) (a |such a )?(big |huge |massive )?fan of /i.test(t) ||
-         /^(i'm|i am|we're|we are) (really |pretty |quite )?into /i.test(t) ||
-         /^(i) (fancy|dig|rate|adore|love) /i.test(t) ||
-         /^(been|been really) (into|loving|enjoying|listening to) /i.test(t);
-}
-
-// === Extract artist names from recommendation queries ===
-function extractArtistsFromQuery(text) {
-  var clean = text.toLowerCase().replace(/[.,!?;:'"()]/g, " ");
-  // Known artist patterns from catalogue
-  var found = [];
-  catalogue.forEach(function(p) {
-    var aname = p.artist.toLowerCase();
-    if (clean.indexOf(aname) > -1 && found.indexOf(p.artist) === -1) {
-      found.push(p.artist);
-    }
-  });
-  return found;
-}
-
-function searchByName(names) {
-  var all = [];
-  names.forEach(function(name) {
-    var q = name.toLowerCase();
-    catalogue.forEach(function(p) {
-      if (p.artist.toLowerCase().indexOf(q) > -1 && all.indexOf(p) === -1) all.push(p);
-    });
-  });
-  return all.slice(0, 8);
-}
-
-// === Discogs search (fallback when not in Spindizzy catalogue) ===
-async function searchDiscogs(query) {
-  if (!DGS_KEY) return [];
-  // For recommendation queries, extract artist names for Discogs
-  var searchTerms = extractSearchTerms(query).slice(0, 3).join(" ");
-  if (!searchTerms || searchTerms.length < 2) searchTerms = query;
+// === Last.fm API ===
+async function searchLastFM_Artists(query) {
+  if (!LFM_KEY) return [];
   try {
-    var resp = await fetch("https://api.discogs.com/database/search?q=" + encodeURIComponent(searchTerms) + "&type=release&per_page=8&token=" + DGS_KEY);
-    if (!resp.ok) throw new Error("Discogs API error: " + resp.status);
+    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + encodeURIComponent(query) + "&api_key=" + LFM_KEY + "&format=json&limit=6");
+    if (!resp.ok) return [];
     var data = await resp.json();
-    if (!data.results || data.results.length === 0) return [];
-    return data.results.map(function(r) {
-      var artists = [];
-      if (r.title) {
-        var parts = r.title.split(" - ");
-        if (parts.length > 1) artists = [parts[0].trim()];
-      }
-      return {
-        artist: artists.length > 0 ? artists[0] : (r.title || "Unknown"),
-        title: r.title || "Unknown release",
-        price: "check site",
-        format: (r.format || ["Vinyl"])[0],
-        img: r.cover_image || r.thumb || "",
-        genres: (r.genre || ["music"]),
-        era: r.year ? (r.year.slice(0, 3) + "s") : "",
-        url: "https://www.discogs.com" + (r.uri || "/search/?q=" + encodeURIComponent(query)),
-        source: "discogs"
-      };
-    });
-  } catch (e) {
-    console.warn("Discogs search failed:", e.message);
+    if (data.results && data.results.artistmatches && data.results.artistmatches.artist) {
+      return data.results.artistmatches.artist.map(function(a) { return { name: a.name }; });
+    }
     return [];
-  }
+  } catch (e) { console.warn("Last.fm search:", e.message); return []; }
 }
 
-// === Last.fm enrichment: similar artists, genre tags ===
 async function getLastFM_SimilarArtists(artistName) {
   if (!LFM_KEY) return [];
   try {
-    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=" + encodeURIComponent(artistName) + "&api_key=" + LFM_KEY + "&format=json&limit=8");
+    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=" + encodeURIComponent(artistName) + "&api_key=" + LFM_KEY + "&format=json&limit=10");
     if (!resp.ok) return [];
     var data = await resp.json();
     if (data.similarartists && data.similarartists.artist) {
@@ -908,7 +486,7 @@ async function getLastFM_SimilarArtists(artistName) {
 async function getLastFM_ArtistTags(artistName) {
   if (!LFM_KEY) return [];
   try {
-    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist=" + encodeURIComponent(artistName) + "&api_key=" + LFM_KEY + "&format=json&limit=6");
+    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist=" + encodeURIComponent(artistName) + "&api_key=" + LFM_KEY + "&format=json&limit=8");
     if (!resp.ok) return [];
     var data = await resp.json();
     if (data.toptags && data.toptags.tag) {
@@ -918,234 +496,130 @@ async function getLastFM_ArtistTags(artistName) {
   } catch (e) { console.warn("Last.fm tags:", e.message); return []; }
 }
 
-function buildLastFMContext(similarArtists, tags, artistName) {
-  var lines = ["LAST.FM ENRICHMENT for " + artistName + ":"];
-  if (similarArtists && similarArtists.length > 0) {
-    lines.push("Similar artists: " + similarArtists.map(function(a) { return a.name + " (" + a.match + "% match)"; }).join(", "));
+// === Pick management ===
+function renderPicks() {
+  picksGrid.innerHTML = '';
+  picksCount.textContent = picks.length;
+  if (picks.length === 0) {
+    picksGrid.innerHTML = '<div class="picks-empty"><div class="picks-empty-icon">&#128218;</div><p>Tell Bob what you\'re into and he\'ll suggest similar artists right here.</p></div>';
+    return;
   }
-  if (tags && tags.length > 0) {
-    lines.push("Genre tags: " + tags.map(function(t) { return t.name; }).join(", "));
-  }
-  lines.push("Use this to sound knowledgeable. Suggest similar artists from this list. Cross-reference with stock to mention any we actually carry.");
-  return lines.join("\n");
-}
-// === Conversation engine ===
-function getSearchResults(userInput) {
-  var text = userInput.trim();
-  var textLower = text.toLowerCase();
-
-  // Check special knowledge maps for search expansions
-  for (var key in knowledge) {
-    if (knowledge.hasOwnProperty(key) && textLower.indexOf(key) > -1) {
-      var searches = knowledge[key].searches;
-      if (searches && searches.length > 0) {
-        var found = searchByName(searches);
-        return { knowledgeHit: knowledge[key], results: found };
-      }
-    }
-  }
-
-  // Check special knowledge response-only (no search expansion)
-  for (var k in knowledge) {
-    if (knowledge.hasOwnProperty(k) && textLower.indexOf(k) > -1) {
-      return { knowledgeHit: knowledge[k], results: [] };
-    }
-  }
-
-  // Taste statements: "I like Pixies", "I'm into Radiohead", "I love jazz"
-  if (isTasteStatement(text)) {
-    var artists = extractArtistsFromQuery(text);
-    if (artists.length > 0) {
-      var direct = searchByName(artists);
-      var allGenres = [];
-      direct.forEach(function(p) { allGenres = allGenres.concat(p.genres); });
-      var uniqueGenres = [];
-      allGenres.forEach(function(g) { if (uniqueGenres.indexOf(g) === -1) uniqueGenres.push(g); });
-      var genreResults = [];
-      uniqueGenres.forEach(function(g) {
-        var matches = searchByName([g]);
-        matches.forEach(function(m) {
-          if (genreResults.indexOf(m) === -1 && direct.indexOf(m) === -1) genreResults.push(m);
-        });
-      });
-      var combined = direct.concat(genreResults).slice(0, 12);
-      var genreNames = uniqueGenres.join(", ");
-      var respText = "Ah, " + artists.join(" and ") + "! Deadly taste. " + (artists.length === 1 ? artists[0] + " are" : artists.join(" and ") + " are") + " absolute legends. I've pulled what we have from " + (artists.length === 1 ? "them" : "them") + " in our catalogue, plus some bits from the " + genreNames + " space you might fancy. Have a gander at Bob's Picks!";
-      return { knowledgeHit: { response: respText }, results: combined, isRecommendation: true, isTaste: true };
-    }
-  }
-
-  // Recommendation queries: "what else is like them?", "similar to X"
-  if (isRecommendationQuery(text)) {
-    var artists = extractArtistsFromQuery(text);
-    if (artists.length > 0) {
-      // Show the artists they mentioned, plus related from catalogue
-      var direct = searchByName(artists);
-      // Also do a broad search for similar genres
-      var allGenres = [];
-      direct.forEach(function(p) { allGenres = allGenres.concat(p.genres); });
-      var uniqueGenres = [];
-      allGenres.forEach(function(g) { if (uniqueGenres.indexOf(g) === -1) uniqueGenres.push(g); });
-      var genreResults = [];
-      uniqueGenres.forEach(function(g) {
-        var matches = searchByName([g]);
-        matches.forEach(function(m) {
-          if (genreResults.indexOf(m) === -1) genreResults.push(m);
-        });
-      });
-      var combined = direct.concat(genreResults).slice(0, 8);
-      return { knowledgeHit: { response: "Ah, " + artists.join(" and ") + "! Deadly taste. Here's what I found: the stuff you mentioned, plus some other bits from the same sort of world. Check Bob's Picks!" }, results: combined, isRecommendation: true };
-    }
-  }
-
-  // General catalogue search
-  return { knowledgeHit: null, results: searchCatalogue(text) };
+  picks.forEach(function(a, i) {
+    var card = document.createElement('div');
+    card.className = 'artist-card';
+    card.onclick = function() {
+      chatInput.value = a.name;
+      sendMessage();
+    };
+    var matchHtml = a.match ? '<span class="artist-card-match">' + Math.round(a.match) + '%</span>' : '';
+    var tagsHtml = a.tags && a.tags.length > 0
+      ? '<div class="artist-card-tags">' + a.tags.slice(0, 4).map(function(t) { return '<span class="artist-card-tag">' + t.name + '</span>'; }).join('') + '</div>'
+      : '';
+    card.innerHTML =
+      '<span class="artist-card-rank">' + (i + 1) + '.</span>' +
+      '<div class="artist-card-info">' +
+        '<div class="artist-card-name">' + a.name + '</div>' +
+        tagsHtml +
+      '</div>' +
+      matchHtml;
+    picksGrid.appendChild(card);
+  });
 }
 
-function formatResultMessage(results) {
-  if (results.length === 0) return null;
-  var artistMap = {};
-  results.forEach(function(r) { artistMap[r.artist] = true; });
-  var artistCount = Object.keys(artistMap).length;
-  return results.length === 1
-    ? "Found 1 match in the Spindizzy catalogue:"
-    : "Found " + results.length + " matches across " + artistCount + " artist" + (artistCount > 1 ? "s" : "") + ":";
-}
-
-function showResults(searchResult) {
-  if (searchResult.results && searchResult.results.length > 0) {
-    addPicks(searchResult.results);
-    var msg = formatResultMessage(searchResult.results);
-    if (msg) addMessage(msg + " Check Bob's Picks on the right.", 'bot');
-    if (searchResult.results.length > 4) {
-      addSuggestions(["New releases", "Rock classics", "Jazz essentials", "Electronic & dance", "Irish artists"]);
-    }
-  }
-}
-
-// === Refinement detection: is this a follow-up filter or a new query? ===
-var REFINE_FORMATS = ["vinyl", "cd", "lp", "7\"", "12\"", "vinyl only", "just vinyl", "just cd", "cd only", "only vinyl", "only cd", "vinyls"];
-var REFINE_PRICES = ["cheap", "cheaper", "bargain", "affordable", "expensive", "under", "over", "around"];
-var REFINE_ERAS = ["newer", "newest", "older", "oldest", "latest", "recent", "classic", "vintage", "modern", "70s", "80s", "90s", "00s", "10s", "20s", "60s", "50s"];
-var REFINE_AUGMENT = ["more like", "similar to", "similar", "what about", "also like", "any more", "more of", "show more", "what else like"];
+// === Refinement detection ===
+var REFINE_AUGMENT = ["more like", "similar", "what else", "show more", "any more", "more of", "deeper cuts"];
 
 function detectIntent(text) {
   if (picks.length === 0) return "new";
   var t = text.toLowerCase().trim();
-
-  // Explicit new-search signals
-  if (/^(scratch|forget|reset|clear|new search|start over|different|something else|change)$/i.test(t)) return "new";
-
-  // Refinement signals: single-word or short format/price/era filter
-  var words = t.split(/\s+/);
-
-  // Format filter: "just vinyl", "vinyl only", "cd", etc.
-  if (REFINE_FORMATS.indexOf(t) > -1 || (words.length <= 2 && REFINE_FORMATS.some(function(f) { return t.indexOf(f) > -1; }))) {
-    return "refine_format";
-  }
-
-  // Price filter: "under 20", "cheap", "bargain", etc.
-  if (REFINE_PRICES.some(function(p) { return t.indexOf(p) === 0 || words.indexOf(p) > -1; }) && words.length <= 4) {
-    return "refine_price";
-  }
-
-  // Era filter: "newer", "90s", "classic" etc.
-  if (REFINE_ERAS.some(function(e) { return words.indexOf(e) > -1; }) && words.length <= 3 && !isRecommendationQuery(text)) {
-    return "refine_era";
-  }
-
-  // Augmentation: "more like this", "similar", "what about X"
-  if (REFINE_AUGMENT.some(function(a) { return t.indexOf(a) > -1; }) && !isRecommendationQuery(text)) {
-    return "refine_augment";
-  }
-
-  // Genre filter: if the query is a genre in our existing picks, treat as filter
-  if (words.length <= 2) {
-    var existingGenres = [];
-    picks.forEach(function(p) { existingGenres = existingGenres.concat(p.genres); });
-    var uniqueGenres = [];
-    existingGenres.forEach(function(g) { if (uniqueGenres.indexOf(g) === -1) uniqueGenres.push(g); });
-    if (uniqueGenres.indexOf(t) > -1 || uniqueGenres.some(function(g) { return words.indexOf(g) > -1; })) {
-      return "refine_genre";
-    }
-  }
-
-  // If query is short and we have picks, check if it's an artist already in picks
-  if (words.length <= 3) {
-    var inPicks = picks.some(function(p) {
-      return p.artist.toLowerCase().indexOf(t) > -1 || t.indexOf(p.artist.toLowerCase()) > -1;
-    });
-    if (inPicks) return "refine_artist";
-  }
-
+  if (/^(scratch|forget|reset|clear|new search|start over|different|something else)$/i.test(t)) return "new";
+  if (REFINE_AUGMENT.some(function(a) { return t.indexOf(a) > -1; })) return "refine_augment";
   return "new";
 }
 
-function filterPicks(intent, text) {
-  var t = text.toLowerCase().trim();
-  var filtered = picks.slice();
+// === Extract a clean artist name from natural language ===
+function extractArtistName(text) {
+  var t = text.toLowerCase().replace(/[.,!?;:'"()]/g, " ").trim();
+  // Remove common lead-in phrases
+  t = t.replace(/^(i |we )?(really |kinda |sort of |pretty )?(like|love|enjoy|adore|rate|dig|fancy|into |fan of |listening to )/i, "");
+  t = t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for )/i, "");
+  // Take the first 1-3 meaningful words as the artist
+  var words = t.split(/\s+/).filter(function(w) { return w.length > 1; });
+  return words.slice(0, 3).join(" ");
+}
 
-  if (intent === "refine_format") {
-    var fmt = t;
-    if (t.indexOf("vinyl") > -1) fmt = "vinyl";
-    if (t.indexOf("cd") > -1) fmt = "cd";
-    filtered = filtered.filter(function(p) { return p.format.toLowerCase().indexOf(fmt) > -1; });
-    return { filtered: filtered, msg: "Narrowed to " + fmt.toUpperCase() + " only. " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
-  }
+// === Call the LLM ===
+async function callLLM(userMessage, artistName, similarArtists, tags) {
+  if (!LLM_KEY || !LLM_URL || !LLM_MODEL) return null;
 
-  if (intent === "refine_price") {
-    var maxPrice = Infinity;
-    var match = t.match(/(\d+)/);
-    if (match) maxPrice = parseInt(match[1]);
-    if (t.indexOf("over") > -1 || t.indexOf("expensive") > -1) {
-      filtered = filtered.filter(function(p) { return parseFloat(p.price) >= maxPrice; });
-      return { filtered: filtered, msg: "Showing pricier picks (EUR " + maxPrice + "+). " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+  var lfmContext = "";
+  if (similarArtists && similarArtists.length > 0) {
+    lfmContext = "LAST.FM DATA for \"" + artistName + "\":\n";
+    lfmContext += "Similar artists: " + similarArtists.map(function(a) { return a.name + " (" + Math.round(a.match) + "% match)"; }).join(", ") + "\n";
+    if (tags && tags.length > 0) {
+      lfmContext += "Genre tags: " + tags.map(function(t) { return t.name; }).join(", ") + "\n";
     }
-    filtered = filtered.filter(function(p) { return parseFloat(p.price) <= maxPrice; });
-    return { filtered: filtered, msg: "Showing picks under EUR " + maxPrice + ". " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+    lfmContext += "Use this data to suggest genuinely related artists. Mention specific names and why they connect. The customer sees these in Bob's Picks.\n";
   }
 
-  if (intent === "refine_era") {
-    var era = t;
-    if (t === "newer" || t === "newest" || t === "latest" || t === "recent" || t === "modern") {
-      filtered = filtered.filter(function(p) { return ["20s", "10s"].indexOf(p.era) > -1; });
-    } else if (t === "older" || t === "oldest" || t === "classic" || t === "vintage") {
-      filtered = filtered.filter(function(p) { return ["50s", "60s", "70s", "80s"].indexOf(p.era) > -1; });
-    } else {
-      filtered = filtered.filter(function(p) { return p.era === era; });
-    }
-    return { filtered: filtered, msg: "Filtered to " + era + " era. " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
-  }
+  var systemPrompt = [
+    "You are Bob, a super friendly, super knowledgeable music guru working at Round & Round Records, a beloved independent record shop in Dublin, Ireland (est. 2005). You live and breathe music. Your knowledge spans the entire history of recorded music: every genre, every era, every scene.",
+    "",
+    "YOUR PERSONALITY:",
+    "- Warm, passionate, the kind of person who can talk for an hour about why a certain B-side is underrated.",
+    "- Dublin/Irish flavour: use 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic' naturally but sparingly.",
+    "- Opinions matter. 'Best album of last month? For my money, it's gotta be...' With reasons.",
+    "- Enthusiasm is infectious. If someone mentions a band you love: 'Ah no way, you're into them? Deadly!'",
+    "- Never corporate. Never robotic. You're having a chat about music, not reading a script.",
+    "",
+    "HOW YOU RESPOND:",
+    "- Lead with your knowledge. Dive into the conversation. Share stories, context, opinions.",
+    "- When someone says they like an artist: share what you know about them, then suggest 2-3 genuinely similar artists and explain WHY they connect (shared genre, era, scene, producer, label, influence).",
+    "- Use the Last.fm data provided to suggest similar artists. Mention specific names and match context.",
+    "- Think broadly. Connect dots. 'If you like X, you'd probably love Y because they share the same producer during that era...'",
+    "- Mention how many similar artists appeared in Bob's Picks: 'I've lined up 10 similar acts in Bob's Picks for you...'",
+    "- Keep it warm and natural. 2-6 sentences usually, go longer if the story deserves it.",
+    "- No em dashes. Use commas, colons, or full stops.",
+    "",
+    "SHOP CONTEXT (use organically, don't lead with it):",
+    "- Round & Round Records, 32 Market Arcade, Dublin. Independent since 2005.",
+    "- We use Last.fm's massive music database to power our recommendations.",
+    "- Free shipping in Ireland on orders over EUR 75. Worldwide delivery.",
+    "",
+    "TODAY'S DATE: " + new Date().getDate() + " " + ["January","February","March","April","May","June","July","August","September","October","November","December"][new Date().getMonth()] + " " + new Date().getFullYear(),
+    "",
+    lfmContext
+  ].join("\n");
 
-  if (intent === "refine_genre") {
-    filtered = filtered.filter(function(p) { return p.genres.indexOf(t) > -1 || p.genres.some(function(g) { return t.indexOf(g) > -1; }); });
-    return { filtered: filtered, msg: "Filtered to " + t + ". " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+  var messages = [{ role: "system", content: systemPrompt }];
+  for (var i = 0; i < conversationHistory.length; i++) {
+    messages.push(conversationHistory[i]);
   }
+  messages.push({ role: "user", content: userMessage });
 
-  if (intent === "refine_artist") {
-    filtered = filtered.filter(function(p) { return p.artist.toLowerCase().indexOf(t) > -1 || t.indexOf(p.artist.toLowerCase()) > -1; });
-    return { filtered: filtered, msg: "Filtered to " + t + ". " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
-  }
-
-  if (intent === "refine_augment") {
-    // For "more like this", augment with additional genre-related items
-    var allGenres = [];
-    picks.forEach(function(p) { allGenres = allGenres.concat(p.genres); });
-    var uniqueGenres = [];
-    allGenres.forEach(function(g) { if (uniqueGenres.indexOf(g) === -1) uniqueGenres.push(g); });
-    var extra = [];
-    catalogue.forEach(function(p) {
-      var alreadyInPicks = picks.some(function(pk) { return pk.artist === p.artist && pk.title === p.title; });
-      if (!alreadyInPicks && p.genres.some(function(g) { return uniqueGenres.indexOf(g) > -1; })) {
-        extra.push(p);
-      }
+  try {
+    console.log("[Bob] Calling LLM with model:", LLM_MODEL, "lfmData:", !!similarArtists && similarArtists.length);
+    var resp = await fetch(LLM_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + LLM_KEY },
+      body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.85, max_tokens: 500 })
     });
-    picks = picks.concat(extra.slice(0, 8));
-    renderPicks();
-    return { filtered: picks, msg: "Added " + Math.min(extra.length, 8) + " more from similar genres. " + picks.length + " total picks now.", augmented: true };
+    if (!resp.ok) {
+      var errText = await resp.text();
+      console.error("[Bob] LLM API error:", resp.status, errText.slice(0, 200));
+      throw new Error("API error: " + resp.status);
+    }
+    var data = await resp.json();
+    var reply = data.choices[0].message.content.trim();
+    console.log("[Bob] LLM reply:", reply.slice(0, 150));
+    conversationHistory.push({ role: "user", content: userMessage });
+    conversationHistory.push({ role: "assistant", content: reply });
+    if (conversationHistory.length > 12) conversationHistory = conversationHistory.slice(-12);
+    return reply;
+  } catch (e) {
+    console.warn("[Bob] LLM call failed:", e.message);
+    return null;
   }
-
-  return { filtered: filtered, msg: null };
 }
 
 // === Main send ===
@@ -1157,139 +631,74 @@ async function sendMessage() {
   showTyping();
 
   var intent = detectIntent(text);
-  var isRefine = intent !== "new";
 
-  // --- REFINEMENT PATH: filter existing picks ---
-  if (isRefine) {
-    var result = filterPicks(intent, text);
-    if (result.augmented) {
-      // Already rendered in filterPicks
-    } else {
-      picks = result.filtered;
+  // Refinement: "show more", "similar", "deeper cuts" etc.
+  if (intent === "refine_augment" && lastQuery) {
+    var moreSimilar = await getLastFM_SimilarArtists(lastQuery);
+    if (moreSimilar.length > 0) {
+      picks = moreSimilar;
       renderPicks();
+      hideTyping();
+      addMessage("Here are " + picks.length + " similar artists based on what you asked before. Click any name to explore further!", 'bot');
+      return;
     }
+  }
 
-    // Call LLM with refinement context if available
-    var refineMsg = result.msg || "Here are your refined picks.";
-    var llmReply = null;
-    if (LLM_KEY && LLM_URL && LLM_MODEL) {
-      var refineContext = {
-        knowledgeHit: null,
-        results: picks.slice(0, 12),
-        isRefinement: true,
-        refinementType: intent,
-        previousQuery: lastQuery
-      };
-      // Fetch Last.fm enrichment for refinement too
-      var lfmCtx2 = null;
-      if (LFM_KEY && lastQuery && picks.length > 0) {
-        var artistFromLast = extractArtistsFromQuery(lastQuery);
-        if (artistFromLast.length > 0) {
-          var sim2 = await getLastFM_SimilarArtists(artistFromLast[0]);
-          var tags2 = await getLastFM_ArtistTags(artistFromLast[0]);
-          if (sim2.length > 0 || tags2.length > 0) {
-            lfmCtx2 = buildLastFMContext(sim2, tags2, artistFromLast[0]);
-          }
-        }
-      }
-      llmReply = await callLLM(text, refineContext, lfmCtx2);
-    }
-
+  // New query: search Last.fm
+  var artistName = extractArtistName(text);
+  if (!artistName || artistName.length < 2) {
     hideTyping();
-
-    if (llmReply) {
-      addMessage(llmReply, 'bot');
-    } else {
-      addMessage(refineMsg + " Check Bob's Picks on the right.", 'bot');
-    }
-    lastQuery = text;
+    addMessage("I need a bit more to go on! Give me an artist name and I'll find you similar acts in a flash.", 'bot');
+    addSuggestions(["Radiohead", "Pixies", "Kendrick Lamar", "Miles Davis", "Aphex Twin", "Daft Punk"]);
     return;
   }
 
-  // --- NEW QUERY PATH: fresh search ---
-  // Clear previous picks
+  lastQuery = artistName;
   picks = [];
   renderPicks();
 
-  // Run catalogue search immediately (fast, no dependency on LLM)
-  var searchResult = getSearchResults(text);
+  var similarArtists = await getLastFM_SimilarArtists(artistName);
+  var tags = await getLastFM_ArtistTags(artistName);
 
-  // For recommendation queries, also search Discogs in parallel for broader results
-  var dgsPromise = null;
-  if (isRecommendationQuery(text) && DGS_KEY) {
-    dgsPromise = searchDiscogs(text);
+  if (similarArtists.length === 0) {
+    hideTyping();
+    var found = await searchLastFM_Artists(artistName);
+    if (found.length > 0) {
+      picks = found;
+      renderPicks();
+      addMessage("Didn't find direct similars for \"" + artistName + "\", but here are some matching artists from Last.fm. Click one to explore!", 'bot');
+    } else {
+      addMessage("Hmm, Last.fm didn't return anything for \"" + artistName + "\". Could you try a different artist name?", 'bot');
+      addSuggestions(["Radiohead", "Pixies", "Kendrick Lamar", "Miles Davis", "Daft Punk"]);
+    }
+    return;
   }
 
-  // If nothing in Spindizzy, try Discogs as fallback
-  if ((!searchResult.results || searchResult.results.length === 0) && DGS_KEY) {
-    var dgsResults = dgsPromise ? await dgsPromise : await searchDiscogs(text);
-    if (dgsResults.length > 0) {
-      searchResult.results = (searchResult.results || []).concat(dgsResults);
-      searchResult.source = "discogs";
-    }
-  } else if (dgsPromise) {
-    // Recommendation query with Spindizzy results: merge Discogs results too
-    var dgsExtra = await dgsPromise;
-    if (dgsExtra.length > 0) {
-      searchResult.results = searchResult.results.concat(dgsExtra).slice(0, 12);
-    }
+  // Enrich picks with tags (fetch tags for top 3 similar artists)
+  picks = similarArtists;
+  picks.forEach(function(a) { a.tags = []; });
+  if (tags && tags.length > 0) picks[0].tags = tags;
+  // Fetch tags for top 2-3 similar artists
+  for (var i = 1; i < Math.min(4, picks.length); i++) {
+    var t = await getLastFM_ArtistTags(picks[i].name);
+    if (t && t.length > 0) picks[i].tags = t;
   }
+  renderPicks();
 
+  // Call LLM
   var llmReply = null;
   if (LLM_KEY && LLM_URL && LLM_MODEL) {
-    // Fetch Last.fm enrichment for taste/recommendation queries
-    var lfmCtx = null;
-    if (LFM_KEY && (searchResult.isTaste || searchResult.isRecommendation)) {
-      var artists = extractArtistsFromQuery(text);
-      if (artists.length > 0) {
-        var similar = await getLastFM_SimilarArtists(artists[0]);
-        var tags = await getLastFM_ArtistTags(artists[0]);
-        if (similar.length > 0 || tags.length > 0) {
-          lfmCtx = buildLastFMContext(similar, tags, artists[0]);
-        }
-      }
-    }
-    llmReply = await callLLM(text, searchResult, lfmCtx);
+    llmReply = await callLLM(text, artistName, similarArtists, tags);
   }
 
   hideTyping();
 
-  var hasResults = searchResult.results && searchResult.results.length > 0;
-  var isDiscogs = searchResult.source === "discogs";
-
-  // Store for potential refinement
-  lastQuery = text;
-  lastSearchResults = searchResult.results || [];
-
   if (llmReply) {
     addMessage(llmReply, 'bot');
-    showResults(searchResult);
-    if (!hasResults) {
-      addSuggestions(["Jazz", "Rock", "Electronic", "Hip-Hop", "Metal", "Indie", "Irish artists", "90s classics"]);
-    }
   } else {
-    // Fallback to rule-based engine
-    if (searchResult.knowledgeHit && searchResult.knowledgeHit.response) {
-      addMessage(searchResult.knowledgeHit.response, 'bot');
-      showResults(searchResult);
-    } else if (hasResults) {
-      showResults(searchResult);
-      if (isDiscogs) {
-        addMessage("Nothing in Spindizzy for that, so I checked Discogs. Found " + searchResult.results.length + " match" + (searchResult.results.length > 1 ? "es" : "") + "! Have a look at Bob's Picks.", 'bot');
-      } else {
-        var artistMap = {};
-        searchResult.results.forEach(function(r) { artistMap[r.artist] = true; });
-        var artistCount = Object.keys(artistMap).length;
-        var msg = searchResult.results.length === 1
-          ? "Got one for you!"
-          : "Nice one! Found " + searchResult.results.length + " matches across " + artistCount + " artist" + (artistCount > 1 ? "s" : "") + ".";
-        addMessage(msg + " Take a look at Bob's Picks on the right. Anything catch your eye?", 'bot');
-      }
-      addSuggestions(["New releases", "Rock classics", "Jazz essentials", "Electronic & dance", "Irish artists"]);
-    } else {
-      addMessage("Hmm, nothing in Spindizzy or Discogs for \"" + text + "\". Could you try a different artist, genre, or style? I'm here to dig!", 'bot');
-      addSuggestions(["Jazz", "Rock", "Electronic", "Hip-Hop", "Metal", "Indie", "Irish artists", "90s classics"]);
-    }
+    var topPick = similarArtists[0];
+    var topPicksStr = similarArtists.slice(0, 3).map(function(a) { return a.name; }).join(", ");
+    addMessage("Deadly! If you're into " + artistName + ", you'd probably love " + topPicksStr + ". " + topPick.name + " is the closest match at " + Math.round(topPick.match) + "%. Check Bob's Picks for the full list and click any name to explore further!", 'bot');
   }
 }
 
@@ -1299,7 +708,6 @@ chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendM
 
 // === Init ===
 (function() {
-  // Set mode badge
   var badge = document.getElementById("bobMode");
   if (LLM_KEY && LLM_URL && LLM_MODEL) {
     badge.textContent = "LLM";
@@ -1309,10 +717,10 @@ chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendM
     badge.style.background = "#555";
   }
 
-  addMessage("Hey there! I'm <strong>Bob</strong>, your personal music guide here at Round &amp; Round Records. Whether you're after a specific album, want to explore a new genre, or just fancy a chat about music: I'm your man.", 'bot');
+  addMessage("Hey there! I'm <strong>Bob</strong>, your personal music guide here at Round &amp; Round Records. Powered by Last.fm's massive music database, I can find you similar artists, suggest deep cuts, and chat about pretty much any genre or era.", 'bot');
   setTimeout(function() {
-    addMessage("So, what are you into? Tell me an artist you love, a genre you're curious about, or even just a vibe, and I'll dig through the Spindizzy catalogue for you. Fire away!", 'bot');
-    addSuggestions(["Radiohead", "Jazz", "Irish artists", "90s indie", "Heavy stuff", "Kim Deal"]);
+    addMessage("Tell me an artist you love and I'll suggest similar acts you might enjoy. Fire away!", 'bot');
+    addSuggestions(["Radiohead", "Pixies", "Kendrick Lamar", "Miles Davis", "Aphex Twin", "Daft Punk"]);
   }, 1200);
 })();
 </script>
