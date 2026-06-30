@@ -649,6 +649,8 @@ const knowledge = {
 
 // === State ===
 let picks = [];
+let lastQuery = "";
+let lastSearchResults = [];
 
 // === DOM ===
 const chatMessages = document.getElementById('chatMessages');
@@ -928,6 +930,131 @@ function showResults(searchResult) {
   }
 }
 
+// === Refinement detection: is this a follow-up filter or a new query? ===
+var REFINE_FORMATS = ["vinyl", "cd", "lp", "7\"", "12\"", "vinyl only", "just vinyl", "just cd", "cd only", "only vinyl", "only cd", "vinyls"];
+var REFINE_PRICES = ["cheap", "cheaper", "bargain", "affordable", "expensive", "under", "over", "around"];
+var REFINE_ERAS = ["newer", "newest", "older", "oldest", "latest", "recent", "classic", "vintage", "modern", "70s", "80s", "90s", "00s", "10s", "20s", "60s", "50s"];
+var REFINE_AUGMENT = ["more like", "similar to", "similar", "what about", "also like", "any more", "more of", "show more", "what else like"];
+
+function detectIntent(text) {
+  if (picks.length === 0) return "new";
+  var t = text.toLowerCase().trim();
+
+  // Explicit new-search signals
+  if (/^(scratch|forget|reset|clear|new search|start over|different|something else|change)$/i.test(t)) return "new";
+
+  // Refinement signals: single-word or short format/price/era filter
+  var words = t.split(/\s+/);
+
+  // Format filter: "just vinyl", "vinyl only", "cd", etc.
+  if (REFINE_FORMATS.indexOf(t) > -1 || (words.length <= 2 && REFINE_FORMATS.some(function(f) { return t.indexOf(f) > -1; }))) {
+    return "refine_format";
+  }
+
+  // Price filter: "under 20", "cheap", "bargain", etc.
+  if (REFINE_PRICES.some(function(p) { return t.indexOf(p) === 0 || words.indexOf(p) > -1; }) && words.length <= 4) {
+    return "refine_price";
+  }
+
+  // Era filter: "newer", "90s", "classic" etc.
+  if (REFINE_ERAS.some(function(e) { return words.indexOf(e) > -1; }) && words.length <= 3 && !isRecommendationQuery(text)) {
+    return "refine_era";
+  }
+
+  // Augmentation: "more like this", "similar", "what about X"
+  if (REFINE_AUGMENT.some(function(a) { return t.indexOf(a) > -1; }) && !isRecommendationQuery(text)) {
+    return "refine_augment";
+  }
+
+  // Genre filter: if the query is a genre in our existing picks, treat as filter
+  if (words.length <= 2) {
+    var existingGenres = [];
+    picks.forEach(function(p) { existingGenres = existingGenres.concat(p.genres); });
+    var uniqueGenres = [];
+    existingGenres.forEach(function(g) { if (uniqueGenres.indexOf(g) === -1) uniqueGenres.push(g); });
+    if (uniqueGenres.indexOf(t) > -1 || uniqueGenres.some(function(g) { return words.indexOf(g) > -1; })) {
+      return "refine_genre";
+    }
+  }
+
+  // If query is short and we have picks, check if it's an artist already in picks
+  if (words.length <= 3) {
+    var inPicks = picks.some(function(p) {
+      return p.artist.toLowerCase().indexOf(t) > -1 || t.indexOf(p.artist.toLowerCase()) > -1;
+    });
+    if (inPicks) return "refine_artist";
+  }
+
+  return "new";
+}
+
+function filterPicks(intent, text) {
+  var t = text.toLowerCase().trim();
+  var filtered = picks.slice();
+
+  if (intent === "refine_format") {
+    var fmt = t;
+    if (t.indexOf("vinyl") > -1) fmt = "vinyl";
+    if (t.indexOf("cd") > -1) fmt = "cd";
+    filtered = filtered.filter(function(p) { return p.format.toLowerCase().indexOf(fmt) > -1; });
+    return { filtered: filtered, msg: "Narrowed to " + fmt.toUpperCase() + " only. " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+  }
+
+  if (intent === "refine_price") {
+    var maxPrice = Infinity;
+    var match = t.match(/(\d+)/);
+    if (match) maxPrice = parseInt(match[1]);
+    if (t.indexOf("over") > -1 || t.indexOf("expensive") > -1) {
+      filtered = filtered.filter(function(p) { return parseFloat(p.price) >= maxPrice; });
+      return { filtered: filtered, msg: "Showing pricier picks (EUR " + maxPrice + "+). " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+    }
+    filtered = filtered.filter(function(p) { return parseFloat(p.price) <= maxPrice; });
+    return { filtered: filtered, msg: "Showing picks under EUR " + maxPrice + ". " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+  }
+
+  if (intent === "refine_era") {
+    var era = t;
+    if (t === "newer" || t === "newest" || t === "latest" || t === "recent" || t === "modern") {
+      filtered = filtered.filter(function(p) { return ["20s", "10s"].indexOf(p.era) > -1; });
+    } else if (t === "older" || t === "oldest" || t === "classic" || t === "vintage") {
+      filtered = filtered.filter(function(p) { return ["50s", "60s", "70s", "80s"].indexOf(p.era) > -1; });
+    } else {
+      filtered = filtered.filter(function(p) { return p.era === era; });
+    }
+    return { filtered: filtered, msg: "Filtered to " + era + " era. " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+  }
+
+  if (intent === "refine_genre") {
+    filtered = filtered.filter(function(p) { return p.genres.indexOf(t) > -1 || p.genres.some(function(g) { return t.indexOf(g) > -1; }); });
+    return { filtered: filtered, msg: "Filtered to " + t + ". " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+  }
+
+  if (intent === "refine_artist") {
+    filtered = filtered.filter(function(p) { return p.artist.toLowerCase().indexOf(t) > -1 || t.indexOf(p.artist.toLowerCase()) > -1; });
+    return { filtered: filtered, msg: "Filtered to " + t + ". " + filtered.length + " pick" + (filtered.length !== 1 ? "s" : "") + "." };
+  }
+
+  if (intent === "refine_augment") {
+    // For "more like this", augment with additional genre-related items
+    var allGenres = [];
+    picks.forEach(function(p) { allGenres = allGenres.concat(p.genres); });
+    var uniqueGenres = [];
+    allGenres.forEach(function(g) { if (uniqueGenres.indexOf(g) === -1) uniqueGenres.push(g); });
+    var extra = [];
+    catalogue.forEach(function(p) {
+      var alreadyInPicks = picks.some(function(pk) { return pk.artist === p.artist && pk.title === p.title; });
+      if (!alreadyInPicks && p.genres.some(function(g) { return uniqueGenres.indexOf(g) > -1; })) {
+        extra.push(p);
+      }
+    });
+    picks = picks.concat(extra.slice(0, 8));
+    renderPicks();
+    return { filtered: picks, msg: "Added " + Math.min(extra.length, 8) + " more from similar genres. " + picks.length + " total picks now.", augmented: true };
+  }
+
+  return { filtered: filtered, msg: null };
+}
+
 // === Main send ===
 async function sendMessage() {
   var text = chatInput.value.trim();
@@ -935,6 +1062,50 @@ async function sendMessage() {
   addMessage(text, 'user');
   chatInput.value = '';
   showTyping();
+
+  var intent = detectIntent(text);
+  var isRefine = intent !== "new";
+
+  // --- REFINEMENT PATH: filter existing picks ---
+  if (isRefine) {
+    var result = filterPicks(intent, text);
+    if (result.augmented) {
+      // Already rendered in filterPicks
+    } else {
+      picks = result.filtered;
+      renderPicks();
+    }
+
+    // Call LLM with refinement context if available
+    var refineMsg = result.msg || "Here are your refined picks.";
+    var llmReply = null;
+    if (LLM_KEY && LLM_URL && LLM_MODEL) {
+      // Build a refinement-aware search result for the LLM
+      var refineContext = {
+        knowledgeHit: null,
+        results: picks.slice(0, 12),
+        isRefinement: true,
+        refinementType: intent,
+        previousQuery: lastQuery
+      };
+      llmReply = await callLLM(text, refineContext);
+    }
+
+    hideTyping();
+
+    if (llmReply) {
+      addMessage(llmReply, 'bot');
+    } else {
+      addMessage(refineMsg + " Check Bob's Picks on the right.", 'bot');
+    }
+    lastQuery = text;
+    return;
+  }
+
+  // --- NEW QUERY PATH: fresh search ---
+  // Clear previous picks
+  picks = [];
+  renderPicks();
 
   // Run catalogue search immediately (fast, no dependency on LLM)
   var searchResult = getSearchResults(text);
@@ -969,6 +1140,10 @@ async function sendMessage() {
 
   var hasResults = searchResult.results && searchResult.results.length > 0;
   var isDiscogs = searchResult.source === "discogs";
+
+  // Store for potential refinement
+  lastQuery = text;
+  lastSearchResults = searchResult.results || [];
 
   if (llmReply) {
     addMessage(llmReply, 'bot');
