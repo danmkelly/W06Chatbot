@@ -351,7 +351,7 @@ body {
     <div class="chat-header">
       <div class="chat-avatar">B</div>
       <div class="chat-header-info">
-        <h3>Bob</h3>
+        <h3>Bob <span id="bobMode" style="font-size:0.6rem;background:#555;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:400;">basic</span></h3>
         <p>Music guide &amp; crate-digger</p>
       </div>
     </div>
@@ -545,20 +545,26 @@ async function callLLM(userMessage, searchResult) {
   messages.push({ role: "user", content: userMessage });
 
   try {
+    console.log("[Bob] Calling LLM with model:", LLM_MODEL, "msg length:", userMessage.length);
     var resp = await fetch(LLM_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + LLM_KEY },
-      body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.85, max_tokens: 400 })
+      body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.85, max_tokens: 500 })
     });
-    if (!resp.ok) throw new Error("API error: " + resp.status);
+    if (!resp.ok) {
+      var errText = await resp.text();
+      console.error("[Bob] LLM API error:", resp.status, errText.slice(0, 200));
+      throw new Error("API error: " + resp.status);
+    }
     var data = await resp.json();
     var reply = data.choices[0].message.content.trim();
+    console.log("[Bob] LLM reply:", reply.slice(0, 150));
     conversationHistory.push({ role: "user", content: userMessage });
     conversationHistory.push({ role: "assistant", content: reply });
     if (conversationHistory.length > 12) conversationHistory = conversationHistory.slice(-12);
     return reply;
   } catch (e) {
-    console.warn("LLM call failed, falling back to rule-based:", e.message);
+    console.warn("[Bob] LLM call failed, falling back to rule-based:", e.message);
     return null;
   }
 }
@@ -1183,6 +1189,16 @@ chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendM
 
 // === Init ===
 (function() {
+  // Set mode badge
+  var badge = document.getElementById("bobMode");
+  if (LLM_KEY && LLM_URL && LLM_MODEL) {
+    badge.textContent = "LLM";
+    badge.style.background = "#2E7D32";
+  } else {
+    badge.textContent = "basic";
+    badge.style.background = "#555";
+  }
+
   addMessage("Hey there! I'm <strong>Bob</strong>, your personal music guide here at Round &amp; Round Records. Whether you're after a specific album, want to explore a new genre, or just fancy a chat about music: I'm your man.", 'bot');
   setTimeout(function() {
     addMessage("So, what are you into? Tell me an artist you love, a genre you're curious about, or even just a vibe, and I'll dig through the Spindizzy catalogue for you. Fire away!", 'bot');
