@@ -342,6 +342,25 @@ async function getAlb(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.get
 async function getBio(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist)return null;return{name:d.artist.name,bio:(d.artist.bio&&d.artist.bio.summary)?d.artist.bio.summary.replace(/<[^>]+>/g,"").slice(0,500):"",listeners:d.artist.stats?d.artist.stats.listeners:"",playcount:d.artist.stats?d.artist.stats.playcount:""}}
 async function getEvt(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getevents&artist="+encodeURIComponent(a)+"&limit=2");if(!d||!d.events||!d.events.event)return[];var ev=d.events.event;if(!Array.isArray(ev))ev=[ev];return ev.map(function(e){return{title:e.title,venue:e.venue?e.venue.name:"",city:e.venue&&e.venue.city?e.venue.city.name:"",date:e.startDate,url:e.url}})}
 async function getTagArt(tag){if(!LFM_KEY)return[];var d=await lfm("method=tag.gettopartists&tag="+encodeURIComponent(tag)+"&limit=10");return(d&&d.topartists&&d.topartists.artist)?d.topartists.artist.map(function(x){return{name:x.name}}):[]}
+async function getTagAlb(tag){if(!LFM_KEY)return[];var d=await lfm("method=tag.gettopalbums&tag="+encodeURIComponent(tag)+"&limit=15");if(!d||!d.albums||!d.albums.album)return[];return d.albums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:"",playcount:parseInt(x.playcount)||0,img:img}})}
+
+var DISCOVERY_TAGS=["irish","french","british","american","canadian","australian","german","italian","spanish","japanese","swedish","norwegian","rock","pop","indie","folk","punk","metal","jazz","electronic","hip-hop","dance","blues","soul","funk","reggae","classical","ambient","experimental","progressive","psychedelic","garage","shoegaze","post-punk","new wave","synthpop","grunge","britpop","trip-hop","drum and bass","house","techno","trance","dubstep"];
+function isDiscoveryQuery(txt){var t=txt.toLowerCase();return /^(list|show|find|name|give|what|top|best|greatest|essential|classic|recommend|suggest)/i.test(t)||/(best|top|greatest|essential|classic|favourite|favorite) (irish|french|british|american|canadian|australian)/i.test(t)||/(irish|french|british|american) (music|rock|pop|indie|folk|punk|electronic|hip.hop|jazz|metal|dance)/i.test(t)||/albums (from|of|in) the (80s|90s|70s|60s|00s)/i.test(t)}
+function extractTag(txt){var t=txt.toLowerCase();for(var i=0;i<DISCOVERY_TAGS.length;i++){if(t.indexOf(DISCOVERY_TAGS[i])>-1)return DISCOVERY_TAGS[i]}return""}
+
+function renderDiscoveryTag(tag,albs,sim){
+  dEmpty.style.display="none";dContent.style.display="block";
+  var label=tag.charAt(0).toUpperCase()+tag.slice(1);
+  artistHero.innerHTML='<div class="artist-hero-name">'+label+'</div><div class="artist-hero-sub">Top albums &amp; artists on Last.fm</div><div class="artist-hero-tags"><span class="artist-hero-tag">'+tag+'</span></div>';
+  document.getElementById("simCount").textContent=sim.length;
+  similarScroll.innerHTML=sim.map(function(a){return'<div class="similar-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><div class="similar-card-avatar">'+(a.name.charAt(0)+a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'</div><div class="similar-card-name">'+a.name+'</div><div class="similar-card-match">top artist</div></div>'}).join("");
+  document.getElementById("albCount").textContent=albs.length;
+  albumGrid.innerHTML=albs.map(function(a){
+    var img=a.img||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#242424" width="200" height="200"/><text x="100" y="115" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#555">No Art</text></svg>');
+    return'<div class="album-card" onclick="qa(\''+(a.artist||tag).replace(/'/g,"\\'")+'\')"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+(a.artist||tag)+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div></div></div>';
+  }).join("");
+  genreChips.innerHTML='';
+}
 
 // === Render discovery ===
 function renderDiscovery(sim,tgs,albs,info){
@@ -428,7 +447,26 @@ async function send(){
   var txt=chatInput.value.trim();if(!txt)return;
   addMsg(txt,"user");chatInput.value="";showTyping();
   var an=extractArtist(txt);
-  if(!an||an.length<2){hideTyping();addMsg("Give me an artist name and I'll dig up similar acts, top albums, genres, bio, the works!",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Miles Davis","Aphex Twin","Daft Punk"]);return}
+
+  // Discovery query: genre/era/list, no artist name
+  if(isDiscoveryQuery(txt)||(!an||an.length<2)){
+    var tag=extractTag(txt);
+    if(!tag){hideTyping();addMsg("I need a genre, era, or style to search! Try something like 'best Irish albums of the 90s' or 'top indie rock artists'.",'bot');addSugg(["Irish rock","90s indie","French electronic","British punk","Best jazz albums"]);return}
+    artistName=tag.charAt(0).toUpperCase()+tag.slice(1);
+    var tagSim=getTagArt(tag),tagAlb=getTagAlb(tag);
+    var ts=await tagSim,ta=await tagAlb;
+    renderDiscoveryTag(tag,ta,ts);
+    var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL){
+      var b="DISCOVERY QUERY: "+txt+"\nTAG: "+tag+"\nTOP ARTISTS: "+(ts.length?ts.map(function(x){return x.name}).join(", "):"none")+"\nTOP ALBUMS: "+(ta.length?ta.slice(0,8).map(function(a){return a.artist+" - "+a.name+" ("+a.playcount.toLocaleString()+" plays)"}).join(" | "):"none")+"\n\nYou are Bob, a music guru at Round & Round Records, Dublin. The user asked a genre/era question. Curate a knowledgeable response. Highlight 5-8 specific albums from the data above, especially any that match the era they asked about (use your knowledge to filter). Add interesting context about the scene. Dublin-flavoured, warm, no em dashes.";
+      var msgs=[{role:"system",content:b}];for(var i=0;i<conv.length;i++)msgs.push(conv[i]);msgs.push({role:"user",content:txt});
+      try{var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.85,max_tokens:500})});if(r.ok){var d=await r.json();llm=d.choices[0].message.content.trim();conv.push({role:"user",content:txt});conv.push({role:"assistant",content:llm});if(conv.length>12)conv=conv.slice(-12)}}catch(e){}
+    }
+    hideTyping();
+    if(llm){addMsg(llm,"bot")}else{addMsg("Exploring <strong>"+tag+"</strong>! Found "+ta.length+" top albums and "+ts.length+" top artists. Scroll the discovery panel to browse, and click anything to dive deeper!",'bot')}
+    return;
+  }
+
+  // Artist query
   artistName=an;
   var sim=getSim(an),tgs=getTgs(an),albs=getAlb(an),info=getBio(an),evts=getEvt(an);
   var s=await sim,tg=await tgs,al=await albs,inf=await info,ev=await evts;
@@ -451,8 +489,8 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
   var b=document.getElementById("bobBadge"),l=document.getElementById("bobLabel");
   if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM";b.classList.add("live");l.textContent="Music guru · AI-powered"}
   else{b.textContent="basic";l.textContent="Music guru & vinyl hunter"}
-  addMsg("Hey! I'm <strong>Bob</strong>, your personal music guru. Powered by Last.fm's massive database, I find similar artists, top albums, genres to explore, artist bios, even upcoming live shows. All in one space!",'bot');
-  setTimeout(function(){addMsg("Tell me an artist you love and I'll fill the discovery panel on the right. Fire away!",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Miles Davis","Aphex Twin","Daft Punk"])},1200);
+  addMsg("Hey! I'm <strong>Bob</strong>, your personal music guru. Tell me an artist you love, or ask a discovery question like &quot;best Irish albums of the 90s&quot;. I'll fill the panel with similar artists, top albums, and genres from Last.fm!",'bot');
+  setTimeout(function(){addMsg("Fire away!",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"])},1200);
 })();
 </script>
 </body>
