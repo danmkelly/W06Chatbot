@@ -237,6 +237,8 @@ body{
 .album-badge{padding:3px 7px;border-radius:4px;font-size:0.55rem;font-weight:700;cursor:pointer;text-decoration:none;text-transform:uppercase;letter-spacing:0.3px;transition:all .15s;display:inline-block}
 .album-badge-buy{background:rgba(74,158,142,0.2);color:var(--accent2);border:1px solid rgba(74,158,142,0.3)}
 .album-badge-buy:hover{background:var(--accent2);color:#fff}
+.album-badge-discogs{background:rgba(51,51,51,0.6);color:#aaa;border:1px solid rgba(255,255,255,0.08)}
+.album-badge-discogs:hover{background:#333;color:#fff}
 .album-badge-req{background:rgba(196,164,74,0.15);color:var(--accent3);border:1px solid rgba(196,164,74,0.3)}
 .album-badge-req:hover{background:var(--accent3);color:#fff}
 </style>
@@ -307,7 +309,7 @@ body{
 </div>
 
 <div class="foot">
-  Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a>
+  Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a> &amp; <a href="https://spindizzyrecords.com" target="_blank">Spindizzy</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a>
   <span class="key-link" onclick="setKey('llm','DeepSeek API key (leave blank to disable):','rr_llm_key')">LLM key</span>
   <span class="key-link" onclick="setKey('lfm','Last.fm API key:','rr_lfm_key')">Last.fm key</span>
 </div>
@@ -395,7 +397,7 @@ function renderDiscoveryTag(tag,albs,sim){
 
 function albumBadges(artist,title){
   var q=encodeURIComponent((artist||"")+" "+(title||""));
-  return'<div class="album-badges"><a class="album-badge album-badge-buy" href="https://www.discogs.com/sell/list?q='+q+'" target="_blank" onclick="event.stopPropagation()">Buy on Discogs</a><span class="album-badge album-badge-req" onclick="event.stopPropagation();openReq(\''+(artist||"").replace(/'/g,"\\'")+'\',\''+(title||"").replace(/'/g,"\\'")+'\')">Request to order</span></div>';
+  return'<div class="album-badges"><a class="album-badge album-badge-buy" href="https://spindizzyrecords.com/search?q='+q+'" target="_blank" onclick="event.stopPropagation()">Buy Now</a><a class="album-badge album-badge-discogs" href="https://www.discogs.com/search/?q='+q+'&type=release" target="_blank" onclick="event.stopPropagation()">View on Discogs</a><span class="album-badge album-badge-req" onclick="event.stopPropagation();openReq(\''+(artist||"").replace(/'/g,"\\'")+'\',\''+(title||"").replace(/'/g,"\\'")+'\')">Request to order</span></div>';
 }
 
 // === Render discovery ===
