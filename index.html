@@ -747,20 +747,68 @@ function renderPicks() {
 }
 
 // === Search ===
+// === Smart search: tokenize natural language into search terms ===
+var STOP_WORDS = ["i","me","my","we","our","you","your","he","she","it","they","them","a","an","the","is","are","was","were","be","been","have","has","had","do","does","did","can","could","will","would","should","may","might","shall","to","of","in","for","on","with","at","by","from","about","as","into","through","during","before","after","above","below","up","down","out","off","over","under","again","further","then","once","here","there","when","where","why","how","all","both","each","few","more","most","other","some","such","no","nor","not","only","own","same","so","than","too","very","just","really","like","love","want","looking","find","help","know","think","search","need","please","what","else","any","got","get","that","this","these","those","which"];
+
+function extractSearchTerms(text) {
+  var clean = text.toLowerCase().replace(/[.,!?;:'"()]/g, " ");
+  var words = clean.split(/\s+/).filter(function(w) { return w.length > 1 && STOP_WORDS.indexOf(w) === -1; });
+  // Also try bigrams for multi-word artist names
+  var bigrams = [];
+  for (var i = 0; i < words.length - 1; i++) {
+    bigrams.push(words[i] + " " + words[i + 1]);
+  }
+  var terms = words.concat(bigrams);
+  // Prioritize longer terms (more specific) and deduplicate
+  var seen = {};
+  var unique = [];
+  terms.forEach(function(t) {
+    if (!seen[t]) { seen[t] = true; unique.push(t); }
+  });
+  unique.sort(function(a, b) { return b.length - a.length; });
+  return unique;
+}
+
 function searchCatalogue(query) {
-  var q = query.toLowerCase().trim();
+  var terms = extractSearchTerms(query);
   var results = [];
   catalogue.forEach(function(p) {
     var score = 0;
-    if (p.artist.toLowerCase().indexOf(q) > -1) score += 10;
-    if (p.title.toLowerCase().indexOf(q) > -1) score += 5;
-    p.genres.forEach(function(g) { if (g.toLowerCase().indexOf(q) > -1 || q.indexOf(g.toLowerCase()) > -1) score += 3; });
-    if (p.era === q || (q === '80s' && p.era === '80s') || (q === '90s' && p.era === '90s') || (q === '70s' && p.era === '70s') || (q === '60s' && p.era === '60s') || (q === '00s' && p.era === '00s') || (q === '10s' && p.era === '10s') || (q === '20s' && p.era === '20s')) score += 4;
-    if (p.format.toLowerCase().indexOf(q) > -1) score += 4;
+    var a = p.artist.toLowerCase();
+    var t = p.title.toLowerCase();
+    var g = p.genres.join(" ").toLowerCase();
+    var matched = {};
+    terms.forEach(function(term) {
+      if (matched[term]) return;
+      if (a.indexOf(term) > -1) { score += 20; matched[term] = true; }
+      if (t.indexOf(term) > -1) { score += 5; matched[term] = true; }
+      if (g.indexOf(term) > -1) { score += 3; matched[term] = true; }
+      if (p.era === term || (term === "80s" && p.era === "80s") || (term === "90s" && p.era === "90s") || (term === "70s" && p.era === "70s") || (term === "60s" && p.era === "60s") || (term === "00s" && p.era === "00s") || (term === "10s" && p.era === "10s") || (term === "20s" && p.era === "20s")) { score += 4; matched[term] = true; }
+    });
     if (score > 0) results.push({ product: p, score: score });
   });
   results.sort(function(a, b) { return b.score - a.score; });
   return results.slice(0, 8).map(function(r) { return r.product; });
+}
+
+// === Check if query is a recommendation/adjacency request ===
+function isRecommendationQuery(text) {
+  var t = text.toLowerCase();
+  return /what else|similar to|like (them|this|that)|recommend|suggest|what (other|else)|bands like|artists like|if i like|into.*what else/.test(t);
+}
+
+// === Extract artist names from recommendation queries ===
+function extractArtistsFromQuery(text) {
+  var clean = text.toLowerCase().replace(/[.,!?;:'"()]/g, " ");
+  // Known artist patterns from catalogue
+  var found = [];
+  catalogue.forEach(function(p) {
+    var aname = p.artist.toLowerCase();
+    if (clean.indexOf(aname) > -1 && found.indexOf(p.artist) === -1) {
+      found.push(p.artist);
+    }
+  });
+  return found;
 }
 
 function searchByName(names) {
@@ -777,8 +825,11 @@ function searchByName(names) {
 // === Discogs search (fallback when not in Spindizzy catalogue) ===
 async function searchDiscogs(query) {
   if (!DGS_KEY) return [];
+  // For recommendation queries, extract artist names for Discogs
+  var searchTerms = extractSearchTerms(query).slice(0, 3).join(" ");
+  if (!searchTerms || searchTerms.length < 2) searchTerms = query;
   try {
-    var resp = await fetch("https://api.discogs.com/database/search?q=" + encodeURIComponent(query) + "&type=release&per_page=8&token=" + DGS_KEY);
+    var resp = await fetch("https://api.discogs.com/database/search?q=" + encodeURIComponent(searchTerms) + "&type=release&per_page=8&token=" + DGS_KEY);
     if (!resp.ok) throw new Error("Discogs API error: " + resp.status);
     var data = await resp.json();
     if (!data.results || data.results.length === 0) return [];
@@ -829,6 +880,29 @@ function getSearchResults(userInput) {
     }
   }
 
+  // Recommendation queries: extract artist names and search
+  if (isRecommendationQuery(text)) {
+    var artists = extractArtistsFromQuery(text);
+    if (artists.length > 0) {
+      // Show the artists they mentioned, plus related from catalogue
+      var direct = searchByName(artists);
+      // Also do a broad search for similar genres
+      var allGenres = [];
+      direct.forEach(function(p) { allGenres = allGenres.concat(p.genres); });
+      var uniqueGenres = [];
+      allGenres.forEach(function(g) { if (uniqueGenres.indexOf(g) === -1) uniqueGenres.push(g); });
+      var genreResults = [];
+      uniqueGenres.forEach(function(g) {
+        var matches = searchByName([g]);
+        matches.forEach(function(m) {
+          if (genreResults.indexOf(m) === -1) genreResults.push(m);
+        });
+      });
+      var combined = direct.concat(genreResults).slice(0, 8);
+      return { knowledgeHit: { response: "Ah, " + artists.join(" and ") + "! Deadly taste. Here's what I found: the stuff you mentioned, plus some other bits from the same sort of world. Check Bob's Picks!" }, results: combined, isRecommendation: true };
+    }
+  }
+
   // General catalogue search
   return { knowledgeHit: null, results: searchCatalogue(text) };
 }
@@ -865,11 +939,24 @@ async function sendMessage() {
   // Run catalogue search immediately (fast, no dependency on LLM)
   var searchResult = getSearchResults(text);
 
-  // If nothing in Spindizzy, try Discogs
+  // For recommendation queries, also search Discogs in parallel for broader results
+  var dgsPromise = null;
+  if (isRecommendationQuery(text) && DGS_KEY) {
+    dgsPromise = searchDiscogs(text);
+  }
+
+  // If nothing in Spindizzy, try Discogs as fallback
   if ((!searchResult.results || searchResult.results.length === 0) && DGS_KEY) {
-    var dgsResults = await searchDiscogs(text);
+    var dgsResults = dgsPromise ? await dgsPromise : await searchDiscogs(text);
     if (dgsResults.length > 0) {
-      searchResult = { knowledgeHit: null, results: dgsResults, source: "discogs" };
+      searchResult.results = (searchResult.results || []).concat(dgsResults);
+      searchResult.source = "discogs";
+    }
+  } else if (dgsPromise) {
+    // Recommendation query with Spindizzy results: merge Discogs results too
+    var dgsExtra = await dgsPromise;
+    if (dgsExtra.length > 0) {
+      searchResult.results = searchResult.results.concat(dgsExtra).slice(0, 12);
     }
   }
 
