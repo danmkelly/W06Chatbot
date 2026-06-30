@@ -290,13 +290,13 @@ body{
         <div class="section-hdr"><span class="section-hdr-icon">&#128101;</span><h4>Similar Artists</h4><span class="section-count" id="simCount">0</span></div>
         <div class="similar-row"><div class="similar-scroll" id="similarScroll"></div></div>
       </div>
-      <div class="section album-section">
-        <div class="section-hdr"><span class="section-hdr-icon">&#128191;</span><h4>Essential Albums</h4><span class="section-count" id="albCount">0</span></div>
-        <div class="album-grid" id="albumGrid"></div>
-      </div>
       <div class="section genre-section">
         <div class="section-hdr"><span class="section-hdr-icon">&#127911;</span><h4>Explore These Genres</h4></div>
         <div class="genre-chips" id="genreChips"></div>
+      </div>
+      <div class="section album-section">
+        <div class="section-hdr"><span class="section-hdr-icon">&#128191;</span><h4>Essential Albums</h4><span class="section-count" id="albCount">0</span></div>
+        <div class="album-grid" id="albumGrid"></div>
       </div>
     </div>
   </div>
@@ -386,7 +386,8 @@ function renderDiscoveryTag(tag,albs,sim){
   var label=tag.charAt(0).toUpperCase()+tag.slice(1);
   artistHero.innerHTML='<div class="artist-hero-name">'+label+'</div><div class="artist-hero-sub">Top albums &amp; artists on Last.fm</div><div class="artist-hero-tags"><span class="artist-hero-tag">'+tag+'</span></div>';
   document.getElementById("simCount").textContent=sim.length;
-  similarScroll.innerHTML=sim.map(function(a){return'<div class="similar-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><div class="similar-card-avatar">'+(a.name.charAt(0)+a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'</div><div class="similar-card-name">'+a.name+'</div><div class="similar-card-match">top artist</div></div>'}).join("");
+  similarScroll.innerHTML=sim.map(function(a,i){return'<div class="similar-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><div class="similar-card-avatar" id="simav'+i+'">'+(a.name.charAt(0)+a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'</div><div class="similar-card-name">'+a.name+'</div><div class="similar-card-match">top artist</div></div>'}).join("");
+  enrichSimImages(sim);
   document.getElementById("albCount").textContent=albs.length;
   albumGrid.innerHTML=albs.map(function(a){
     var img=a.img||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#242424" width="200" height="200"/><text x="100" y="115" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#555">No Art</text></svg>');
@@ -470,7 +471,8 @@ function renderDiscovery(sim,tgs,albs,info){
 
   // Similar artists horizontal scroll
   document.getElementById("simCount").textContent=sim.length;
-  similarScroll.innerHTML=sim.map(function(a){return'<div class="similar-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><div class="similar-card-avatar">'+(a.name.charAt(0)+a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'</div><div class="similar-card-name">'+a.name+'</div><div class="similar-card-match">'+Math.round(a.match)+'% match</div></div>'}).join("");
+  similarScroll.innerHTML=sim.map(function(a,i){return'<div class="similar-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><div class="similar-card-avatar" id="simav'+i+'">'+(a.name.charAt(0)+a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'</div><div class="similar-card-name">'+a.name+'</div><div class="similar-card-match">'+Math.round(a.match)+'% match</div></div>'}).join("");
+  enrichSimImages(sim);
 
   // Albums grid
   document.getElementById("albCount").textContent=albs.length;
@@ -571,6 +573,22 @@ async function send(){
     if(tg.length)p.push("Explore: "+tg.slice(0,5).map(function(t){return t.name}).join(", "));
     addMsg(p.join(". ")+". Scroll the panel on the right!",'bot');
   }
+}
+
+// === Discogs image enrichment for similar artists ===
+async function enrichSimImages(sim){
+  if(typeof DGS_KEY==="undefined"||!DGS_KEY||!sim||!sim.length)return;
+  var promises=sim.map(function(a,i){
+    return fetch("https://api.discogs.com/database/search?q="+encodeURIComponent(a.name)+"&type=artist&per_page=1&token="+DGS_KEY)
+      .then(function(r){return r.ok?r.json():null})
+      .then(function(d){
+        if(d&&d.results&&d.results.length>0&&d.results[0].cover_image){
+          var el=document.getElementById("simav"+i);
+          if(el)el.innerHTML='<img src="'+d.results[0].cover_image+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.parentElement.innerHTML=\''+a.name.charAt(0)+(a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'\'">';
+        }
+      }).catch(function(){});
+  });
+  await Promise.allSettled(promises);
 }
 
 // === Request-to-order modal ===
