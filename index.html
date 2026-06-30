@@ -28,8 +28,18 @@ body{
   min-height:100vh;overflow:hidden;
 }
 .app{
-  display:grid;grid-template-columns:1fr 440px;height:100vh;
+  display:grid;grid-template-columns:1fr 440px;height:calc(100vh - 44px);
 }
+/* Brand bar */
+.app-brand{
+  height:44px;display:flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(135deg,#1A1A1A,#0D0D0D);border-bottom:1px solid var(--border);
+  padding:0 20px;
+}
+.app-brand-icon{font-size:1.4rem}
+.app-brand-name{font-size:0.8rem;font-weight:700;color:var(--text);letter-spacing:0.8px;text-transform:uppercase}
+.app-brand-name span{color:var(--accent)}
+.app-brand-tagline{font-size:0.6rem;color:var(--text-dim);margin-left:4px}
 /* CHAT PANEL */
 .chat{
   display:flex;flex-direction:column;border-right:1px solid var(--border);
@@ -256,6 +266,11 @@ body{
 </style>
 </head>
 <body>
+<div class="app-brand">
+  <span class="app-brand-icon">&#119070;</span>
+  <span class="app-brand-name">Round <span>&amp;</span> Round Records</span>
+  <span class="app-brand-tagline">Independent since 2005 &bull; 32 Market Arcade, Dublin</span>
+</div>
 <div class="app">
 
   <!-- CHAT PANEL -->
@@ -270,7 +285,7 @@ body{
     </div>
     <div class="chat-msgs" id="chatMessages"></div>
     <div class="chat-input-wrap">
-      <input class="chat-input" id="chatInput" placeholder="Tell Bob about an artist you love..." autofocus>
+      <input class="chat-input" id="chatInput" placeholder="Tell Bob about an artist or genre you love..." autofocus>
       <button class="chat-send" id="chatSend" aria-label="Send">&#8594;</button>
     </div>
   </div>
@@ -281,7 +296,7 @@ body{
       <div class="d-empty-inner">
         <div class="d-empty-icon">&#127925;</div>
         <h3>Your Discovery Space</h3>
-        <p>Chat with Bob about any artist. He'll fill this space with similar artists, essential albums, and genres to explore.</p>
+        <p>Chat with Bob about any artist or genre. He'll fill this space with similar artists, essential albums, and genres to explore.</p>
       </div>
     </div>
     <div id="dContent" style="display:none">
@@ -509,23 +524,54 @@ function extractArtist(txt){
 }
 
 // === LLM ===
-async function callLLM(msg,sim,tgs,albs,info,evts){
-  if(!LLM_KEY||!LLM_URL||!LLM_MODEL)return null;
-  var b="ARTIST: "+artistName+"\n";
-  if(info&&info.bio)b+="BIO: "+info.bio.slice(0,400)+"\n";
-  if(info&&info.listeners)b+="Listeners: "+parseInt(info.listeners).toLocaleString()+"\n";
-  if(sim&&sim.length)b+="SIMILAR: "+sim.map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+"\n";
+var BOB_VOICE=[
+  "You are Bob, a music guide at Round & Round Records, a beloved independent record shop in Dublin (est. 2005). You're a proper music obsessive: you read the NME and Pitchfork, you go to gigs at Whelan's and the Olympia, you argue with regulars about the best B-sides. Your job is to have great conversations about music, and gently guide customers toward discoveries they'll love.",
+  "",
+  "HOW YOU TALK:",
+  "- Warm, curious, never robotic. You're chatting with a fellow music fan, not reading a script.",
+  "- Dublin flavour: use 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic' naturally - like seasoning, not the whole dish.",
+  "- Get excited. If someone says they like something: 'Ah deadly, you're into them! Did you ever hear the story about when they recorded...'",
+  "- Ask questions back. 'What's your favourite era of theirs?' 'Have you seen them live?' 'Do you prefer the early stuff or the later albums?'",
+  "- Guide them. 'If you're into X, you'd probably love Y. They came out of the same scene, same producer actually...'",
+  "- Share the most interesting fact you know from the bio data, not all of it. Pick one great story.",
+  "",
+  "WHAT TO DO WITH THE DATA BELOW:",
+  "- Similar artists: pick 2-3 that genuinely connect and explain WHY. 'Dinosaur Jr. were touring with them in '89 actually...'",
+  "- Top albums: mention 1-2 that are essential listening, with a brief reason. Don't list everything.",
+  "- Genre tags: use them to suggest a direction: 'The indie rock tag is interesting - if you're into that side of them, you might want to explore...'",
+  "- Live events: if any, lead with excitement: 'Oh and they're playing Dublin in July! The Olympia. Deadly venue for them.'",
+  "- The discovery panel on the right shows everything. Say 'I've lined everything up for you in the discovery panel - similar artists you can scroll through, top albums to check out, and genres to explore.'",
+  "",
+  "CONVERSATION TIPS:",
+  "- 3-5 sentences is a sweet spot. Go longer for a great story.",
+  "- End with a question or a suggestion of where to go next. Keep the conversation moving.",
+  "- If the data is sparse, lean on your general music knowledge. You know far more than what's in the data.",
+  "- If you don't know something specific, say 'That's a great question, I'd want to check properly...' and pivot to what you do know.",
+  "- No em dashes. Use commas, colons, or full stops."
+].join("\n");
+
+function buildLLMPrompt(msg,sim,tgs,albs,info,evts,extra){
+  var b=BOB_VOICE+"\n\n";
+  b+="CURRENT TOPIC: "+artistName+"\n";
+  if(info&&info.bio)b+="BIO: "+info.bio.slice(0,350)+"\n";
+  if(info&&info.listeners)b+="FANS: "+parseInt(info.listeners).toLocaleString()+" Last.fm listeners\n";
+  if(sim&&sim.length)b+="SIMILAR ARTISTS: "+sim.map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+"\n";
   if(albs&&albs.length)b+="TOP ALBUMS: "+albs.slice(0,5).map(function(a){return a.name+" ("+a.playcount.toLocaleString()+" plays)"}).join(" | ")+"\n";
   if(tgs&&tgs.length)b+="GENRES: "+tgs.map(function(t){return t.name}).join(", ")+"\n";
-  if(evts&&evts.length)b+="EVENTS: "+evts.map(function(e){return e.title+" at "+e.venue+", "+e.city+" ("+e.date+")"}).join(" | ")+"\n";
-  b+="\nYou are Bob, a music guru at Round & Round Records, Dublin. Be expansive. Share the most interesting bio facts. Suggest specific similar artists and explain WHY they connect. Mention top albums by name. If there are live shows, tell the customer. Tell a story, not just a list. Warm, Dublin-flavoured: 'grand','deadly','class','craic'. 3-6 sentences, longer for good stories. No em dashes.";
+  if(evts&&evts.length)b+="UPCOMING: "+evts.map(function(e){return e.title+" at "+e.venue+", "+e.city+" ("+e.date+")"}).join(" | ")+"\n";
+  if(extra)b+=extra+"\n";
+  return b;
+}
 
+async function callLLM(msg,sim,tgs,albs,info,evts){
+  if(!LLM_KEY||!LLM_URL||!LLM_MODEL)return null;
+  var b=buildLLMPrompt(msg,sim,tgs,albs,info,evts);
   var msgs=[{role:"system",content:b}];
   for(var i=0;i<conv.length;i++)msgs.push(conv[i]);
   msgs.push({role:"user",content:msg});
   try{
-    console.log("[Bob] LLM:",artistName,"sim:",sim.length,"alb:",albs?albs.length:0,"evt:",evts?evts.length:0);
-    var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.85,max_tokens:500})});
+    console.log("[Bob] LLM:",artistName,"sim:",sim.length,"alb:",albs?albs.length:0);
+    var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.9,max_tokens:450})});
     if(!r.ok){var et=await r.text();console.error("[Bob] err:",r.status,et.slice(0,200));return null}
     var d=await r.json();var reply=d.choices[0].message.content.trim();
     console.log("[Bob] reply:",reply.slice(0,200));
@@ -550,12 +596,12 @@ async function send(){
     var ts=await tagSim,ta=await tagAlb;
     renderDiscoveryTag(tag,ta,ts);
     var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL){
-      var b="DISCOVERY QUERY: "+txt+"\nTAG: "+tag+"\nTOP ARTISTS: "+(ts.length?ts.map(function(x){return x.name}).join(", "):"none")+"\nTOP ALBUMS: "+(ta.length?ta.slice(0,8).map(function(a){return a.artist+" - "+a.name+" ("+a.playcount.toLocaleString()+" plays)"}).join(" | "):"none")+"\n\nYou are Bob, a music guru at Round & Round Records, Dublin. The user asked a genre/era question. Curate a knowledgeable response. Highlight 5-8 specific albums from the data above, especially any that match the era they asked about (use your knowledge to filter). Add interesting context about the scene. Dublin-flavoured, warm, no em dashes.";
+      var b=BOB_VOICE+"\n\nDISCOVERY QUERY\nTAG: "+tag+"\nTOP ARTISTS: "+(ts.length?ts.map(function(x){return x.name}).join(", "):"none")+"\nTOP ALBUMS: "+(ta.length?ta.slice(0,8).map(function(a){return a.artist+" - "+a.name+" ("+a.playcount.toLocaleString()+" plays)"}).join(" | "):"none")+"\n\nThis is a genre/scene query. Share 5-8 standout albums from the data. Add context about the scene. Ask what they're curious about within this genre.";
       var msgs=[{role:"system",content:b}];for(var i=0;i<conv.length;i++)msgs.push(conv[i]);msgs.push({role:"user",content:txt});
       try{var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.85,max_tokens:500})});if(r.ok){var d=await r.json();llm=d.choices[0].message.content.trim();conv.push({role:"user",content:txt});conv.push({role:"assistant",content:llm});if(conv.length>12)conv=conv.slice(-12)}}catch(e){}
     }
     hideTyping();
-    if(llm){addMsg(llm,"bot")}else{addMsg("Exploring <strong>"+tag+"</strong>! Found "+ta.length+" top albums and "+ts.length+" top artists. Scroll the discovery panel to browse, and click anything to dive deeper!",'bot')}
+    if(llm){addMsg(llm,"bot")}else{addMsg("Exploring <strong>"+tag+"</strong>! I've pulled "+ta.length+" top albums and "+ts.length+" artists from Last.fm. Scroll through the discovery panel and see what catches your eye. What kind of sound within this genre are you after?",'bot')}
     return;
   }
 
@@ -567,11 +613,11 @@ async function send(){
   var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL)llm=await callLLM(txt,s,tg,al,inf,ev);
   hideTyping();
   if(llm){addMsg(llm,"bot")}else{
-    var p=[];p.push("Right, <strong>"+artistName+"</strong>!");
-    if(s.length)p.push(s.slice(0,3).map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+" are the closest matches");
+    var p=[];p.push("Ah, <strong>"+artistName+"</strong>! Deadly choice.");
+    if(s.length)p.push(s.slice(0,3).map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+" are your closest matches");
     if(al.length)p.push("Essential albums: "+al.slice(0,3).map(function(a){return a.name}).join(", "));
-    if(tg.length)p.push("Explore: "+tg.slice(0,5).map(function(t){return t.name}).join(", "));
-    addMsg(p.join(". ")+". Scroll the panel on the right!",'bot');
+    if(tg.length)p.push("Tap the genre chips to explore "+tg.slice(0,3).map(function(t){return t.name}).join(", "));
+    addMsg(p.join(". ")+". What era are you most into - early stuff or the later work?",'bot');
   }
 }
 
@@ -622,8 +668,8 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
   var b=document.getElementById("bobBadge"),l=document.getElementById("bobLabel");
   if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM";b.classList.add("live");l.textContent="Music guru · AI-powered"}
   else{b.textContent="basic";l.textContent="Music guru & vinyl hunter"}
-  addMsg("Hey! I'm <strong>Bob</strong>, your personal music guru. Tell me an artist you love, or ask a discovery question like &quot;best Irish albums of the 90s&quot;. I'll fill the panel with similar artists, top albums, and genres from Last.fm!",'bot');
-  setTimeout(function(){addMsg("Fire away!",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"])},1200);
+  addMsg("Hey! I'm <strong>Bob</strong>, your music guide at Round &amp; Round Records. Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot');
+  setTimeout(function(){addMsg("What are you into right now?",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"])},1200);
 })();
 </script>
 </body>
