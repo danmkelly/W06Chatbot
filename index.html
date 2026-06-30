@@ -428,30 +428,84 @@ body {
 // === Conversation history (for LLM context) ===
 let conversationHistory = [];
 
-// === Build a compact catalogue summary for the LLM system prompt ===
-function buildCatalogueSummary() {
-  var genres = {};
+// === Build a rich catalogue listing for the LLM system prompt ===
+function buildCatalogueListing() {
+  var lines = ["SPINDIZZY RECORDS CURRENT STOCK (" + catalogue.length + " items in our catalogue right now):"];
   catalogue.forEach(function(p) {
-    p.genres.forEach(function(g) {
-      if (!genres[g]) genres[g] = [];
-      if (genres[g].length < 3) genres[g].push(p.artist + " - " + p.title);
-    });
+    var genreStr = p.genres.slice(0, 3).join("/");
+    lines.push("- " + p.artist + " | " + p.title + " | " + p.format + " | EUR " + p.price + " | " + genreStr + " | " + p.era);
   });
-  var lines = ["You have access to the Spindizzy Records catalogue. Here is a summary:"];
-  lines.push("Total products: " + catalogue.length);
-  lines.push("Available genres: " + Object.keys(genres).sort().join(", "));
-  lines.push("Notable artists: Radiohead, Joy Division, Dinosaur Jr., Herbie Hancock, Chet Baker, Art Blakey, Pixies, The Breeders, 2Pac, Damien Dempsey, Glen Hansard, Morrissey, Camel, Simple Minds, BABYMETAL, Bananarama, beabadoobee, Blondshell, AFI, and more.");
-  lines.push("Formats: Vinyl, CD, Vinyl Boxset. Prices range from EUR 2 to EUR 156.");
-  lines.push("Special knowledge: Kim Deal formed The Breeders after Pixies. Also had side project The Amps.");
   return lines.join("\n");
 }
 
-// === Call the LLM ===
-async function callLLM(userMessage) {
+// === Build music knowledge for the LLM (artist connections, genre context) ===
+function buildMusicKnowledge() {
+  return [
+    "MUSIC KNOWLEDGE (use this to sound genuinely knowledgeable):",
+    "",
+    "Artist connections you know about:",
+    "- Kim Deal was bassist/vocalist in Pixies, then formed The Breeders (Last Splash, Pod) and side project The Amps (Pacer).",
+    "- Radiohead evolved from 90s alt-rock (The Bends, OK Computer) to experimental/electronic (Kid A, Amnesiac) to later works (In Rainbows, A Moon Shaped Pool). Their catalogue numbers start with XL/Parlophone.",
+    "- Joy Division's Unknown Pleasures (1979) and Closer (1980) defined post-punk. After Ian Curtis died, remaining members formed New Order.",
+    "- Herbie Hancock, Chet Baker, Art Blakey, Horace Silver are Blue Note jazz essentials from the 50s/60s. The Blue Note catalogue is the gold standard of hard bop and cool jazz.",
+    "- Dinosaur Jr. (J Mascis) pioneered loud/quiet alt-rock from the late 80s onward. Still releasing new material.",
+    "- Damien Dempsey and Glen Hansard are pillars of Irish music: Dempsey is raw folk/political, Hansard (The Frames, Once) is soulful indie-folk.",
+    "- 2Pac's All Eyez On Me and Best Of collections are landmarks of 90s West Coast hip-hop.",
+    "",
+    "Genre quick-reference:",
+    "- Jazz: Herbie Hancock, Chet Baker, Art Blakey, Horace Silver, Sun Ra",
+    "- Rock: Radiohead, Dinosaur Jr., Joy Division, Pixies, Camel, Simple Minds, 13th Floor Elevators, 10CC",
+    "- Indie/Alternative: LOS CAMPESINOS!, Blondshell, beabadoobee, The Breeders, Morrissey, Beth Orton, AFI",
+    "- Electronic/Dance: Fat Dog, 2 Brothers On The 4th Floor, 4 Tune Fairytales, JJEROME87",
+    "- Metal/Hardcore: BABYMETAL, 36 CRAZYFISTS",
+    "- Pop: Bananarama, Sam Smith, HAYLEY WILLIAMS, BRANDON FLOWERS",
+    "- Irish: Damien Dempsey, Glen Hansard, 49TH & MAIN, JJEROME87",
+    "- 90s: Radiohead (The Bends, OK Computer), 2Pac, 2 Brothers, 4 Tune Fairytales, Breeders (Last Splash)",
+    "- 70s: Joy Division, Camel, 13th Floor Elevators, 10CC, ELP, Leaf Hound, Rocky Horror",
+    "- 60s: Herbie Hancock, Horace Silver, 13th Floor Elevators, 101 Strings, Sun Ra",
+    "",
+    "Dublin shop flavour:",
+    "- R&R Records is at 32 Market Arcade, South Great George's Street, Dublin. A proper indie shop.",
+    "- Free shipping in Ireland on orders over EUR 75. Fast worldwide delivery.",
+    "- Spindizzy has been a Dublin institution for decades. We know our regulars by name and their taste.",
+    "- Record Store Day is huge for us. We stock RSD exclusives, coloured vinyl, limited pressings."
+  ].join("\n");
+}
+
+// === Call the LLM with rich context ===
+async function callLLM(userMessage, searchResult) {
   if (!LLM_KEY || !LLM_URL || !LLM_MODEL) return null;
-  var systemPrompt = "You are Bob, a super friendly, super knowledgeable music guide at Round & Round Records, a small independent record shop in Dublin, Ireland (established 2005). Your vibe: warm, passionate, a bit of a crate-digger. You speak like the best record shop staff member ever: know your stuff, never pretentious, always excited to help someone find their next favourite album.\n\n";
-  systemPrompt += "Rules:\n- Keep responses warm and conversational (2-4 sentences usually)\n- Use details: catalogue numbers, pressing info, era context when you can\n- NEVER make up a product that is not mentioned below\n- If a customer asks about something not in the summary below, be honest: offer to help them search or suggest something adjacent\n- If you don't know, say so and pivot to something you can help with\n- Mention that the customer should check 'Bob's Picks' panel for what's actually in stock\n- No em dashes. Use commas, colons, or full stops instead.\n\n";
-  systemPrompt += "You work with the Spindizzy Records catalogue in Dublin. Here is a summary of what's available right now:\n" + buildCatalogueSummary();
+
+  var systemPrompt = [
+    "You are Bob, a super friendly, super knowledgeable music guide working at Round & Round Records, a small independent record shop in Dublin, Ireland. The shop has been running since 2005 and uses the Spindizzy Records catalogue for stock.",
+    "",
+    "YOUR PERSONALITY:",
+    "- Warm, passionate, a proper crate-digger who lives for music",
+    "- You speak like the best record shop staff member ever: know your stuff deeply, never pretentious, always genuinely excited to help someone find their next favourite album",
+    "- Use Irish/Dublin colloquialisms naturally: 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic' -- but don't overdo it, just a sprinkle",
+    "- You're a bit of a music nerd and proud of it. Drop interesting facts about albums, pressings, recording stories, band history when relevant",
+    "- If a customer mentions they like something, get enthusiastic: 'Ah no way, you're into them? Deadly! You know they recorded that album in...'",
+    "- Never corporate. Never robotic. You're in a record shop, not a call centre",
+    "",
+    "RULES:",
+    "- Keep responses conversational and warm (2-5 sentences usually, but go longer if you have good stories to tell)",
+    "- Reference specific albums, formats, prices, and catalogue details from the STOCK listing below",
+    "- If search results are provided, mention 1-3 of the best matches by name, format, and price",
+    "- ALWAYS remind the customer to check 'Bob's Picks' on the right side of the page to see the actual products",
+    "- NEVER make up an album that is NOT in the STOCK listing below",
+    "- If a customer asks about something not in stock, say honestly 'Ah, we don't have that one in at the moment, but...' then suggest something adjacent from the stock",
+    "- If you genuinely don't know something, say 'That's a great question actually' and pivot to what you can help with",
+    "- Use music knowledge to sound informed: pressing details, era context, label history, production notes",
+    "- No em dashes. Use commas, colons, or full stops instead",
+    "",
+    buildMusicKnowledge(),
+    "",
+    buildCatalogueListing(),
+    "",
+    searchResult && searchResult.results && searchResult.results.length > 0
+      ? "SEARCH RESULTS FOR THIS QUERY (" + searchResult.results.length + " matches found):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nReference these in your response! Mention the best 2-3 matches by name and price. Tell the customer these are live in Bob's Picks."
+      : "NO DIRECT MATCHES FOUND for this query. Be honest about it, but suggest related artists or genres from the stock above. Ask what else they're into."
+  ].join("\n");
 
   var messages = [{ role: "system", content: systemPrompt }];
   for (var i = 0; i < conversationHistory.length; i++) {
@@ -463,7 +517,7 @@ async function callLLM(userMessage) {
     var resp = await fetch(LLM_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + LLM_KEY },
-      body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.8, max_tokens: 300 })
+      body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.85, max_tokens: 400 })
     });
     if (!resp.ok) throw new Error("API error: " + resp.status);
     var data = await resp.json();
@@ -750,7 +804,7 @@ async function sendMessage() {
 
   var llmReply = null;
   if (LLM_KEY && LLM_URL && LLM_MODEL) {
-    llmReply = await callLLM(text);
+    llmReply = await callLLM(text, searchResult);
   }
 
   hideTyping();
