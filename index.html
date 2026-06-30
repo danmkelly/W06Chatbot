@@ -21,6 +21,7 @@
   --card-bg: #FFF;
   --shadow: 0 2px 12px rgba(0,0,0,0.08);
   --radius: 8px;
+  --tab-active: #D44C2F;
 }
 
 body {
@@ -72,7 +73,7 @@ body {
   margin: 0 auto;
   padding: 20px 24px;
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 420px;
   gap: 20px;
   min-height: calc(100vh - 140px);
 }
@@ -116,38 +117,23 @@ body {
   min-height: 480px;
   max-height: calc(100vh - 320px);
 }
-.msg {
-  max-width: 82%;
-  line-height: 1.5;
-  animation: fadeUp 0.3s ease;
-}
+.msg { max-width: 82%; line-height: 1.5; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .msg.bot { align-self: flex-start; }
 .msg.user { align-self: flex-end; }
-.msg-bubble {
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 0.9rem;
-}
+.msg-bubble { padding: 12px 16px; border-radius: 16px; font-size: 0.9rem; }
 .msg.bot .msg-bubble { background: var(--bubble-bot); color: var(--ink); border-bottom-left-radius: 4px; }
 .msg.user .msg-bubble { background: var(--bubble-user); color: #fff; border-bottom-right-radius: 4px; }
 .msg-meta { font-size: 0.65rem; color: #999; margin-top: 4px; padding: 0 4px; }
 .msg.user .msg-meta { text-align: right; }
 
-.typing-indicator {
-  display: flex; gap: 4px; padding: 8px 0;
-}
-.typing-indicator span {
-  width: 7px; height: 7px; border-radius: 50%; background: var(--subtle);
-  animation: bounce 1.2s infinite;
-}
+.typing-indicator { display: flex; gap: 4px; padding: 8px 0; }
+.typing-indicator span { width: 7px; height: 7px; border-radius: 50%; background: var(--subtle); animation: bounce 1.2s infinite; }
 .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
 .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
 
-.chat-suggestions {
-  display: flex; flex-wrap: wrap; gap: 6px; padding: 0;
-}
+.chat-suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; }
 .chat-suggestion {
   background: #fff; border: 1px solid #DDD4C4; color: var(--ink-light);
   padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;
@@ -155,147 +141,95 @@ body {
 }
 .chat-suggestion:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 
-.chat-input-area {
-  padding: 14px 20px;
-  border-top: 1px solid #E5DDD0;
-  display: flex; gap: 10px;
-  background: #fff;
-}
+.chat-input-area { padding: 14px 20px; border-top: 1px solid #E5DDD0; display: flex; gap: 10px; background: #fff; }
 .chat-input {
-  flex: 1;
-  border: 2px solid #E5DDD0;
-  border-radius: 24px;
-  padding: 10px 18px;
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.15s;
-  font-family: inherit;
+  flex: 1; border: 2px solid #E5DDD0; border-radius: 24px;
+  padding: 10px 18px; font-size: 0.9rem; outline: none;
+  transition: border-color 0.15s; font-family: inherit;
 }
 .chat-input:focus { border-color: var(--accent); }
 .chat-send {
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
+  width: 44px; height: 44px; border-radius: 50%; background: var(--accent);
+  color: #fff; border: none; cursor: pointer; font-size: 1.1rem;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s;
-  flex-shrink: 0;
+  transition: background 0.15s; flex-shrink: 0;
 }
 .chat-send:hover { background: var(--accent-hover); }
 
 /* Picks Panel */
 .picks-panel {
-  background: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  border: 1px solid #E5DDD0;
-  display: flex;
-  flex-direction: column;
+  background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
+  overflow: hidden; border: 1px solid #E5DDD0; display: flex; flex-direction: column;
 }
 .picks-header {
-  background: var(--wood);
-  color: #fff;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 0.5px;
+  background: var(--wood); color: #fff; padding: 10px 16px;
+  display: flex; align-items: center; gap: 8px; font-weight: 600;
+  font-size: 0.85rem; letter-spacing: 0.5px;
 }
+.picks-tabs { display: flex; background: #F5F0E8; border-bottom: 1px solid #DDD4C4; }
+.picks-tab {
+  flex: 1; text-align: center; padding: 8px 6px; font-size: 0.7rem; font-weight: 600;
+  cursor: pointer; border: none; background: none; color: var(--ink-light);
+  border-bottom: 2px solid transparent; transition: all 0.15s;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+.picks-tab:hover { background: #EDE5D8; }
+.picks-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .picks-count {
-  background: rgba(255,255,255,0.25);
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  margin-left: auto;
+  background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 12px;
+  font-size: 0.65rem; margin-left: auto;
 }
-.picks-grid {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  align-content: start;
-  max-height: calc(100vh - 320px);
-}
+
+.picks-content { flex: 1; overflow-y: auto; padding: 12px; max-height: calc(100vh - 370px); }
 .picks-empty {
-  grid-column: 1 / -1;
-  text-align: center;
-  color: var(--subtle);
-  padding: 40px 20px;
-  font-size: 0.85rem;
-  line-height: 1.6;
+  text-align: center; color: var(--subtle); padding: 30px 12px; font-size: 0.85rem; line-height: 1.6;
 }
 .picks-empty-icon { font-size: 2rem; margin-bottom: 8px; }
 
+/* Artist cards (list style) */
 .artist-card {
-  background: #FCFAF5;
-  border-radius: 6px;
-  padding: 12px;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  border: 1px solid #EEE8DA;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  background: #FCFAF5; border-radius: 6px; padding: 10px 12px;
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  border: 1px solid #EEE8DA; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
 }
-.artist-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-.artist-card-rank {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--subtle);
-  min-width: 20px;
-}
-.artist-card-info { flex: 1; }
-.artist-card-name {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 3px;
-}
-.artist-card-tags {
-  font-size: 0.65rem;
-  color: var(--subtle);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-}
+.artist-card:hover { transform: translateY(-1px); box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+.artist-card-rank { font-size: 0.65rem; font-weight: 700; color: var(--subtle); min-width: 18px; }
+.artist-card-name { flex: 1; font-size: 0.8rem; font-weight: 700; color: var(--ink); }
+.artist-card-match { font-size: 0.7rem; font-weight: 700; color: var(--accent); }
+.artist-card-meta { font-size: 0.6rem; color: var(--subtle); }
+.artist-card-tags { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 2px; }
 .artist-card-tag {
-  background: #EEE8DA;
-  padding: 1px 6px;
-  border-radius: 8px;
-  white-space: nowrap;
+  background: #EEE8DA; padding: 1px 5px; border-radius: 6px; font-size: 0.58rem; white-space: nowrap;
 }
-.artist-card-match {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent);
-  white-space: nowrap;
+
+/* Album cards (grid style) */
+.album-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.album-card {
+  background: #FCFAF5; border-radius: 6px; overflow: hidden;
+  cursor: pointer; transition: transform 0.15s; border: 1px solid #EEE8DA;
 }
-.artist-card-badge {
-  font-size: 0.55rem;
-  background: #D44C2F;
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 3px;
-  text-transform: uppercase;
+.album-card:hover { transform: translateY(-2px); box-shadow: 0 3px 12px rgba(0,0,0,0.1); }
+.album-card-img {
+  width: 100%; aspect-ratio: 1; object-fit: cover; background: #E8E0D0; display: block;
 }
+.album-card-body { padding: 8px; }
+.album-card-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); line-height: 1.2; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.album-card-artist { font-size: 0.62rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.2px; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.album-card-plays { font-size: 0.58rem; color: var(--subtle); }
+
+/* Genre chips */
+.genre-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0; }
+.genre-chip {
+  background: #fff; border: 1px solid #DDD4C4; color: var(--ink-light);
+  padding: 7px 14px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;
+  transition: all 0.15s; font-weight: 500;
+}
+.genre-chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 
 /* Footer */
 .footer {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 16px 24px;
-  text-align: center;
-  color: var(--subtle);
-  font-size: 0.75rem;
-  border-top: 1px solid #E5DDD0;
+  max-width: 1400px; margin: 0 auto; padding: 16px 24px;
+  text-align: center; color: var(--subtle); font-size: 0.75rem; border-top: 1px solid #E5DDD0;
 }
 .footer a { color: var(--wood); text-decoration: none; }
 .footer a:hover { text-decoration: underline; }
@@ -304,13 +238,14 @@ body {
 @media (max-width: 860px) {
   .main-wrap { grid-template-columns: 1fr; }
   .picks-panel { order: 3; max-height: none; }
-  .picks-grid { max-height: 360px; }
+  .picks-content { max-height: 400px; }
   .chat-messages { min-height: 360px; max-height: 400px; }
 }
 @media (max-width: 500px) {
   .header-inner { padding: 10px 14px; }
   .main-wrap { padding: 12px; }
   .logo { font-size: 1.3rem; }
+  .album-grid { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
@@ -346,10 +281,15 @@ body {
     <div class="picks-header">
       &#9835; Bob's Picks <span class="picks-count" id="picksCount">0</span>
     </div>
-    <div class="picks-grid" id="picksGrid">
+    <div class="picks-tabs">
+      <button class="picks-tab active" onclick="switchTab('artists')">Similar Artists</button>
+      <button class="picks-tab" onclick="switchTab('albums')">Albums</button>
+      <button class="picks-tab" onclick="switchTab('genres')">Explore</button>
+    </div>
+    <div class="picks-content" id="picksContent">
       <div class="picks-empty">
         <div class="picks-empty-icon">&#128218;</div>
-        <p>Tell Bob what you're into and he'll suggest similar artists right here.</p>
+        <p>Tell Bob about an artist you love and he'll dig up similar acts, top albums, and genres to explore.</p>
       </div>
     </div>
   </div>
@@ -364,40 +304,22 @@ body {
 
 <script src="config.js"></script>
 <script>
+// === Key init ===
 (function() {
   if (typeof LLM_KEY === "undefined") window.LLM_KEY = "";
   if (typeof LLM_URL === "undefined") window.LLM_URL = "";
   if (typeof LLM_MODEL === "undefined") window.LLM_MODEL = "";
   if (typeof LFM_KEY === "undefined") window.LFM_KEY = "";
-
   if (!LLM_KEY && localStorage.getItem("rr_llm_key")) {
     LLM_KEY = localStorage.getItem("rr_llm_key");
     LLM_URL = localStorage.getItem("rr_llm_url") || "https://api.deepseek.com/v1/chat/completions";
     LLM_MODEL = localStorage.getItem("rr_llm_model") || "deepseek-chat";
   }
-  if (!LFM_KEY && localStorage.getItem("rr_lfm_key")) {
-    LFM_KEY = localStorage.getItem("rr_lfm_key");
-  }
-
+  if (!LFM_KEY && localStorage.getItem("rr_lfm_key")) { LFM_KEY = localStorage.getItem("rr_lfm_key"); }
   if (!LLM_KEY) {
     setTimeout(function() {
-      var key = prompt(
-        "Hi! Bob is smarter with an LLM behind him.\n\n" +
-        "Paste your DeepSeek API key to enable it, or\n" +
-        "leave blank to use the built-in engine.\n\n" +
-        "Get a free key at: platform.deepseek.com",
-        ""
-      );
-      if (key && key.trim()) {
-        var cleanKey = key.trim();
-        LLM_KEY = cleanKey;
-        LLM_URL = "https://api.deepseek.com/v1/chat/completions";
-        LLM_MODEL = "deepseek-chat";
-        localStorage.setItem("rr_llm_key", cleanKey);
-        localStorage.setItem("rr_llm_url", LLM_URL);
-        localStorage.setItem("rr_llm_model", LLM_MODEL);
-        location.reload();
-      }
+      var key = prompt("Hi! Bob is smarter with an LLM behind him.\n\nPaste your DeepSeek API key to enable it, or leave blank to use the built-in engine.\n\nGet a free key at: platform.deepseek.com","");
+      if (key && key.trim()) { LLM_KEY = key.trim(); LLM_URL = "https://api.deepseek.com/v1/chat/completions"; LLM_MODEL = "deepseek-chat"; localStorage.setItem("rr_llm_key",LLM_KEY); localStorage.setItem("rr_llm_url",LLM_URL); localStorage.setItem("rr_llm_model",LLM_MODEL); location.reload(); }
     }, 500);
   }
   if (LLM_KEY && !LLM_URL) LLM_URL = "https://api.deepseek.com/v1/chat/completions";
@@ -405,221 +327,206 @@ body {
 })();
 
 // === State ===
-let conversationHistory = [];
-let picks = [];
-let lastQuery = "";
+var conversationHistory = [];
+var currentArtist = "";
+var artistsData = [];
+var albumsData = [];
+var tagsList = [];
+var activeTab = "artists";
 
 // === DOM ===
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const chatSend = document.getElementById('chatSend');
-const picksGrid = document.getElementById('picksGrid');
-const picksCount = document.getElementById('picksCount');
+var chatMessages = document.getElementById('chatMessages');
+var chatInput = document.getElementById('chatInput');
+var picksContent = document.getElementById('picksContent');
+var picksCount = document.getElementById('picksCount');
 
 // === Helpers ===
 function scrollChat() { chatMessages.scrollTop = chatMessages.scrollHeight; }
-
 function addMessage(text, sender) {
-  const div = document.createElement('div');
-  div.className = 'msg ' + sender;
-  const now = new Date();
-  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  var div = document.createElement('div'); div.className = 'msg ' + sender;
+  var now = new Date();
+  var time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
   div.innerHTML = '<div class="msg-bubble">' + text + '</div><div class="msg-meta">' + (sender === 'bot' ? 'Bob' : 'You') + ' &middot; ' + time + '</div>';
-  chatMessages.appendChild(div);
-  scrollChat();
+  chatMessages.appendChild(div); scrollChat();
 }
-
 function addSuggestions(suggestions) {
-  const div = document.createElement('div');
-  div.className = 'msg bot';
-  div.innerHTML = '<div class="chat-suggestions">' + suggestions.map(s => '<span class="chat-suggestion" onclick="quickAsk(\'' + s.replace(/'/g, "\\'") + '\')">' + s + '</span>').join('') + '</div>';
-  chatMessages.appendChild(div);
-  scrollChat();
+  var div = document.createElement('div'); div.className = 'msg bot';
+  div.innerHTML = '<div class="chat-suggestions">' + suggestions.map(function(s){return '<span class="chat-suggestion" onclick="quickAsk(\''+s.replace(/'/g,"\\'")+'\')">'+s+'</span>';}).join('') + '</div>';
+  chatMessages.appendChild(div); scrollChat();
 }
-
 function showTyping() {
-  const div = document.createElement('div');
-  div.className = 'msg bot';
+  var div = document.createElement('div'); div.className = 'msg bot';
   div.innerHTML = '<div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
-  div.id = 'typingMsg';
-  chatMessages.appendChild(div);
-  scrollChat();
+  div.id = 'typingMsg'; chatMessages.appendChild(div); scrollChat();
 }
-
-function hideTyping() {
-  const el = document.getElementById('typingMsg');
-  if (el) el.remove();
-}
-
-function quickAsk(text) {
-  chatInput.value = text;
-  sendMessage();
-}
+function hideTyping() { var el = document.getElementById('typingMsg'); if (el) el.remove(); }
+function quickAsk(text) { chatInput.value = text; sendMessage(); }
 
 // === Last.fm API ===
-async function searchLastFM_Artists(query) {
-  if (!LFM_KEY) return [];
-  try {
-    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + encodeURIComponent(query) + "&api_key=" + LFM_KEY + "&format=json&limit=6");
-    if (!resp.ok) return [];
-    var data = await resp.json();
-    if (data.results && data.results.artistmatches && data.results.artistmatches.artist) {
-      return data.results.artistmatches.artist.map(function(a) { return { name: a.name }; });
-    }
-    return [];
-  } catch (e) { console.warn("Last.fm search:", e.message); return []; }
+function lfm(params) {
+  return fetch("https://ws.audioscrobbler.com/2.0/?api_key=" + LFM_KEY + "&format=json&" + params)
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .catch(function(e) { console.warn("Last.fm:", e.message); return null; });
 }
-
-async function getLastFM_SimilarArtists(artistName) {
-  if (!LFM_KEY) return [];
-  try {
-    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=" + encodeURIComponent(artistName) + "&api_key=" + LFM_KEY + "&format=json&limit=10");
-    if (!resp.ok) return [];
-    var data = await resp.json();
-    if (data.similarartists && data.similarartists.artist) {
-      return data.similarartists.artist.map(function(a) { return { name: a.name, match: parseFloat(a.match) }; });
-    }
-    return [];
-  } catch (e) { console.warn("Last.fm similar:", e.message); return []; }
+async function getSimilar(artist) {
+  if (!LFM_KEY) return []; var d = await lfm("method=artist.getsimilar&artist=" + encodeURIComponent(artist) + "&limit=12");
+  if (!d || !d.similarartists || !d.similarartists.artist) return [];
+  return d.similarartists.artist.map(function(a) { return { name: a.name, match: parseFloat(a.match) }; });
 }
-
-async function getLastFM_ArtistTags(artistName) {
-  if (!LFM_KEY) return [];
-  try {
-    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist=" + encodeURIComponent(artistName) + "&api_key=" + LFM_KEY + "&format=json&limit=8");
-    if (!resp.ok) return [];
-    var data = await resp.json();
-    if (data.toptags && data.toptags.tag) {
-      return data.toptags.tag.map(function(t) { return { name: t.name, count: parseInt(t.count) }; });
-    }
-    return [];
-  } catch (e) { console.warn("Last.fm tags:", e.message); return []; }
+async function getTags(artist) {
+  if (!LFM_KEY) return []; var d = await lfm("method=artist.gettoptags&artist=" + encodeURIComponent(artist) + "&limit=8");
+  if (!d || !d.toptags || !d.toptags.tag) return [];
+  return d.toptags.tag.map(function(t) { return { name: t.name, count: parseInt(t.count) }; });
 }
-
-// === Pick management ===
-function renderPicks() {
-  picksGrid.innerHTML = '';
-  picksCount.textContent = picks.length;
-  if (picks.length === 0) {
-    picksGrid.innerHTML = '<div class="picks-empty"><div class="picks-empty-icon">&#128218;</div><p>Tell Bob what you\'re into and he\'ll suggest similar artists right here.</p></div>';
-    return;
-  }
-  picks.forEach(function(a, i) {
-    var card = document.createElement('div');
-    card.className = 'artist-card';
-    card.onclick = function() {
-      chatInput.value = a.name;
-      sendMessage();
-    };
-    var matchHtml = a.match ? '<span class="artist-card-match">' + Math.round(a.match) + '%</span>' : '';
-    var tagsHtml = a.tags && a.tags.length > 0
-      ? '<div class="artist-card-tags">' + a.tags.slice(0, 4).map(function(t) { return '<span class="artist-card-tag">' + t.name + '</span>'; }).join('') + '</div>'
-      : '';
-    card.innerHTML =
-      '<span class="artist-card-rank">' + (i + 1) + '.</span>' +
-      '<div class="artist-card-info">' +
-        '<div class="artist-card-name">' + a.name + '</div>' +
-        tagsHtml +
-      '</div>' +
-      matchHtml;
-    picksGrid.appendChild(card);
+async function getTopAlbums(artist) {
+  if (!LFM_KEY) return []; var d = await lfm("method=artist.gettopalbums&artist=" + encodeURIComponent(artist) + "&limit=10");
+  if (!d || !d.topalbums || !d.topalbums.album) return [];
+  return d.topalbums.album.map(function(a) {
+    var img = ""; if (a.image) { for (var i = a.image.length-1; i >= 0; i--) { if (a.image[i]["#text"]) { img = a.image[i]["#text"]; break; } } }
+    return { name: a.name, artist: a.artist ? a.artist.name : artist, playcount: parseInt(a.playcount) || 0, img: img };
   });
 }
-
-// === Refinement detection ===
-var REFINE_AUGMENT = ["more like", "similar", "what else", "show more", "any more", "more of", "deeper cuts"];
-
-function detectIntent(text) {
-  if (picks.length === 0) return "new";
-  var t = text.toLowerCase().trim();
-  if (/^(scratch|forget|reset|clear|new search|start over|different|something else)$/i.test(t)) return "new";
-  if (REFINE_AUGMENT.some(function(a) { return t.indexOf(a) > -1; })) return "refine_augment";
-  return "new";
+async function getArtistInfo(artist) {
+  if (!LFM_KEY) return null; var d = await lfm("method=artist.getinfo&artist=" + encodeURIComponent(artist));
+  if (!d || !d.artist) return null;
+  return { name: d.artist.name, bio: (d.artist.bio && d.artist.bio.summary) ? d.artist.bio.summary.replace(/<[^>]+>/g,'').slice(0,600) : "", listeners: d.artist.stats ? d.artist.stats.listeners : "", playcount: d.artist.stats ? d.artist.stats.playcount : "" };
+}
+async function getArtistEvents(artist) {
+  if (!LFM_KEY) return []; var d = await lfm("method=artist.getevents&artist=" + encodeURIComponent(artist) + "&limit=3");
+  if (!d || !d.events || !d.events.event) return [];
+  var events = d.events.event; if (!Array.isArray(events)) events = [events];
+  return events.map(function(e) { return { title: e.title, venue: e.venue ? e.venue.name : "", city: e.venue && e.venue.city ? e.venue.city.name : "", date: e.startDate, url: e.url }; });
+}
+async function getTagTopArtists(tag) {
+  if (!LFM_KEY) return []; var d = await lfm("method=tag.gettopartists&tag=" + encodeURIComponent(tag) + "&limit=10");
+  if (!d || !d.topartists || !d.topartists.artist) return [];
+  return d.topartists.artist.map(function(a) { return { name: a.name }; });
 }
 
-// === Extract a clean artist name from natural language ===
+// === Picks rendering ===
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.picks-tab').forEach(function(b) { b.classList.toggle('active', b.textContent.toLowerCase().indexOf(tab) > -1); });
+  renderPicks();
+}
+
+function renderPicks() {
+  var total = 0;
+  if (activeTab === "artists") total = artistsData.length;
+  else if (activeTab === "albums") total = albumsData.length;
+  else total = tagsList.length;
+  picksCount.textContent = total;
+
+  var html = "";
+  if (activeTab === "artists") {
+    if (artistsData.length === 0) { html = '<div class="picks-empty"><p>Search an artist first.</p></div>'; }
+    else {
+      artistsData.forEach(function(a, i) {
+        html += '<div class="artist-card" onclick="quickAsk(\'' + a.name.replace(/'/g,"\\'") + '\')">';
+        html += '<span class="artist-card-rank">' + (i+1) + '.</span>';
+        html += '<span class="artist-card-name">' + a.name + '</span>';
+        html += '<span class="artist-card-match">' + Math.round(a.match) + '%</span>';
+        html += '</div>';
+      });
+    }
+  } else if (activeTab === "albums") {
+    if (albumsData.length === 0) { html = '<div class="picks-empty"><p>No albums loaded. Search an artist first.</p></div>'; }
+    else {
+      html += '<div class="album-grid">';
+      albumsData.forEach(function(a) {
+        var img = a.img || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#E8E0D0" width="200" height="200"/><text x="100" y="110" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#999">No Art</text></svg>');
+        html += '<div class="album-card" onclick="quickAsk(\'' + a.artist.replace(/'/g,"\\'") + '\')">';
+        html += '<img class="album-card-img" src="' + img + '" alt="' + a.name + '" loading="lazy" onerror="this.src=\'data:image/svg+xml,' + encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#E8E0D0\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"110\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#999\\">No Art</text></svg>') + '\'">';
+        html += '<div class="album-card-body">';
+        html += '<div class="album-card-artist">' + a.artist + '</div>';
+        html += '<div class="album-card-name">' + a.name + '</div>';
+        html += '<div class="album-card-plays">' + a.playcount.toLocaleString() + ' plays</div>';
+        html += '</div></div>';
+      });
+      html += '</div>';
+    }
+  } else {
+    if (tagsList.length === 0) { html = '<div class="picks-empty"><p>No genres loaded. Search an artist first.</p></div>'; }
+    else {
+      html += '<div class="genre-chips">';
+      tagsList.forEach(function(t) {
+        html += '<span class="genre-chip" onclick="exploreGenre(\'' + t.name.replace(/'/g,"\\'") + '\')">' + t.name + ' (' + t.count + ')</span>';
+      });
+      html += '</div>';
+      html += '<p style="text-align:center;color:var(--subtle);font-size:0.7rem;margin-top:8px;">Click a genre to find top artists in that scene</p>';
+    }
+  }
+  picksContent.innerHTML = html;
+}
+
+async function exploreGenre(tag) {
+  showTyping();
+  var artists = await getTagTopArtists(tag);
+  hideTyping();
+  if (artists.length > 0) {
+    artistsData = artists.map(function(a) { return { name: a.name, match: 100 }; });
+    var topTags = await getTags(tag);
+    if (topTags.length > 0) tagsList = topTags;
+    switchTab("artists");
+    addMessage("Exploring <strong>" + tag + "</strong>. Found " + artists.length + " top artists. Click any name to dive deeper!", 'bot');
+  } else {
+    addMessage("Couldn't find artists for \"" + tag + "\". Try another genre!", 'bot');
+  }
+}
+
+// === Extract artist name from natural language ===
 function extractArtistName(text) {
   var t = text.toLowerCase().replace(/[.,!?;:'"()]/g, " ").trim();
-  // Remove common lead-in phrases
-  t = t.replace(/^(i |we )?(really |kinda |sort of |pretty )?(like|love|enjoy|adore|rate|dig|fancy|into |fan of |listening to )/i, "");
-  t = t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for )/i, "");
-  // Take the first 1-3 meaningful words as the artist
+  t = t.replace(/^(i |we )?(really |kinda |sort of |pretty |absolutely )?(like|love|enjoy|adore|rate|dig|fancy|into |fan of |listening to )/i, "");
+  t = t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for |tell me about )/i, "");
   var words = t.split(/\s+/).filter(function(w) { return w.length > 1; });
   return words.slice(0, 3).join(" ");
 }
 
 // === Call the LLM ===
-async function callLLM(userMessage, artistName, similarArtists, tags) {
+async function callLLM(userMessage, artistName, similarArtists, tags, topAlbums, artistInfo, events) {
   if (!LLM_KEY || !LLM_URL || !LLM_MODEL) return null;
 
-  var lfmContext = "";
+  var block = "";
+  block += "QUERY: " + userMessage + "\n\n";
+  block += "ARTIST: " + artistName + "\n";
+
+  if (artistInfo && artistInfo.bio) {
+    block += "BIO: " + artistInfo.bio.slice(0, 400) + "\n";
+    if (artistInfo.listeners) block += "Last.fm listeners: " + parseInt(artistInfo.listeners).toLocaleString() + "\n";
+  }
+
   if (similarArtists && similarArtists.length > 0) {
-    lfmContext = "LAST.FM DATA for \"" + artistName + "\":\n";
-    lfmContext += "Similar artists: " + similarArtists.map(function(a) { return a.name + " (" + Math.round(a.match) + "% match)"; }).join(", ") + "\n";
-    if (tags && tags.length > 0) {
-      lfmContext += "Genre tags: " + tags.map(function(t) { return t.name; }).join(", ") + "\n";
-    }
-    lfmContext += "Use this data to suggest genuinely related artists. Mention specific names and why they connect. The customer sees these in Bob's Picks.\n";
+    block += "SIMILAR ARTISTS: " + similarArtists.map(function(a) { return a.name + " (" + Math.round(a.match) + "%)"; }).join(", ") + "\n";
+  }
+  if (tags && tags.length > 0) {
+    block += "GENRE TAGS: " + tags.map(function(t) { return t.name; }).join(", ") + "\n";
+  }
+  if (topAlbums && topAlbums.length > 0) {
+    block += "TOP ALBUMS: " + topAlbums.slice(0,5).map(function(a) { return a.name + " (" + a.playcount.toLocaleString() + " plays)"; }).join(" | ") + "\n";
+  }
+  if (events && events.length > 0) {
+    block += "UPCOMING EVENTS: " + events.map(function(e) { return e.title + " at " + e.venue + ", " + e.city + " (" + e.date + ")"; }).join(" | ") + "\n";
   }
 
-  var systemPrompt = [
-    "You are Bob, a super friendly, super knowledgeable music guru working at Round & Round Records, a beloved independent record shop in Dublin, Ireland (est. 2005). You live and breathe music. Your knowledge spans the entire history of recorded music: every genre, every era, every scene.",
-    "",
-    "YOUR PERSONALITY:",
-    "- Warm, passionate, the kind of person who can talk for an hour about why a certain B-side is underrated.",
-    "- Dublin/Irish flavour: use 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic' naturally but sparingly.",
-    "- Opinions matter. 'Best album of last month? For my money, it's gotta be...' With reasons.",
-    "- Enthusiasm is infectious. If someone mentions a band you love: 'Ah no way, you're into them? Deadly!'",
-    "- Never corporate. Never robotic. You're having a chat about music, not reading a script.",
-    "",
-    "HOW YOU RESPOND:",
-    "- Lead with your knowledge. Dive into the conversation. Share stories, context, opinions.",
-    "- When someone says they like an artist: share what you know about them, then suggest 2-3 genuinely similar artists and explain WHY they connect (shared genre, era, scene, producer, label, influence).",
-    "- Use the Last.fm data provided to suggest similar artists. Mention specific names and match context.",
-    "- Think broadly. Connect dots. 'If you like X, you'd probably love Y because they share the same producer during that era...'",
-    "- Mention how many similar artists appeared in Bob's Picks: 'I've lined up 10 similar acts in Bob's Picks for you...'",
-    "- Keep it warm and natural. 2-6 sentences usually, go longer if the story deserves it.",
-    "- No em dashes. Use commas, colons, or full stops.",
-    "",
-    "SHOP CONTEXT (use organically, don't lead with it):",
-    "- Round & Round Records, 32 Market Arcade, Dublin. Independent since 2005.",
-    "- We use Last.fm's massive music database to power our recommendations.",
-    "- Free shipping in Ireland on orders over EUR 75. Worldwide delivery.",
-    "",
-    "TODAY'S DATE: " + new Date().getDate() + " " + ["January","February","March","April","May","June","July","August","September","October","November","December"][new Date().getMonth()] + " " + new Date().getFullYear(),
-    "",
-    lfmContext
-  ].join("\n");
+  block += "\nINSTRUCTIONS: You are Bob, a music guru at Round & Round Records in Dublin. Be expansive and knowledgeable. Share the most interesting facts from the bio. Suggest specific similar artists and explain WHY they connect (shared genre, era, producer, label, influence). Mention top albums by name. If there are upcoming live shows, tell the customer. Don't just say 'if you like X you'll like Y' - tell a story. Be warm, Dublin-flavoured: 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic'. 3-6 sentences usually, longer for good stories. No em dashes.";
 
-  var messages = [{ role: "system", content: systemPrompt }];
-  for (var i = 0; i < conversationHistory.length; i++) {
-    messages.push(conversationHistory[i]);
-  }
+  var messages = [{ role: "system", content: block }];
+  for (var i = 0; i < conversationHistory.length; i++) { messages.push(conversationHistory[i]); }
   messages.push({ role: "user", content: userMessage });
 
   try {
-    console.log("[Bob] Calling LLM with model:", LLM_MODEL, "lfmData:", !!similarArtists && similarArtists.length);
-    var resp = await fetch(LLM_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + LLM_KEY },
-      body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.85, max_tokens: 500 })
-    });
-    if (!resp.ok) {
-      var errText = await resp.text();
-      console.error("[Bob] LLM API error:", resp.status, errText.slice(0, 200));
-      throw new Error("API error: " + resp.status);
-    }
+    console.log("[Bob] LLM req:", artistName, "similars:", similarArtists.length, "albums:", topAlbums ? topAlbums.length : 0);
+    var resp = await fetch(LLM_URL, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + LLM_KEY }, body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.85, max_tokens: 500 }) });
+    if (!resp.ok) { var et = await resp.text(); console.error("[Bob] err:", resp.status, et.slice(0,200)); return null; }
     var data = await resp.json();
     var reply = data.choices[0].message.content.trim();
-    console.log("[Bob] LLM reply:", reply.slice(0, 150));
+    console.log("[Bob] reply:", reply.slice(0,200));
     conversationHistory.push({ role: "user", content: userMessage });
     conversationHistory.push({ role: "assistant", content: reply });
     if (conversationHistory.length > 12) conversationHistory = conversationHistory.slice(-12);
     return reply;
-  } catch (e) {
-    console.warn("[Bob] LLM call failed:", e.message);
-    return null;
-  }
+  } catch (e) { console.warn("[Bob] fail:", e.message); return null; }
 }
 
 // === Main send ===
@@ -630,65 +537,40 @@ async function sendMessage() {
   chatInput.value = '';
   showTyping();
 
-  var intent = detectIntent(text);
-
-  // Refinement: "show more", "similar", "deeper cuts" etc.
-  if (intent === "refine_augment" && lastQuery) {
-    var moreSimilar = await getLastFM_SimilarArtists(lastQuery);
-    if (moreSimilar.length > 0) {
-      picks = moreSimilar;
-      renderPicks();
-      hideTyping();
-      addMessage("Here are " + picks.length + " similar artists based on what you asked before. Click any name to explore further!", 'bot');
-      return;
-    }
-  }
-
-  // New query: search Last.fm
   var artistName = extractArtistName(text);
   if (!artistName || artistName.length < 2) {
     hideTyping();
-    addMessage("I need a bit more to go on! Give me an artist name and I'll find you similar acts in a flash.", 'bot');
+    addMessage("Give me an artist name and I'll dig up similar acts, top albums, genres to explore, the works!", 'bot');
     addSuggestions(["Radiohead", "Pixies", "Kendrick Lamar", "Miles Davis", "Aphex Twin", "Daft Punk"]);
     return;
   }
 
-  lastQuery = artistName;
-  picks = [];
-  renderPicks();
+  currentArtist = artistName;
 
-  var similarArtists = await getLastFM_SimilarArtists(artistName);
-  var tags = await getLastFM_ArtistTags(artistName);
+  // Fetch all data in parallel
+  var similarArtists = getSimilar(artistName);
+  var tags = getTags(artistName);
+  var topAlbums = getTopAlbums(artistName);
+  var artistInfo = getArtistInfo(artistName);
+  var events = getArtistEvents(artistName);
 
-  if (similarArtists.length === 0) {
-    hideTyping();
-    var found = await searchLastFM_Artists(artistName);
-    if (found.length > 0) {
-      picks = found;
-      renderPicks();
-      addMessage("Didn't find direct similars for \"" + artistName + "\", but here are some matching artists from Last.fm. Click one to explore!", 'bot');
-    } else {
-      addMessage("Hmm, Last.fm didn't return anything for \"" + artistName + "\". Could you try a different artist name?", 'bot');
-      addSuggestions(["Radiohead", "Pixies", "Kendrick Lamar", "Miles Davis", "Daft Punk"]);
-    }
-    return;
-  }
+  var sim = await similarArtists;
+  var tgs = await tags;
+  var albs = await topAlbums;
+  var info = await artistInfo;
+  var evts = await events;
 
-  // Enrich picks with tags (fetch tags for top 3 similar artists)
-  picks = similarArtists;
-  picks.forEach(function(a) { a.tags = []; });
-  if (tags && tags.length > 0) picks[0].tags = tags;
-  // Fetch tags for top 2-3 similar artists
-  for (var i = 1; i < Math.min(4, picks.length); i++) {
-    var t = await getLastFM_ArtistTags(picks[i].name);
-    if (t && t.length > 0) picks[i].tags = t;
-  }
+  // Update picks
+  artistsData = sim;
+  albumsData = albs;
+  tagsList = tgs;
+  activeTab = "artists";
   renderPicks();
 
   // Call LLM
   var llmReply = null;
   if (LLM_KEY && LLM_URL && LLM_MODEL) {
-    llmReply = await callLLM(text, artistName, similarArtists, tags);
+    llmReply = await callLLM(text, artistName, sim, tgs, albs, info, evts);
   }
 
   hideTyping();
@@ -696,30 +578,28 @@ async function sendMessage() {
   if (llmReply) {
     addMessage(llmReply, 'bot');
   } else {
-    var topPick = similarArtists[0];
-    var topPicksStr = similarArtists.slice(0, 3).map(function(a) { return a.name; }).join(", ");
-    addMessage("Deadly! If you're into " + artistName + ", you'd probably love " + topPicksStr + ". " + topPick.name + " is the closest match at " + Math.round(topPick.match) + "%. Check Bob's Picks for the full list and click any name to explore further!", 'bot');
+    var parts = [];
+    parts.push("Right, " + artistName + "!");
+    if (sim.length > 0) parts.push("Top similar acts: " + sim.slice(0,3).map(function(a){return a.name + " ("+Math.round(a.match)+"%)";}).join(", "));
+    if (albs.length > 0) parts.push("Essential albums include " + albs.slice(0,3).map(function(a){return a.name;}).join(", "));
+    if (tgs.length > 0) parts.push("Explore genres: " + tgs.slice(0,5).map(function(t){return t.name;}).join(", "));
+    parts.push("Check the tabs on the right for artists, albums, and genres!");
+    addMessage(parts.join(". ") + ".", 'bot');
   }
 }
 
 // === Event listeners ===
-chatSend.addEventListener('click', sendMessage);
+document.getElementById('chatSend').addEventListener('click', sendMessage);
 chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendMessage(); });
 
 // === Init ===
 (function() {
   var badge = document.getElementById("bobMode");
-  if (LLM_KEY && LLM_URL && LLM_MODEL) {
-    badge.textContent = "LLM";
-    badge.style.background = "#2E7D32";
-  } else {
-    badge.textContent = "basic";
-    badge.style.background = "#555";
-  }
-
-  addMessage("Hey there! I'm <strong>Bob</strong>, your personal music guide here at Round &amp; Round Records. Powered by Last.fm's massive music database, I can find you similar artists, suggest deep cuts, and chat about pretty much any genre or era.", 'bot');
+  if (LLM_KEY && LLM_URL && LLM_MODEL) { badge.textContent = "LLM"; badge.style.background = "#2E7D32"; }
+  else { badge.textContent = "basic"; badge.style.background = "#555"; }
+  addMessage("Hey there! I'm <strong>Bob</strong>, your personal music guide here at Round &amp; Round Records. Powered by Last.fm's massive database, I can find you similar artists, top albums, genres to explore, bios, even upcoming live shows!", 'bot');
   setTimeout(function() {
-    addMessage("Tell me an artist you love and I'll suggest similar acts you might enjoy. Fire away!", 'bot');
+    addMessage("Tell me an artist you're into and I'll dig up the full picture. Fire away!", 'bot');
     addSuggestions(["Radiohead", "Pixies", "Kendrick Lamar", "Miles Davis", "Aphex Twin", "Daft Punk"]);
   }, 1200);
 })();
