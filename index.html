@@ -378,8 +378,9 @@ body {
 </div>
 
 <footer class="footer">
-  Powered by <a href="https://spindizzyrecords.com" target="_blank">Spindizzy Records</a> catalogue &bull; 32 Market Arcade, Dublin
-  <span style="margin-left:12px;font-size:0.7rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your new DeepSeek API key (leave blank to disable LLM):',localStorage.getItem('rr_llm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_llm_key',ck);localStorage.setItem('rr_llm_url','https://api.deepseek.com/v1/chat/completions');localStorage.setItem('rr_llm_model','deepseek-chat')}else{localStorage.removeItem('rr_llm_key');localStorage.removeItem('rr_llm_url');localStorage.removeItem('rr_llm_model')}location.reload()}">set LLM key</span>
+  Powered by <a href="https://spindizzyrecords.com" target="_blank">Spindizzy Records</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a> &bull; 32 Market Arcade, Dublin
+  <span style="margin-left:10px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your new DeepSeek API key (leave blank to disable LLM):',localStorage.getItem('rr_llm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_llm_key',ck);localStorage.setItem('rr_llm_url','https://api.deepseek.com/v1/chat/completions');localStorage.setItem('rr_llm_model','deepseek-chat')}else{localStorage.removeItem('rr_llm_key');localStorage.removeItem('rr_llm_url');localStorage.removeItem('rr_llm_model')}location.reload()}">LLM key</span>
+  <span style="margin-left:8px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your Discogs API token (leave blank to disable):',localStorage.getItem('rr_dgs_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_dgs_key',ck)}else{localStorage.removeItem('rr_dgs_key')}location.reload()}">Discogs key</span>
 </footer>
 
 <script src="config.js"></script>
@@ -389,12 +390,16 @@ body {
   if (typeof LLM_KEY === "undefined") window.LLM_KEY = "";
   if (typeof LLM_URL === "undefined") window.LLM_URL = "";
   if (typeof LLM_MODEL === "undefined") window.LLM_MODEL = "";
+  if (typeof DGS_KEY === "undefined") window.DGS_KEY = "";
 
-  // If config.js didn't provide a key, try localStorage
+  // If config.js didn't provide keys, try localStorage
   if (!LLM_KEY && localStorage.getItem("rr_llm_key")) {
     LLM_KEY = localStorage.getItem("rr_llm_key");
     LLM_URL = localStorage.getItem("rr_llm_url") || "https://api.deepseek.com/v1/chat/completions";
     LLM_MODEL = localStorage.getItem("rr_llm_model") || "deepseek-chat";
+  }
+  if (!DGS_KEY && localStorage.getItem("rr_dgs_key")) {
+    DGS_KEY = localStorage.getItem("rr_dgs_key");
   }
 
   // Prompt for key on first visit (no config.js, no localStorage)
@@ -415,7 +420,6 @@ body {
         localStorage.setItem("rr_llm_key", cleanKey);
         localStorage.setItem("rr_llm_url", LLM_URL);
         localStorage.setItem("rr_llm_model", LLM_MODEL);
-        // Reload to pick up the key cleanly
         location.reload();
       }
     }, 500);
@@ -472,39 +476,80 @@ function buildMusicKnowledge() {
   ].join("\n");
 }
 
+// === Build recent release context for the LLM ===
+function buildRecentContext() {
+  var today = new Date();
+  var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var dateStr = today.getDate() + " " + monthNames[today.getMonth()] + " " + today.getFullYear();
+  var newItems = catalogue.filter(function(p) {
+    var t = (p.title + " " + p.genres.join(" ")).toLowerCase();
+    return t.indexOf("2026") > -1 || t.indexOf("reissue") > -1;
+  });
+  var lines = ["TODAY'S DATE: " + dateStr];
+  lines.push("");
+  lines.push("RECENT & UPCOMING RELEASES (from our catalogue, newest first):");
+  if (newItems.length > 0) {
+    newItems.slice(0, 12).forEach(function(p) {
+      lines.push("- " + p.artist + " - " + p.title + " (" + p.format + ", EUR " + p.price + ")");
+    });
+  }
+  lines.push("");
+  lines.push("NOTE: New releases drop every Friday. Use your general music knowledge to discuss recent albums broadly. Only claim something is IN STOCK if it appears in the FULL CATALOGUE below.");
+  return lines.join("\n");
+}
+
 // === Call the LLM with rich context ===
 async function callLLM(userMessage, searchResult) {
   if (!LLM_KEY || !LLM_URL || !LLM_MODEL) return null;
 
   var systemPrompt = [
-    "You are Bob, a super friendly, super knowledgeable music guide working at Round & Round Records, a small independent record shop in Dublin, Ireland. The shop has been running since 2005 and uses the Spindizzy Records catalogue for stock.",
+    "You are Bob, a super friendly, super knowledgeable music guru working at Round & Round Records, a beloved independent record shop in Dublin, Ireland (est. 2005). You live and breathe music. You read the music press, you follow new releases, you know band histories inside out, and you have strong but fair opinions about albums. You're the person customers come to when they want a real recommendation from someone who genuinely knows their stuff.",
     "",
     "YOUR PERSONALITY:",
-    "- Warm, passionate, a proper crate-digger who lives for music",
-    "- You speak like the best record shop staff member ever: know your stuff deeply, never pretentious, always genuinely excited to help someone find their next favourite album",
-    "- Use Irish/Dublin colloquialisms naturally: 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic' -- but don't overdo it, just a sprinkle",
-    "- You're a bit of a music nerd and proud of it. Drop interesting facts about albums, pressings, recording stories, band history when relevant",
-    "- If a customer mentions they like something, get enthusiastic: 'Ah no way, you're into them? Deadly! You know they recorded that album in...'",
-    "- Never corporate. Never robotic. You're in a record shop, not a call centre",
+    "- Warm, passionate, a proper crate-digger. You love talking about music as much as selling it.",
+    "- Dublin/Irish flavour: use 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic' naturally but sparingly.",
+    "- Music nerd and proud of it. Drop interesting facts: pressing details, recording stories, label history, producer notes.",
+    "- If a customer mentions they like something, get genuinely excited: 'Ah no way, you're into them? Deadly!'",
+    "- You HAVE opinions. 'Best album of last month? For my money, it's gotta be...' Back them up with reasons.",
+    "- Never corporate. Never robotic. You're in a record shop, not a call centre.",
     "",
-    "RULES:",
-    "- Keep responses conversational and warm (2-5 sentences usually, but go longer if you have good stories to tell)",
-    "- Reference specific albums, formats, prices, and catalogue details from the STOCK listing below",
-    "- If search results are provided, mention 1-3 of the best matches by name, format, and price",
-    "- ALWAYS remind the customer to check 'Bob's Picks' on the right side of the page to see the actual products",
-    "- NEVER make up an album that is NOT in the STOCK listing below",
-    "- If a customer asks about something not in stock, say honestly 'Ah, we don't have that one in at the moment, but...' then suggest something adjacent from the stock",
-    "- If you genuinely don't know something, say 'That's a great question actually' and pivot to what you can help with",
-    "- Use music knowledge to sound informed: pressing details, era context, label history, production notes",
-    "- No em dashes. Use commas, colons, or full stops instead",
+    "TWO MODES YOU OPERATE IN:",
+    "",
+    "MODE 1: MUSIC GURU (general chat, opinions, recommendations, questions about music):",
+    "- Use your FULL general knowledge: bands, albums, genres, history, recent releases, industry news, festival lineups.",
+    "- Give opinions freely: 'best album of last month', 'my favourite Radiohead album', 'most underrated 90s band'.",
+    "- Discuss artists NOT in our catalogue. Say 'We don't stock them right now, but...' then share what you know.",
+    "- Be a walking music encyclopedia. The customer came to a record shop for expertise. Give it to them.",
+    "- If you're unsure about a very recent release, be honest: 'I'd need to double-check the latest, but from what I've heard...'",
+    "",
+    "MODE 2: SHOP ASSISTANT (when recommending something to BUY):",
+    "- ONLY claim an album is in stock / purchasable if it appears in the FULL CATALOGUE listing below.",
+    "- When search results are provided, reference 1-3 specific matches by name, format, and price.",
+    "- Say 'check Bob's Picks on the right' to point them at actual purchasable items.",
+    "- If a customer wants to buy something not in our catalogue: 'Ah we don't have that one at the moment, but...' then suggest adjacent items we DO have.",
+    "- Never fabricate stock. Never guess a price. The catalogue below is the truth for purchasing.",
+    "",
+    "CONVERSATION FLOW:",
+    "- Start in MODE 1 (music guru). Be generous with your knowledge.",
+    "- Switch to MODE 2 when you're ready to recommend something to buy.",
+    "- Keep responses warm and conversational. 2-6 sentences is fine, longer if you're telling a good story.",
+    "- Search results appear in Bob's Picks panel. Highlight the best ones, don't list everything.",
+    "- If we don't have it in Spindizzy, the system will check Discogs (the world's biggest music database) as a fallback.",
+    "- No em dashes. Use commas, colons, or full stops.",
+    "",
+    "DISCOGS FALLBACK:",
+    "- When a customer asks for something not in our Spindizzy catalogue, the system automatically searches Discogs.",
+    "- If Discogs results come back, they appear in Bob's Picks marked 'via Discogs'. You can mention: 'I checked Discogs for you and found these...'",
+    "",
+    buildRecentContext(),
     "",
     buildMusicKnowledge(),
     "",
     buildCatalogueListing(),
     "",
     searchResult && searchResult.results && searchResult.results.length > 0
-      ? "SEARCH RESULTS FOR THIS QUERY (" + searchResult.results.length + " matches found):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nReference these in your response! Mention the best 2-3 matches by name and price. Tell the customer these are live in Bob's Picks."
-      : "NO DIRECT MATCHES FOUND for this query. Be honest about it, but suggest related artists or genres from the stock above. Ask what else they're into."
+      ? "SEARCH RESULTS FOR THIS QUERY (" + searchResult.results.length + " matches found in our catalogue):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nMention the best 2-3 matches by name and price in your response. These are now visible in Bob's Picks."
+      : "NO DIRECT MATCHES FOUND in our catalogue for this query. Use MODE 1: share your general music knowledge about what they asked. Then suggest related artists or genres from the catalogue above that they might enjoy."
   ].join("\n");
 
   var messages = [{ role: "system", content: systemPrompt }];
@@ -704,10 +749,10 @@ function renderPicks() {
     card.innerHTML =
       '<img class="product-card-img" src="' + getImageUrl(p) + '" alt="' + p.title + '" loading="lazy" onerror="this.src=\'data:image/svg+xml,' + encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#E8E0D0\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"110\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#999\\">No Image</text></svg>') + '\'">' +
       '<div class="product-card-body">' +
-        '<div class="product-card-artist">' + p.artist + '</div>' +
+        '<div class="product-card-artist">' + p.artist + (p.source === "discogs" ? ' <span style="font-size:0.6rem;background:#FF6B00;color:#fff;padding:1px 5px;border-radius:3px;margin-left:3px;">Discogs</span>' : '') + '</div>' +
         '<div class="product-card-title">' + p.title + '</div>' +
         '<div class="product-card-footer">' +
-          '<span class="product-card-price">&euro;' + p.price + '</span>' +
+          '<span class="product-card-price">' + (p.price === "check site" ? "Discogs" : "&euro;" + p.price) + '</span>' +
           '<span class="product-card-format">' + p.format + '</span>' +
         '</div>' +
       '</div>';
@@ -741,6 +786,38 @@ function searchByName(names) {
     });
   });
   return all.slice(0, 8);
+}
+
+// === Discogs search (fallback when not in Spindizzy catalogue) ===
+async function searchDiscogs(query) {
+  if (!DGS_KEY) return [];
+  try {
+    var resp = await fetch("https://api.discogs.com/database/search?q=" + encodeURIComponent(query) + "&type=release&per_page=8&token=" + DGS_KEY);
+    if (!resp.ok) throw new Error("Discogs API error: " + resp.status);
+    var data = await resp.json();
+    if (!data.results || data.results.length === 0) return [];
+    return data.results.map(function(r) {
+      var artists = [];
+      if (r.title) {
+        var parts = r.title.split(" - ");
+        if (parts.length > 1) artists = [parts[0].trim()];
+      }
+      return {
+        artist: artists.length > 0 ? artists[0] : (r.title || "Unknown"),
+        title: r.title || "Unknown release",
+        price: "check site",
+        format: (r.format || ["Vinyl"])[0],
+        img: r.cover_image || r.thumb || "",
+        genres: (r.genre || ["music"]),
+        era: r.year ? (r.year.slice(0, 3) + "s") : "",
+        url: "https://www.discogs.com" + (r.uri || "/search/?q=" + encodeURIComponent(query)),
+        source: "discogs"
+      };
+    });
+  } catch (e) {
+    console.warn("Discogs search failed:", e.message);
+    return [];
+  }
 }
 
 // === Conversation engine ===
@@ -802,6 +879,14 @@ async function sendMessage() {
   // Run catalogue search immediately (fast, no dependency on LLM)
   var searchResult = getSearchResults(text);
 
+  // If nothing in Spindizzy, try Discogs
+  if ((!searchResult.results || searchResult.results.length === 0) && DGS_KEY) {
+    var dgsResults = await searchDiscogs(text);
+    if (dgsResults.length > 0) {
+      searchResult = { knowledgeHit: null, results: dgsResults, source: "discogs" };
+    }
+  }
+
   var llmReply = null;
   if (LLM_KEY && LLM_URL && LLM_MODEL) {
     llmReply = await callLLM(text, searchResult);
@@ -809,13 +894,13 @@ async function sendMessage() {
 
   hideTyping();
 
+  var hasResults = searchResult.results && searchResult.results.length > 0;
+  var isDiscogs = searchResult.source === "discogs";
+
   if (llmReply) {
-    // LLM response for conversational tone
     addMessage(llmReply, 'bot');
-    // Show search results in picks panel
     showResults(searchResult);
-    // If no results from search, offer suggestions
-    if (!searchResult.results || searchResult.results.length === 0) {
+    if (!hasResults) {
       addSuggestions(["Jazz", "Rock", "Electronic", "Hip-Hop", "Metal", "Indie", "Irish artists", "90s classics"]);
     }
   } else {
@@ -823,18 +908,22 @@ async function sendMessage() {
     if (searchResult.knowledgeHit && searchResult.knowledgeHit.response) {
       addMessage(searchResult.knowledgeHit.response, 'bot');
       showResults(searchResult);
-    } else if (searchResult.results.length > 0) {
+    } else if (hasResults) {
       showResults(searchResult);
-      var artistMap = {};
-      searchResult.results.forEach(function(r) { artistMap[r.artist] = true; });
-      var artistCount = Object.keys(artistMap).length;
-      var msg = searchResult.results.length === 1
-        ? "Got one for you!"
-        : "Nice one! Found " + searchResult.results.length + " matches across " + artistCount + " artist" + (artistCount > 1 ? "s" : "") + ".";
-      addMessage(msg + " Take a look at Bob's Picks on the right. Anything catch your eye?", 'bot');
+      if (isDiscogs) {
+        addMessage("Nothing in Spindizzy for that, so I checked Discogs. Found " + searchResult.results.length + " match" + (searchResult.results.length > 1 ? "es" : "") + "! Have a look at Bob's Picks.", 'bot');
+      } else {
+        var artistMap = {};
+        searchResult.results.forEach(function(r) { artistMap[r.artist] = true; });
+        var artistCount = Object.keys(artistMap).length;
+        var msg = searchResult.results.length === 1
+          ? "Got one for you!"
+          : "Nice one! Found " + searchResult.results.length + " matches across " + artistCount + " artist" + (artistCount > 1 ? "s" : "") + ".";
+        addMessage(msg + " Take a look at Bob's Picks on the right. Anything catch your eye?", 'bot');
+      }
       addSuggestions(["New releases", "Rock classics", "Jazz essentials", "Electronic & dance", "Irish artists"]);
     } else {
-      addMessage("Hmm, nothing jumping out at me for \"" + text + "\" in the Spindizzy catalogue right now. Could you try a different artist, genre, or style? I'm here to dig!", 'bot');
+      addMessage("Hmm, nothing in Spindizzy or Discogs for \"" + text + "\". Could you try a different artist, genre, or style? I'm here to dig!", 'bot');
       addSuggestions(["Jazz", "Rock", "Electronic", "Hip-Hop", "Metal", "Indie", "Irish artists", "90s classics"]);
     }
   }
