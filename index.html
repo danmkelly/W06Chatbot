@@ -379,10 +379,51 @@ body {
 
 <footer class="footer">
   Powered by <a href="https://spindizzyrecords.com" target="_blank">Spindizzy Records</a> catalogue &bull; 32 Market Arcade, Dublin
+  <span style="margin-left:12px;font-size:0.7rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your new DeepSeek API key (leave blank to disable LLM):',localStorage.getItem('rr_llm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_llm_key',ck);localStorage.setItem('rr_llm_url','https://api.deepseek.com/v1/chat/completions');localStorage.setItem('rr_llm_model','deepseek-chat')}else{localStorage.removeItem('rr_llm_key');localStorage.removeItem('rr_llm_url');localStorage.removeItem('rr_llm_model')}location.reload()}">set LLM key</span>
 </footer>
 
 <script src="config.js"></script>
 <script>
+// === LLM key setup (for hosted deployment where config.js is not deployed) ===
+(function() {
+  if (typeof LLM_KEY === "undefined") window.LLM_KEY = "";
+  if (typeof LLM_URL === "undefined") window.LLM_URL = "";
+  if (typeof LLM_MODEL === "undefined") window.LLM_MODEL = "";
+
+  // If config.js didn't provide a key, try localStorage
+  if (!LLM_KEY && localStorage.getItem("rr_llm_key")) {
+    LLM_KEY = localStorage.getItem("rr_llm_key");
+    LLM_URL = localStorage.getItem("rr_llm_url") || "https://api.deepseek.com/v1/chat/completions";
+    LLM_MODEL = localStorage.getItem("rr_llm_model") || "deepseek-chat";
+  }
+
+  // Prompt for key on first visit (no config.js, no localStorage)
+  if (!LLM_KEY) {
+    setTimeout(function() {
+      var key = prompt(
+        "Hi! Bob is smarter with an LLM behind him.\n\n" +
+        "Paste your DeepSeek API key to enable it, or\n" +
+        "leave blank to use the built-in engine.\n\n" +
+        "Get a free key at: platform.deepseek.com",
+        ""
+      );
+      if (key && key.trim()) {
+        var cleanKey = key.trim();
+        LLM_KEY = cleanKey;
+        LLM_URL = "https://api.deepseek.com/v1/chat/completions";
+        LLM_MODEL = "deepseek-chat";
+        localStorage.setItem("rr_llm_key", cleanKey);
+        localStorage.setItem("rr_llm_url", LLM_URL);
+        localStorage.setItem("rr_llm_model", LLM_MODEL);
+        // Reload to pick up the key cleanly
+        location.reload();
+      }
+    }, 500);
+  }
+  // If key came from localStorage but models are undefined, set defaults
+  if (LLM_KEY && !LLM_URL) LLM_URL = "https://api.deepseek.com/v1/chat/completions";
+  if (LLM_KEY && !LLM_MODEL) LLM_MODEL = "deepseek-chat";
+})();
 
 // === Conversation history (for LLM context) ===
 let conversationHistory = [];
