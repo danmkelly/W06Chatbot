@@ -378,9 +378,10 @@ body {
 </div>
 
 <footer class="footer">
-  Powered by <a href="https://spindizzyrecords.com" target="_blank">Spindizzy Records</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a> &bull; 32 Market Arcade, Dublin
-  <span style="margin-left:10px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your new DeepSeek API key (leave blank to disable LLM):',localStorage.getItem('rr_llm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_llm_key',ck);localStorage.setItem('rr_llm_url','https://api.deepseek.com/v1/chat/completions');localStorage.setItem('rr_llm_model','deepseek-chat')}else{localStorage.removeItem('rr_llm_key');localStorage.removeItem('rr_llm_url');localStorage.removeItem('rr_llm_model')}location.reload()}">LLM key</span>
-  <span style="margin-left:8px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your Discogs API token (leave blank to disable):',localStorage.getItem('rr_dgs_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_dgs_key',ck)}else{localStorage.removeItem('rr_dgs_key')}location.reload()}">Discogs key</span>
+  Powered by <a href="https://spindizzyrecords.com" target="_blank">Spindizzy</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a> &amp; <a href="https://www.last.fm" target="_blank">Last.fm</a> &bull; 32 Market Arcade, Dublin
+  <span style="margin-left:8px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your new DeepSeek API key (leave blank to disable LLM):',localStorage.getItem('rr_llm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_llm_key',ck);localStorage.setItem('rr_llm_url','https://api.deepseek.com/v1/chat/completions');localStorage.setItem('rr_llm_model','deepseek-chat')}else{localStorage.removeItem('rr_llm_key');localStorage.removeItem('rr_llm_url');localStorage.removeItem('rr_llm_model')}location.reload()}">LLM key</span>
+  <span style="margin-left:6px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your Discogs token:',localStorage.getItem('rr_dgs_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_dgs_key',ck)}else{localStorage.removeItem('rr_dgs_key')}location.reload()}">Discogs</span>
+  <span style="margin-left:6px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your Last.fm API key (free at last.fm/api):',localStorage.getItem('rr_lfm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_lfm_key',ck)}else{localStorage.removeItem('rr_lfm_key')}location.reload()}">Last.fm</span>
 </footer>
 
 <script src="config.js"></script>
@@ -391,6 +392,7 @@ body {
   if (typeof LLM_URL === "undefined") window.LLM_URL = "";
   if (typeof LLM_MODEL === "undefined") window.LLM_MODEL = "";
   if (typeof DGS_KEY === "undefined") window.DGS_KEY = "";
+  if (typeof LFM_KEY === "undefined") window.LFM_KEY = "";
 
   // If config.js didn't provide keys, try localStorage
   if (!LLM_KEY && localStorage.getItem("rr_llm_key")) {
@@ -400,6 +402,9 @@ body {
   }
   if (!DGS_KEY && localStorage.getItem("rr_dgs_key")) {
     DGS_KEY = localStorage.getItem("rr_dgs_key");
+  }
+  if (!LFM_KEY && localStorage.getItem("rr_lfm_key")) {
+    LFM_KEY = localStorage.getItem("rr_lfm_key");
   }
 
   // Prompt for key on first visit (no config.js, no localStorage)
@@ -494,7 +499,7 @@ function buildRecentContext() {
 }
 
 // === Call the LLM with rich context ===
-async function callLLM(userMessage, searchResult) {
+async function callLLM(userMessage, searchResult, lastfmEnrichment) {
   if (!LLM_KEY || !LLM_URL || !LLM_MODEL) return null;
 
   var systemPrompt = [
@@ -539,6 +544,8 @@ async function callLLM(userMessage, searchResult) {
     "STOCK LIST (what's actually on our shelves - for reference only, don't lead with this):",
     buildCatalogueListing(),
     "",
+    lastfmEnrichment || "",
+    lastfmEnrichment ? "" : "",
     searchResult && searchResult.results && searchResult.results.length > 0
       ? (searchResult.isTaste
           ? "THIS IS A TASTE STATEMENT. The customer said they like an artist. SEARCH RESULTS (" + searchResult.results.length + " items, showing the artist's albums + genre-related picks):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nIMPORTANT: Share your music knowledge about this artist and similar artists. Mention 2-3 similar acts they might like. Only mention 1-2 stock items organically if it fits. The Picks panel already shows everything."
@@ -884,6 +891,44 @@ async function searchDiscogs(query) {
   }
 }
 
+// === Last.fm enrichment: similar artists, genre tags ===
+async function getLastFM_SimilarArtists(artistName) {
+  if (!LFM_KEY) return [];
+  try {
+    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=" + encodeURIComponent(artistName) + "&api_key=" + LFM_KEY + "&format=json&limit=8");
+    if (!resp.ok) return [];
+    var data = await resp.json();
+    if (data.similarartists && data.similarartists.artist) {
+      return data.similarartists.artist.map(function(a) { return { name: a.name, match: parseFloat(a.match) }; });
+    }
+    return [];
+  } catch (e) { console.warn("Last.fm similar:", e.message); return []; }
+}
+
+async function getLastFM_ArtistTags(artistName) {
+  if (!LFM_KEY) return [];
+  try {
+    var resp = await fetch("https://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist=" + encodeURIComponent(artistName) + "&api_key=" + LFM_KEY + "&format=json&limit=6");
+    if (!resp.ok) return [];
+    var data = await resp.json();
+    if (data.toptags && data.toptags.tag) {
+      return data.toptags.tag.map(function(t) { return { name: t.name, count: parseInt(t.count) }; });
+    }
+    return [];
+  } catch (e) { console.warn("Last.fm tags:", e.message); return []; }
+}
+
+function buildLastFMContext(similarArtists, tags, artistName) {
+  var lines = ["LAST.FM ENRICHMENT for " + artistName + ":"];
+  if (similarArtists && similarArtists.length > 0) {
+    lines.push("Similar artists: " + similarArtists.map(function(a) { return a.name + " (" + a.match + "% match)"; }).join(", "));
+  }
+  if (tags && tags.length > 0) {
+    lines.push("Genre tags: " + tags.map(function(t) { return t.name; }).join(", "));
+  }
+  lines.push("Use this to sound knowledgeable. Suggest similar artists from this list. Cross-reference with stock to mention any we actually carry.");
+  return lines.join("\n");
+}
 // === Conversation engine ===
 function getSearchResults(userInput) {
   var text = userInput.trim();
@@ -1128,7 +1173,6 @@ async function sendMessage() {
     var refineMsg = result.msg || "Here are your refined picks.";
     var llmReply = null;
     if (LLM_KEY && LLM_URL && LLM_MODEL) {
-      // Build a refinement-aware search result for the LLM
       var refineContext = {
         knowledgeHit: null,
         results: picks.slice(0, 12),
@@ -1136,7 +1180,19 @@ async function sendMessage() {
         refinementType: intent,
         previousQuery: lastQuery
       };
-      llmReply = await callLLM(text, refineContext);
+      // Fetch Last.fm enrichment for refinement too
+      var lfmCtx2 = null;
+      if (LFM_KEY && lastQuery && picks.length > 0) {
+        var artistFromLast = extractArtistsFromQuery(lastQuery);
+        if (artistFromLast.length > 0) {
+          var sim2 = await getLastFM_SimilarArtists(artistFromLast[0]);
+          var tags2 = await getLastFM_ArtistTags(artistFromLast[0]);
+          if (sim2.length > 0 || tags2.length > 0) {
+            lfmCtx2 = buildLastFMContext(sim2, tags2, artistFromLast[0]);
+          }
+        }
+      }
+      llmReply = await callLLM(text, refineContext, lfmCtx2);
     }
 
     hideTyping();
@@ -1181,7 +1237,19 @@ async function sendMessage() {
 
   var llmReply = null;
   if (LLM_KEY && LLM_URL && LLM_MODEL) {
-    llmReply = await callLLM(text, searchResult);
+    // Fetch Last.fm enrichment for taste/recommendation queries
+    var lfmCtx = null;
+    if (LFM_KEY && (searchResult.isTaste || searchResult.isRecommendation)) {
+      var artists = extractArtistsFromQuery(text);
+      if (artists.length > 0) {
+        var similar = await getLastFM_SimilarArtists(artists[0]);
+        var tags = await getLastFM_ArtistTags(artists[0]);
+        if (similar.length > 0 || tags.length > 0) {
+          lfmCtx = buildLastFMContext(similar, tags, artists[0]);
+        }
+      }
+    }
+    llmReply = await callLLM(text, searchResult, lfmCtx);
   }
 
   hideTyping();
