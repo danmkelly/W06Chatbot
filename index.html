@@ -212,8 +212,34 @@ body{
 .foot a:hover{color:var(--text)}
 .foot .key-link{cursor:pointer;text-decoration:underline;font-size:0.6rem}
 
-/* Mobile */
-@media(max-width:860px){
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:90%;max-width:420px;animation:fadeUp .25s ease}
+.modal h3{font-size:1rem;margin-bottom:4px;color:var(--text)}
+.modal .modal-artist{font-size:0.75rem;color:var(--accent3);margin-bottom:16px}
+.modal-field{margin-bottom:12px}
+.modal-field label{display:block;font-size:0.7rem;font-weight:600;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
+.modal-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:0.85rem;color:var(--text);font-family:inherit;outline:none;transition:border-color .15s}
+.modal-field input:focus{border-color:var(--accent)}
+.modal-btns{display:flex;gap:10px;margin-top:20px}
+.modal-btn{padding:10px 20px;border-radius:var(--radius-sm);font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.modal-btn-submit{flex:1;background:var(--accent);color:#fff;border:none}
+.modal-btn-submit:hover{background:#D14A30}
+.modal-btn-cancel{background:transparent;color:var(--text-dim);border:1px solid var(--border)}
+.modal-btn-cancel:hover{color:var(--text);border-color:var(--text-dim)}
+.modal-done{text-align:center;padding:20px 0}
+.modal-done-icon{font-size:2rem;margin-bottom:8px}
+.modal-done p{font-size:0.85rem;color:var(--text-dim);line-height:1.5}
+
+/* Album badges */
+.album-badges{display:flex;gap:4px;margin-top:6px}
+.album-badge{padding:3px 7px;border-radius:4px;font-size:0.55rem;font-weight:700;cursor:pointer;text-decoration:none;text-transform:uppercase;letter-spacing:0.3px;transition:all .15s;display:inline-block}
+.album-badge-buy{background:rgba(74,158,142,0.2);color:var(--accent2);border:1px solid rgba(74,158,142,0.3)}
+.album-badge-buy:hover{background:var(--accent2);color:#fff}
+.album-badge-req{background:rgba(196,164,74,0.15);color:var(--accent3);border:1px solid rgba(196,164,74,0.3)}
+.album-badge-req:hover{background:var(--accent3);color:#fff}
+</style>
   .app{grid-template-columns:1fr;grid-template-rows:1fr auto}
   .discovery{max-height:320px;border-top:1px solid var(--border)}
   .chat-msgs{min-height:300px}
@@ -271,6 +297,11 @@ body{
         <div class="genre-chips" id="genreChips"></div>
       </div>
     </div>
+  </div>
+
+  <!-- Request-to-order modal -->
+  <div class="modal-overlay" id="reqModal">
+    <div class="modal" id="reqModalInner"></div>
   </div>
 
 </div>
@@ -357,9 +388,14 @@ function renderDiscoveryTag(tag,albs,sim){
   document.getElementById("albCount").textContent=albs.length;
   albumGrid.innerHTML=albs.map(function(a){
     var img=a.img||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#242424" width="200" height="200"/><text x="100" y="115" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#555">No Art</text></svg>');
-    return'<div class="album-card" onclick="qa(\''+(a.artist||tag).replace(/'/g,"\\'")+'\')"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+(a.artist||tag)+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div></div></div>';
+    return'<div class="album-card"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+(a.artist||tag)+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div>'+albumBadges(a.artist||tag,a.name)+'</div></div>';
   }).join("");
   genreChips.innerHTML='';
+}
+
+function albumBadges(artist,title){
+  var q=encodeURIComponent((artist||"")+" "+(title||""));
+  return'<div class="album-badges"><a class="album-badge album-badge-buy" href="https://www.discogs.com/sell/list?q='+q+'" target="_blank" onclick="event.stopPropagation()">Buy on Discogs</a><span class="album-badge album-badge-req" onclick="event.stopPropagation();openReq(\''+(artist||"").replace(/'/g,"\\'")+'\',\''+(title||"").replace(/'/g,"\\'")+'\')">Request to order</span></div>';
 }
 
 // === Render discovery ===
@@ -385,7 +421,7 @@ function renderDiscovery(sim,tgs,albs,info){
   document.getElementById("albCount").textContent=albs.length;
   albumGrid.innerHTML=albs.map(function(a){
     var img=a.img||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#242424" width="200" height="200"/><text x="100" y="115" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#555">No Art</text></svg>');
-    return'<div class="album-card" onclick="qa(\''+a.artist.replace(/'/g,"\\'")+'\')"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+a.artist+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div></div></div>';
+    return'<div class="album-card"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+a.artist+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div>'+albumBadges(a.artist,a.name)+'</div></div>';
   }).join("");
 
   // Genre chips
@@ -481,6 +517,30 @@ async function send(){
     addMsg(p.join(". ")+". Scroll the panel on the right!",'bot');
   }
 }
+
+// === Request-to-order modal ===
+function openReq(artist,title){
+  document.getElementById("reqModalInner").innerHTML=
+    '<h3>Request to Order</h3>'+
+    '<div class="modal-artist">'+artist+' &mdash; '+title+'</div>'+
+    '<div class="modal-field"><label>Your name</label><input id="reqName" placeholder="Your full name"></div>'+
+    '<div class="modal-field"><label>Email</label><input id="reqEmail" type="email" placeholder="you@email.com"></div>'+
+    '<div class="modal-field"><label>Phone (optional)</label><input id="reqPhone" type="tel" placeholder="+353 1 234 5678"></div>'+
+    '<p style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">No payment needed until we confirm we can find stock. We\'ll email you within 48 hours.</p>'+
+    '<div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeReq()">Cancel</button><button class="modal-btn modal-btn-submit" onclick="submitReq(\''+artist.replace(/'/g,"\\'")+'\',\''+title.replace(/'/g,"\\'")+'\')">Send Request</button></div>';
+  document.getElementById("reqModal").classList.add("open");
+}
+function closeReq(){document.getElementById("reqModal").classList.remove("open")}
+function submitReq(artist,title){
+  var name=document.getElementById("reqName").value.trim();
+  var email=document.getElementById("reqEmail").value.trim();
+  var phone=document.getElementById("reqPhone").value.trim();
+  if(!name||!email){alert("Please fill in your name and email.");return}
+  console.log("[Order request]",{artist:artist,title:title,name:name,email:email,phone:phone});
+  document.getElementById("reqModalInner").innerHTML=
+    '<div class="modal-done"><div class="modal-done-icon">&#9989;</div><p>Thanks, '+name+'! We\'ll hunt down <strong>'+artist+' &mdash; '+title+'</strong> for you.<br><br>We\'ll email '+email+' within 48 hours. No payment needed until we confirm stock.</p><button class="modal-btn modal-btn-submit" style="width:100%" onclick="closeReq()">Got it</button></div>';
+}
+document.getElementById("reqModal").addEventListener("click",function(e){if(e.target===this)closeReq()});
 
 // === Init ===
 document.getElementById("chatSend").addEventListener("click",send);
