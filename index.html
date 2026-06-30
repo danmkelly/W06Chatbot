@@ -521,10 +521,16 @@ async function callLLM(userMessage, searchResult) {
     "- Point to 'Bob's Picks on the right' for the full list. Don't repeat it in chat.",
     "- NEVER claim an album is in stock unless it appears in the STOCK LIST below. That's the only thing you must be strict about.",
     "",
+    "WHEN SOMEONE SAYS THEY LIKE AN ARTIST (taste statement):",
+    "- This is a conversation opener, not a search query. Share your knowledge about that artist: their best albums, their history, who they influenced, who they were influenced by, similar artists.",
+    "- Then broaden out: 'If you're into X, you'd probably love Y and Z because...' Give reasons. Connect dots.",
+    "- Mentioning stock is optional and organic, not required. The Picks panel has already shown them the artist's albums.",
+    "",
     "CONVERSATION RULES:",
     "- Keep it warm and natural. 2-6 sentences usually, but go long if the story deserves it.",
     "- No em dashes. Use commas, colons, or full stops.",
     "- Don't lead with the catalogue. Lead with music. Let the stock mention be organic, not forced.",
+    "- If the search results include items from DIFFERENT genres (taste/recommendation query), discuss the breadth: 'I've pulled some from the same world...'",
     "",
     buildRecentContext(),
     "",
@@ -534,7 +540,9 @@ async function callLLM(userMessage, searchResult) {
     buildCatalogueListing(),
     "",
     searchResult && searchResult.results && searchResult.results.length > 0
-      ? "SEARCH RESULTS (" + searchResult.results.length + " matches on our shelves right now):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nIf it feels natural, mention 1-2 of these in your response. They're visible in Bob's Picks."
+      ? (searchResult.isTaste
+          ? "THIS IS A TASTE STATEMENT. The customer said they like an artist. SEARCH RESULTS (" + searchResult.results.length + " items, showing the artist's albums + genre-related picks):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nIMPORTANT: Share your music knowledge about this artist and similar artists. Mention 2-3 similar acts they might like. Only mention 1-2 stock items organically if it fits. The Picks panel already shows everything."
+          : "SEARCH RESULTS (" + searchResult.results.length + " matches on our shelves):\n" + searchResult.results.map(function(r, i) { return (i+1) + ". " + r.artist + " - " + r.title + " (" + r.format + ", EUR " + r.price + ")"; }).join("\n") + "\n\nIf it feels natural, mention 1-2 of these in your response.")
       : "NO MATCHES on our shelves for this query. Share your general music knowledge freely. If you think of related artists we might stock, check the STOCK LIST above."
   ].join("\n");
 
@@ -805,6 +813,17 @@ function isRecommendationQuery(text) {
   return /what else|similar to|like (them|this|that)|recommend|suggest|what (other|else)|bands like|artists like|if i like|into.*what else/.test(t);
 }
 
+// === Detect taste statements: "I like X", "I love X", "I'm into X" ===
+function isTasteStatement(text) {
+  var t = text.toLowerCase().replace(/[.,!?]/g, "").trim();
+  return /^(i|we) (really |absolutely |kinda |sort of |kinda |pretty )?(like|love|enjoy|adore|rate|dig|fancy|into) /i.test(t) ||
+         /^(my|our) favo(u?)rite (band|artist|group|music|sound|genre|style|album) is /i.test(t) ||
+         /^(i'm|i am|we're|we are) (a |such a )?(big |huge |massive )?fan of /i.test(t) ||
+         /^(i'm|i am|we're|we are) (really |pretty |quite )?into /i.test(t) ||
+         /^(i) (fancy|dig|rate|adore|love) /i.test(t) ||
+         /^(been|been really) (into|loving|enjoying|listening to) /i.test(t);
+}
+
 // === Extract artist names from recommendation queries ===
 function extractArtistsFromQuery(text) {
   var clean = text.toLowerCase().replace(/[.,!?;:'"()]/g, " ");
@@ -888,7 +907,30 @@ function getSearchResults(userInput) {
     }
   }
 
-  // Recommendation queries: extract artist names and search
+  // Taste statements: "I like Pixies", "I'm into Radiohead", "I love jazz"
+  if (isTasteStatement(text)) {
+    var artists = extractArtistsFromQuery(text);
+    if (artists.length > 0) {
+      var direct = searchByName(artists);
+      var allGenres = [];
+      direct.forEach(function(p) { allGenres = allGenres.concat(p.genres); });
+      var uniqueGenres = [];
+      allGenres.forEach(function(g) { if (uniqueGenres.indexOf(g) === -1) uniqueGenres.push(g); });
+      var genreResults = [];
+      uniqueGenres.forEach(function(g) {
+        var matches = searchByName([g]);
+        matches.forEach(function(m) {
+          if (genreResults.indexOf(m) === -1 && direct.indexOf(m) === -1) genreResults.push(m);
+        });
+      });
+      var combined = direct.concat(genreResults).slice(0, 12);
+      var genreNames = uniqueGenres.join(", ");
+      var respText = "Ah, " + artists.join(" and ") + "! Deadly taste. " + (artists.length === 1 ? artists[0] + " are" : artists.join(" and ") + " are") + " absolute legends. I've pulled what we have from " + (artists.length === 1 ? "them" : "them") + " in our catalogue, plus some bits from the " + genreNames + " space you might fancy. Have a gander at Bob's Picks!";
+      return { knowledgeHit: { response: respText }, results: combined, isRecommendation: true, isTaste: true };
+    }
+  }
+
+  // Recommendation queries: "what else is like them?", "similar to X"
   if (isRecommendationQuery(text)) {
     var artists = extractArtistsFromQuery(text);
     if (artists.length > 0) {
