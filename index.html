@@ -5,603 +5,454 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Round & Round Records - Chat with Bob</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;
+  --surface:#1A1A1A;
+  --surface2:#242424;
+  --border:#2E2E2E;
+  --text:#E8E4DD;
+  --text-dim:#8A857C;
+  --accent:#E85D3F;
+  --accent-glow:rgba(232,93,63,0.25);
+  --accent2:#4A9E8E;
+  --accent3:#C4A44A;
+  --bubble-bot:#1E1E1E;
+  --bubble-user:#E85D3F;
+  --radius:10px;
+  --radius-sm:6px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  min-height:100vh;overflow:hidden;
+}
+.app{
+  display:grid;grid-template-columns:1fr 440px;height:100vh;
+}
+/* CHAT PANEL */
+.chat{
+  display:flex;flex-direction:column;border-right:1px solid var(--border);
+  background:var(--bg);
+}
+.chat-top{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.chat-avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),#C0392B);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:1.1rem;color:#fff;flex-shrink:0;
+}
+.chat-top-info h2{font-size:0.95rem;font-weight:600;color:var(--text);}
+.chat-top-info span{font-size:0.65rem;color:var(--text-dim);}
+.chat-top-badge{
+  margin-left:auto;font-size:0.6rem;padding:3px 10px;border-radius:10px;
+  font-weight:600;text-transform:uppercase;letter-spacing:0.5px;
+  background:#2A2A2A;color:var(--text-dim);
+}
+.chat-top-badge.live{background:rgba(74,158,142,0.2);color:var(--accent2);}
+.chat-msgs{
+  flex:1;overflow-y:auto;padding:20px;
+  display:flex;flex-direction:column;gap:16px;
+  scroll-behavior:smooth;
+}
+.msg{max-width:85%;line-height:1.55;animation:fadeUp .35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.msg.bot{align-self:flex-start}
+.msg.user{align-self:flex-end}
+.msg-bubble{padding:12px 16px;border-radius:14px;font-size:0.88rem;}
+.msg.bot .msg-bubble{background:var(--bubble-bot);color:var(--text);border-bottom-left-radius:4px;}
+.msg.user .msg-bubble{background:var(--bubble-user);color:#fff;border-bottom-right-radius:4px;}
+.msg-meta{font-size:0.6rem;color:var(--text-dim);margin-top:4px;padding:0 4px;}
+.msg.user .msg-meta{text-align:right}
 
-:root {
-  --wood: #8B6914;
-  --wood-dark: #5C440C;
-  --cream: #FFF8E7;
-  --ink: #1A1A1A;
-  --ink-light: #333;
-  --accent: #D44C2F;
-  --accent-hover: #B33D24;
-  --bubble-bot: #F0E8D8;
-  --bubble-user: #1A1A1A;
-  --subtle: #C4B896;
-  --card-bg: #FFF;
-  --shadow: 0 2px 12px rgba(0,0,0,0.08);
-  --radius: 8px;
-  --tab-active: #D44C2F;
-}
+.typing{display:flex;gap:4px;padding:6px 0}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 
-body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #F5F0E8;
-  color: var(--ink);
-  min-height: 100vh;
+.chat-sugg{display:flex;flex-wrap:wrap;gap:6px}
+.chat-sugg-btn{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);
+  padding:7px 14px;border-radius:20px;font-size:0.78rem;cursor:pointer;
+  transition:all .15s;font-family:inherit;
 }
+.chat-sugg-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-/* Header */
-.header {
-  background: var(--ink);
-  color: var(--cream);
-  padding: 0;
-  border-bottom: 3px solid var(--accent);
+.chat-input-wrap{
+  padding:14px 20px;border-top:1px solid var(--border);
+  display:flex;gap:10px;background:var(--surface);
 }
-.header-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.chat-input{
+  flex:1;background:var(--bg);border:1px solid var(--border);border-radius:24px;
+  padding:10px 18px;font-size:0.88rem;outline:none;color:var(--text);
+  font-family:inherit;transition:border-color .15s;
 }
-.logo {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.6rem;
-  font-weight: bold;
-  letter-spacing: 1px;
-  color: var(--cream);
+.chat-input::placeholder{color:var(--text-dim)}
+.chat-input:focus{border-color:var(--accent)}
+.chat-send{
+  width:42px;height:42px;border-radius:50%;background:var(--accent);
+  color:#fff;border:none;cursor:pointer;font-size:1rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
 }
-.logo-accent { color: var(--accent); }
-.tagline { font-size: 0.8rem; color: var(--subtle); margin-left: 8px; }
-.header-spacer { flex: 1; }
-.badge {
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.7rem;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
+.chat-send:hover{background:#D14A30;transform:scale(1.05)}
 
-/* Layout */
-.main-wrap {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px 24px;
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 20px;
-  min-height: calc(100vh - 140px);
+/* DISCOVERY PANEL */
+.discovery{
+  background:var(--surface);overflow-y:auto;overflow-x:hidden;
+  display:flex;flex-direction:column;
 }
+.discovery::-webkit-scrollbar{width:4px}
+.discovery::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-/* Chat Panel */
-.chat-panel {
-  background: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid #E5DDD0;
+.d-empty{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:40px 24px;text-align:center;
 }
-.chat-header {
-  background: var(--ink);
-  color: var(--cream);
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.chat-avatar {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: bold; font-size: 1.2rem;
-}
-.chat-header-info h3 { font-size: 0.95rem; font-weight: 600; }
-.chat-header-info p { font-size: 0.7rem; color: var(--subtle); margin-top: 2px; }
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  background: #FCFAF5;
-  min-height: 480px;
-  max-height: calc(100vh - 320px);
-}
-.msg { max-width: 82%; line-height: 1.5; animation: fadeUp 0.3s ease; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.msg.bot { align-self: flex-start; }
-.msg.user { align-self: flex-end; }
-.msg-bubble { padding: 12px 16px; border-radius: 16px; font-size: 0.9rem; }
-.msg.bot .msg-bubble { background: var(--bubble-bot); color: var(--ink); border-bottom-left-radius: 4px; }
-.msg.user .msg-bubble { background: var(--bubble-user); color: #fff; border-bottom-right-radius: 4px; }
-.msg-meta { font-size: 0.65rem; color: #999; margin-top: 4px; padding: 0 4px; }
-.msg.user .msg-meta { text-align: right; }
+.d-empty-inner{max-width:260px}
+.d-empty-icon{font-size:3rem;margin-bottom:12px;opacity:0.5}
+.d-empty h3{font-size:0.9rem;font-weight:600;margin-bottom:6px;color:var(--text-dim)}
+.d-empty p{font-size:0.78rem;color:var(--text-dim);line-height:1.5}
 
-.typing-indicator { display: flex; gap: 4px; padding: 8px 0; }
-.typing-indicator span { width: 7px; height: 7px; border-radius: 50%; background: var(--subtle); animation: bounce 1.2s infinite; }
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+.section{padding:0}
+.section-hdr{
+  padding:14px 20px 8px;display:flex;align-items:center;gap:8px;
+  position:sticky;top:0;background:var(--surface);z-index:2;
+}
+.section-hdr-icon{font-size:1rem;opacity:0.7}
+.section-hdr h4{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-dim)}
+.section-count{font-size:0.62rem;color:var(--text-dim);margin-left:auto}
 
-.chat-suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; }
-.chat-suggestion {
-  background: #fff; border: 1px solid #DDD4C4; color: var(--ink-light);
-  padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;
-  transition: all 0.15s;
+/* Artist hero */
+.artist-hero{
+  padding:20px;background:linear-gradient(135deg,var(--surface2),var(--surface));
+  border-bottom:1px solid var(--border);
 }
-.chat-suggestion:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.artist-hero-name{font-size:1.4rem;font-weight:800;color:var(--text);margin-bottom:4px}
+.artist-hero-sub{font-size:0.75rem;color:var(--accent3);margin-bottom:10px}
+.artist-hero-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.artist-hero-tag{
+  background:rgba(255,255,255,0.06);color:var(--text-dim);
+  padding:3px 8px;border-radius:10px;font-size:0.62rem;
+}
+.artist-hero-bio{
+  font-size:0.75rem;color:var(--text-dim);line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+}
+.artist-hero-stats{
+  display:flex;gap:16px;margin-top:10px;font-size:0.65rem;color:var(--text-dim);
+}
+.artist-hero-stat strong{color:var(--text)}
 
-.chat-input-area { padding: 14px 20px; border-top: 1px solid #E5DDD0; display: flex; gap: 10px; background: #fff; }
-.chat-input {
-  flex: 1; border: 2px solid #E5DDD0; border-radius: 24px;
-  padding: 10px 18px; font-size: 0.9rem; outline: none;
-  transition: border-color 0.15s; font-family: inherit;
+/* Horizontal scroll: similar artists */
+.similar-row{padding:0 20px 12px}
+.similar-scroll{
+  display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
 }
-.chat-input:focus { border-color: var(--accent); }
-.chat-send {
-  width: 44px; height: 44px; border-radius: 50%; background: var(--accent);
-  color: #fff; border: none; cursor: pointer; font-size: 1.1rem;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s; flex-shrink: 0;
+.similar-scroll::-webkit-scrollbar{height:0}
+.similar-card{
+  flex-shrink:0;width:100px;text-align:center;cursor:pointer;
+  scroll-snap-align:start;transition:transform .15s;
 }
-.chat-send:hover { background: var(--accent-hover); }
+.similar-card:hover{transform:translateY(-3px)}
+.similar-card-avatar{
+  width:64px;height:64px;border-radius:50%;margin:0 auto 6px;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.72rem;font-weight:700;color:#fff;
+  box-shadow:0 4px 20px var(--accent-glow);
+}
+.similar-card:nth-child(2n) .similar-card-avatar{background:linear-gradient(135deg,var(--accent2),#2E7D78)}
+.similar-card:nth-child(3n) .similar-card-avatar{background:linear-gradient(135deg,var(--accent3),#9A7D2E)}
+.similar-card:nth-child(4n) .similar-card-avatar{background:linear-gradient(135deg,#6C4A9E,#4A2E7D)}
+.similar-card-name{font-size:0.68rem;font-weight:600;color:var(--text);line-height:1.2;max-width:100px}
+.similar-card-match{font-size:0.6rem;color:var(--accent);margin-top:2px}
 
-/* Picks Panel */
-.picks-panel {
-  background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
-  overflow: hidden; border: 1px solid #E5DDD0; display: flex; flex-direction: column;
+/* Album grid */
+.album-section{padding:0 20px 16px}
+.album-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.album-card{
+  background:var(--surface2);border-radius:var(--radius-sm);
+  overflow:hidden;cursor:pointer;transition:all .2s;
+  border:1px solid transparent;
 }
-.picks-header {
-  background: var(--wood); color: #fff; padding: 10px 16px;
-  display: flex; align-items: center; gap: 8px; font-weight: 600;
-  font-size: 0.85rem; letter-spacing: 0.5px;
+.album-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.album-card-img{
+  width:100%;aspect-ratio:1;object-fit:cover;display:block;
+  background:var(--bg);
 }
-.picks-tabs { display: flex; background: #F5F0E8; border-bottom: 1px solid #DDD4C4; }
-.picks-tab {
-  flex: 1; text-align: center; padding: 8px 6px; font-size: 0.7rem; font-weight: 600;
-  cursor: pointer; border: none; background: none; color: var(--ink-light);
-  border-bottom: 2px solid transparent; transition: all 0.15s;
-  text-transform: uppercase; letter-spacing: 0.3px;
-}
-.picks-tab:hover { background: #EDE5D8; }
-.picks-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-.picks-count {
-  background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 12px;
-  font-size: 0.65rem; margin-left: auto;
-}
-
-.picks-content { flex: 1; overflow-y: auto; padding: 12px; max-height: calc(100vh - 370px); }
-.picks-empty {
-  text-align: center; color: var(--subtle); padding: 30px 12px; font-size: 0.85rem; line-height: 1.6;
-}
-.picks-empty-icon { font-size: 2rem; margin-bottom: 8px; }
-
-/* Artist cards (list style) */
-.artist-card {
-  background: #FCFAF5; border-radius: 6px; padding: 10px 12px;
-  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
-  border: 1px solid #EEE8DA; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
-}
-.artist-card:hover { transform: translateY(-1px); box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
-.artist-card-rank { font-size: 0.65rem; font-weight: 700; color: var(--subtle); min-width: 18px; }
-.artist-card-name { flex: 1; font-size: 0.8rem; font-weight: 700; color: var(--ink); }
-.artist-card-match { font-size: 0.7rem; font-weight: 700; color: var(--accent); }
-.artist-card-meta { font-size: 0.6rem; color: var(--subtle); }
-.artist-card-tags { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 2px; }
-.artist-card-tag {
-  background: #EEE8DA; padding: 1px 5px; border-radius: 6px; font-size: 0.58rem; white-space: nowrap;
-}
-
-/* Album cards (grid style) */
-.album-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.album-card {
-  background: #FCFAF5; border-radius: 6px; overflow: hidden;
-  cursor: pointer; transition: transform 0.15s; border: 1px solid #EEE8DA;
-}
-.album-card:hover { transform: translateY(-2px); box-shadow: 0 3px 12px rgba(0,0,0,0.1); }
-.album-card-img {
-  width: 100%; aspect-ratio: 1; object-fit: cover; background: #E8E0D0; display: block;
-}
-.album-card-body { padding: 8px; }
-.album-card-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); line-height: 1.2; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.album-card-artist { font-size: 0.62rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.2px; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-.album-card-plays { font-size: 0.58rem; color: var(--subtle); }
+.album-card-body{padding:8px 10px 10px}
+.album-card-name{font-size:0.72rem;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:2px;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.album-card-artist{font-size:0.6rem;color:var(--accent3);margin-bottom:2px}
+.album-card-plays{font-size:0.58rem;color:var(--text-dim)}
 
 /* Genre chips */
-.genre-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0; }
-.genre-chip {
-  background: #fff; border: 1px solid #DDD4C4; color: var(--ink-light);
-  padding: 7px 14px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;
-  transition: all 0.15s; font-weight: 500;
+.genre-section{padding:0 20px 20px}
+.genre-chips{display:flex;flex-wrap:wrap;gap:6px}
+.genre-chip{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);
+  padding:6px 12px;border-radius:16px;font-size:0.7rem;cursor:pointer;
+  transition:all .15s;font-family:inherit;
 }
-.genre-chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.genre-chip:hover{background:var(--accent2);color:#fff;border-color:var(--accent2)}
 
 /* Footer */
-.footer {
-  max-width: 1400px; margin: 0 auto; padding: 16px 24px;
-  text-align: center; color: var(--subtle); font-size: 0.75rem; border-top: 1px solid #E5DDD0;
+.foot{
+  padding:12px 20px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  font-size:0.62rem;color:var(--text-dim);
 }
-.footer a { color: var(--wood); text-decoration: none; }
-.footer a:hover { text-decoration: underline; }
+.foot a{color:var(--text-dim);text-decoration:none}
+.foot a:hover{color:var(--text)}
+.foot .key-link{cursor:pointer;text-decoration:underline;font-size:0.6rem}
 
 /* Mobile */
-@media (max-width: 860px) {
-  .main-wrap { grid-template-columns: 1fr; }
-  .picks-panel { order: 3; max-height: none; }
-  .picks-content { max-height: 400px; }
-  .chat-messages { min-height: 360px; max-height: 400px; }
+@media(max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  .discovery{max-height:320px;border-top:1px solid var(--border)}
+  .chat-msgs{min-height:300px}
+  .album-grid{grid-template-columns:repeat(4,1fr)}
 }
-@media (max-width: 500px) {
-  .header-inner { padding: 10px 14px; }
-  .main-wrap { padding: 12px; }
-  .logo { font-size: 1.3rem; }
-  .album-grid { grid-template-columns: 1fr 1fr; }
+@media(max-width:500px){
+  .album-grid{grid-template-columns:1fr 1fr}
+  .chat-top{padding:12px 14px}
+  .chat-msgs{padding:14px}
+  .chat-input-wrap{padding:10px 14px}
 }
 </style>
 </head>
 <body>
+<div class="app">
 
-<header class="header">
-  <div class="header-inner">
-    <span class="logo">ROUND <span class="logo-accent">&amp;</span> ROUND RECORDS</span>
-    <span class="tagline">Your personal music guides since 2005</span>
-    <span class="header-spacer"></span>
-    <span class="badge">Now Chatting</span>
-  </div>
-</header>
-
-<div class="main-wrap">
-
-  <div class="chat-panel" id="chatPanel">
-    <div class="chat-header">
+  <!-- CHAT PANEL -->
+  <div class="chat">
+    <div class="chat-top">
       <div class="chat-avatar">B</div>
-      <div class="chat-header-info">
-        <h3>Bob <span id="bobMode" style="font-size:0.6rem;background:#555;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:400;">basic</span></h3>
-        <p>Music guide &amp; crate-digger</p>
+      <div class="chat-top-info">
+        <h2>Bob</h2>
+        <span id="bobLabel">Music guru &amp; vinyl hunter</span>
+      </div>
+      <span class="chat-top-badge" id="bobBadge">basic</span>
+    </div>
+    <div class="chat-msgs" id="chatMessages"></div>
+    <div class="chat-input-wrap">
+      <input class="chat-input" id="chatInput" placeholder="Tell Bob about an artist you love..." autofocus>
+      <button class="chat-send" id="chatSend" aria-label="Send">&#8594;</button>
+    </div>
+  </div>
+
+  <!-- DISCOVERY PANEL -->
+  <div class="discovery" id="discovery">
+    <div class="d-empty" id="dEmpty">
+      <div class="d-empty-inner">
+        <div class="d-empty-icon">&#127925;</div>
+        <h3>Your Discovery Space</h3>
+        <p>Chat with Bob about any artist. He'll fill this space with similar artists, essential albums, and genres to explore.</p>
       </div>
     </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-area">
-      <input type="text" class="chat-input" id="chatInput" placeholder="Ask Bob anything about music..." autofocus>
-      <button class="chat-send" id="chatSend" aria-label="Send">&#10148;</button>
-    </div>
-  </div>
-
-  <div class="picks-panel" id="picksPanel">
-    <div class="picks-header">
-      &#9835; Bob's Picks <span class="picks-count" id="picksCount">0</span>
-    </div>
-    <div class="picks-tabs">
-      <button class="picks-tab active" onclick="switchTab('artists')">Similar Artists</button>
-      <button class="picks-tab" onclick="switchTab('albums')">Albums</button>
-      <button class="picks-tab" onclick="switchTab('genres')">Explore</button>
-    </div>
-    <div class="picks-content" id="picksContent">
-      <div class="picks-empty">
-        <div class="picks-empty-icon">&#128218;</div>
-        <p>Tell Bob about an artist you love and he'll dig up similar acts, top albums, and genres to explore.</p>
+    <div id="dContent" style="display:none">
+      <div class="artist-hero" id="artistHero"></div>
+      <div class="section">
+        <div class="section-hdr"><span class="section-hdr-icon">&#128101;</span><h4>Similar Artists</h4><span class="section-count" id="simCount">0</span></div>
+        <div class="similar-row"><div class="similar-scroll" id="similarScroll"></div></div>
+      </div>
+      <div class="section album-section">
+        <div class="section-hdr"><span class="section-hdr-icon">&#128191;</span><h4>Essential Albums</h4><span class="section-count" id="albCount">0</span></div>
+        <div class="album-grid" id="albumGrid"></div>
+      </div>
+      <div class="section genre-section">
+        <div class="section-hdr"><span class="section-hdr-icon">&#127911;</span><h4>Explore These Genres</h4></div>
+        <div class="genre-chips" id="genreChips"></div>
       </div>
     </div>
   </div>
 
 </div>
 
-<footer class="footer">
-  Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a> &bull; 32 Market Arcade, Dublin
-  <span style="margin-left:8px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your new DeepSeek API key (leave blank to disable LLM):',localStorage.getItem('rr_llm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_llm_key',ck);localStorage.setItem('rr_llm_url','https://api.deepseek.com/v1/chat/completions');localStorage.setItem('rr_llm_model','deepseek-chat')}else{localStorage.removeItem('rr_llm_key');localStorage.removeItem('rr_llm_url');localStorage.removeItem('rr_llm_model')}location.reload()}">LLM key</span>
-  <span style="margin-left:6px;font-size:0.65rem;cursor:pointer;text-decoration:underline;" onclick="var k=prompt('Paste your Last.fm API key (free at last.fm/api):',localStorage.getItem('rr_lfm_key')||'');if(k!==null){var ck=k.trim();if(ck){localStorage.setItem('rr_lfm_key',ck)}else{localStorage.removeItem('rr_lfm_key')}location.reload()}">Last.fm key</span>
-</footer>
+<div class="foot">
+  Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a>
+  <span class="key-link" onclick="setKey('llm','DeepSeek API key (leave blank to disable):','rr_llm_key')">LLM key</span>
+  <span class="key-link" onclick="setKey('lfm','Last.fm API key:','rr_lfm_key')">Last.fm key</span>
+</div>
 
 <script src="config.js"></script>
 <script>
-// === Key init ===
-(function() {
-  if (typeof LLM_KEY === "undefined") window.LLM_KEY = "";
-  if (typeof LLM_URL === "undefined") window.LLM_URL = "";
-  if (typeof LLM_MODEL === "undefined") window.LLM_MODEL = "";
-  if (typeof LFM_KEY === "undefined") window.LFM_KEY = "";
-  if (!LLM_KEY && localStorage.getItem("rr_llm_key")) {
-    LLM_KEY = localStorage.getItem("rr_llm_key");
-    LLM_URL = localStorage.getItem("rr_llm_url") || "https://api.deepseek.com/v1/chat/completions";
-    LLM_MODEL = localStorage.getItem("rr_llm_model") || "deepseek-chat";
-  }
-  if (!LFM_KEY && localStorage.getItem("rr_lfm_key")) { LFM_KEY = localStorage.getItem("rr_lfm_key"); }
-  if (!LLM_KEY) {
-    setTimeout(function() {
-      var key = prompt("Hi! Bob is smarter with an LLM behind him.\n\nPaste your DeepSeek API key to enable it, or leave blank to use the built-in engine.\n\nGet a free key at: platform.deepseek.com","");
-      if (key && key.trim()) { LLM_KEY = key.trim(); LLM_URL = "https://api.deepseek.com/v1/chat/completions"; LLM_MODEL = "deepseek-chat"; localStorage.setItem("rr_llm_key",LLM_KEY); localStorage.setItem("rr_llm_url",LLM_URL); localStorage.setItem("rr_llm_model",LLM_MODEL); location.reload(); }
-    }, 500);
-  }
-  if (LLM_KEY && !LLM_URL) LLM_URL = "https://api.deepseek.com/v1/chat/completions";
-  if (LLM_KEY && !LLM_MODEL) LLM_MODEL = "deepseek-chat";
+// === Key setup ===
+(function(){
+  if(typeof LLM_KEY==="undefined")window.LLM_KEY="";
+  if(typeof LLM_URL==="undefined")window.LLM_URL="";
+  if(typeof LLM_MODEL==="undefined")window.LLM_MODEL="";
+  if(typeof LFM_KEY==="undefined")window.LFM_KEY="";
+  if(!LLM_KEY&&localStorage.getItem("rr_llm_key")){LLM_KEY=localStorage.getItem("rr_llm_key");LLM_URL=localStorage.getItem("rr_llm_url")||"https://api.deepseek.com/v1/chat/completions";LLM_MODEL=localStorage.getItem("rr_llm_model")||"deepseek-chat"}
+  if(!LFM_KEY&&localStorage.getItem("rr_lfm_key")){LFM_KEY=localStorage.getItem("rr_lfm_key")}
+  if(!LLM_KEY){setTimeout(function(){var k=prompt("Hi! Bob is smarter with an LLM.\n\nPaste your DeepSeek API key, or leave blank.\nFree key at: platform.deepseek.com","");if(k&&k.trim()){LLM_KEY=k.trim();LLM_URL="https://api.deepseek.com/v1/chat/completions";LLM_MODEL="deepseek-chat";localStorage.setItem("rr_llm_key",LLM_KEY);localStorage.setItem("rr_llm_url",LLM_URL);localStorage.setItem("rr_llm_model",LLM_MODEL);location.reload()}},500)}
+  if(LLM_KEY&&!LLM_URL)LLM_URL="https://api.deepseek.com/v1/chat/completions";
+  if(LLM_KEY&&!LLM_MODEL)LLM_MODEL="deepseek-chat";
 })();
+function setKey(type,msg,storeKey){
+  var cur=localStorage.getItem(storeKey)||"";
+  var k=prompt(msg,cur);if(k===null)return;
+  var ck=k.trim();
+  if(ck){localStorage.setItem(storeKey,ck);if(type==="llm"){localStorage.setItem("rr_llm_url","https://api.deepseek.com/v1/chat/completions");localStorage.setItem("rr_llm_model","deepseek-chat")}}
+  else{localStorage.removeItem(storeKey)}
+  location.reload();
+}
 
 // === State ===
-var conversationHistory = [];
-var currentArtist = "";
-var artistsData = [];
-var albumsData = [];
-var tagsList = [];
-var activeTab = "artists";
+var conv=[],artistName="";
 
 // === DOM ===
-var chatMessages = document.getElementById('chatMessages');
-var chatInput = document.getElementById('chatInput');
-var picksContent = document.getElementById('picksContent');
-var picksCount = document.getElementById('picksCount');
+var chatMsgs=document.getElementById("chatMessages");
+var chatInput=document.getElementById("chatInput");
+var dEmpty=document.getElementById("dEmpty");
+var dContent=document.getElementById("dContent");
+var artistHero=document.getElementById("artistHero");
+var similarScroll=document.getElementById("similarScroll");
+var albumGrid=document.getElementById("albumGrid");
+var genreChips=document.getElementById("genreChips");
 
 // === Helpers ===
-function scrollChat() { chatMessages.scrollTop = chatMessages.scrollHeight; }
-function addMessage(text, sender) {
-  var div = document.createElement('div'); div.className = 'msg ' + sender;
-  var now = new Date();
-  var time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  div.innerHTML = '<div class="msg-bubble">' + text + '</div><div class="msg-meta">' + (sender === 'bot' ? 'Bob' : 'You') + ' &middot; ' + time + '</div>';
-  chatMessages.appendChild(div); scrollChat();
+function sc(){chatMsgs.scrollTop=chatMsgs.scrollHeight}
+function addMsg(t,s){
+  var d=document.createElement("div");d.className="msg "+s;
+  var now=new Date();var time=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
+  d.innerHTML='<div class="msg-bubble">'+t+'</div><div class="msg-meta">'+(s==="bot"?"Bob":"You")+' &middot; '+time+'</div>';
+  chatMsgs.appendChild(d);sc();
 }
-function addSuggestions(suggestions) {
-  var div = document.createElement('div'); div.className = 'msg bot';
-  div.innerHTML = '<div class="chat-suggestions">' + suggestions.map(function(s){return '<span class="chat-suggestion" onclick="quickAsk(\''+s.replace(/'/g,"\\'")+'\')">'+s+'</span>';}).join('') + '</div>';
-  chatMessages.appendChild(div); scrollChat();
+function addSugg(arr){
+  var d=document.createElement("div");d.className="msg bot";
+  d.innerHTML='<div class="chat-sugg">'+arr.map(function(x){return'<span class="chat-sugg-btn" onclick="qa(\''+x.replace(/'/g,"\\'")+'\')">'+x+'</span>'}).join("")+'</div>';
+  chatMsgs.appendChild(d);sc();
 }
-function showTyping() {
-  var div = document.createElement('div'); div.className = 'msg bot';
-  div.innerHTML = '<div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
-  div.id = 'typingMsg'; chatMessages.appendChild(div); scrollChat();
-}
-function hideTyping() { var el = document.getElementById('typingMsg'); if (el) el.remove(); }
-function quickAsk(text) { chatInput.value = text; sendMessage(); }
+function showTyping(){var d=document.createElement("div");d.className="msg bot";d.innerHTML='<div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';d.id="t";chatMsgs.appendChild(d);sc()}
+function hideTyping(){var e=document.getElementById("t");if(e)e.remove()}
+function qa(t){chatInput.value=t;send()}
 
-// === Last.fm API ===
-function lfm(params) {
-  return fetch("https://ws.audioscrobbler.com/2.0/?api_key=" + LFM_KEY + "&format=json&" + params)
-    .then(function(r) { return r.ok ? r.json() : null; })
-    .catch(function(e) { console.warn("Last.fm:", e.message); return null; });
-}
-async function getSimilar(artist) {
-  if (!LFM_KEY) return []; var d = await lfm("method=artist.getsimilar&artist=" + encodeURIComponent(artist) + "&limit=12");
-  if (!d || !d.similarartists || !d.similarartists.artist) return [];
-  return d.similarartists.artist.map(function(a) { return { name: a.name, match: parseFloat(a.match) }; });
-}
-async function getTags(artist) {
-  if (!LFM_KEY) return []; var d = await lfm("method=artist.gettoptags&artist=" + encodeURIComponent(artist) + "&limit=8");
-  if (!d || !d.toptags || !d.toptags.tag) return [];
-  return d.toptags.tag.map(function(t) { return { name: t.name, count: parseInt(t.count) }; });
-}
-async function getTopAlbums(artist) {
-  if (!LFM_KEY) return []; var d = await lfm("method=artist.gettopalbums&artist=" + encodeURIComponent(artist) + "&limit=10");
-  if (!d || !d.topalbums || !d.topalbums.album) return [];
-  return d.topalbums.album.map(function(a) {
-    var img = ""; if (a.image) { for (var i = a.image.length-1; i >= 0; i--) { if (a.image[i]["#text"]) { img = a.image[i]["#text"]; break; } } }
-    return { name: a.name, artist: a.artist ? a.artist.name : artist, playcount: parseInt(a.playcount) || 0, img: img };
-  });
-}
-async function getArtistInfo(artist) {
-  if (!LFM_KEY) return null; var d = await lfm("method=artist.getinfo&artist=" + encodeURIComponent(artist));
-  if (!d || !d.artist) return null;
-  return { name: d.artist.name, bio: (d.artist.bio && d.artist.bio.summary) ? d.artist.bio.summary.replace(/<[^>]+>/g,'').slice(0,600) : "", listeners: d.artist.stats ? d.artist.stats.listeners : "", playcount: d.artist.stats ? d.artist.stats.playcount : "" };
-}
-async function getArtistEvents(artist) {
-  if (!LFM_KEY) return []; var d = await lfm("method=artist.getevents&artist=" + encodeURIComponent(artist) + "&limit=3");
-  if (!d || !d.events || !d.events.event) return [];
-  var events = d.events.event; if (!Array.isArray(events)) events = [events];
-  return events.map(function(e) { return { title: e.title, venue: e.venue ? e.venue.name : "", city: e.venue && e.venue.city ? e.venue.city.name : "", date: e.startDate, url: e.url }; });
-}
-async function getTagTopArtists(tag) {
-  if (!LFM_KEY) return []; var d = await lfm("method=tag.gettopartists&tag=" + encodeURIComponent(tag) + "&limit=10");
-  if (!d || !d.topartists || !d.topartists.artist) return [];
-  return d.topartists.artist.map(function(a) { return { name: a.name }; });
-}
+// === Last.fm ===
+function lfm(p){return fetch("https://ws.audioscrobbler.com/2.0/?api_key="+LFM_KEY+"&format=json&"+p).then(function(r){return r.ok?r.json():null}).catch(function(e){console.warn("LFM",e.message);return null})}
+async function getSim(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getsimilar&artist="+encodeURIComponent(a)+"&limit=12");return(d&&d.similarartists&&d.similarartists.artist)?d.similarartists.artist.map(function(x){return{name:x.name,match:parseFloat(x.match)}}):[]}
+async function getTgs(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettoptags&artist="+encodeURIComponent(a)+"&limit=10");return(d&&d.toptags&&d.toptags.tag)?d.toptags.tag.map(function(x){return{name:x.name,count:parseInt(x.count)}}):[]}
+async function getAlb(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettopalbums&artist="+encodeURIComponent(a)+"&limit=10");if(!d||!d.topalbums||!d.topalbums.album)return[];return d.topalbums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:a,playcount:parseInt(x.playcount)||0,img:img}})}
+async function getBio(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist)return null;return{name:d.artist.name,bio:(d.artist.bio&&d.artist.bio.summary)?d.artist.bio.summary.replace(/<[^>]+>/g,"").slice(0,500):"",listeners:d.artist.stats?d.artist.stats.listeners:"",playcount:d.artist.stats?d.artist.stats.playcount:""}}
+async function getEvt(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getevents&artist="+encodeURIComponent(a)+"&limit=2");if(!d||!d.events||!d.events.event)return[];var ev=d.events.event;if(!Array.isArray(ev))ev=[ev];return ev.map(function(e){return{title:e.title,venue:e.venue?e.venue.name:"",city:e.venue&&e.venue.city?e.venue.city.name:"",date:e.startDate,url:e.url}})}
+async function getTagArt(tag){if(!LFM_KEY)return[];var d=await lfm("method=tag.gettopartists&tag="+encodeURIComponent(tag)+"&limit=10");return(d&&d.topartists&&d.topartists.artist)?d.topartists.artist.map(function(x){return{name:x.name}}):[]}
 
-// === Picks rendering ===
-function switchTab(tab) {
-  activeTab = tab;
-  document.querySelectorAll('.picks-tab').forEach(function(b) { b.classList.toggle('active', b.textContent.toLowerCase().indexOf(tab) > -1); });
-  renderPicks();
-}
+// === Render discovery ===
+function renderDiscovery(sim,tgs,albs,info){
+  dEmpty.style.display="none";dContent.style.display="block";
 
-function renderPicks() {
-  var total = 0;
-  if (activeTab === "artists") total = artistsData.length;
-  else if (activeTab === "albums") total = albumsData.length;
-  else total = tagsList.length;
-  picksCount.textContent = total;
-
-  var html = "";
-  if (activeTab === "artists") {
-    if (artistsData.length === 0) { html = '<div class="picks-empty"><p>Search an artist first.</p></div>'; }
-    else {
-      artistsData.forEach(function(a, i) {
-        html += '<div class="artist-card" onclick="quickAsk(\'' + a.name.replace(/'/g,"\\'") + '\')">';
-        html += '<span class="artist-card-rank">' + (i+1) + '.</span>';
-        html += '<span class="artist-card-name">' + a.name + '</span>';
-        html += '<span class="artist-card-match">' + Math.round(a.match) + '%</span>';
-        html += '</div>';
-      });
-    }
-  } else if (activeTab === "albums") {
-    if (albumsData.length === 0) { html = '<div class="picks-empty"><p>No albums loaded. Search an artist first.</p></div>'; }
-    else {
-      html += '<div class="album-grid">';
-      albumsData.forEach(function(a) {
-        var img = a.img || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#E8E0D0" width="200" height="200"/><text x="100" y="110" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#999">No Art</text></svg>');
-        html += '<div class="album-card" onclick="quickAsk(\'' + a.artist.replace(/'/g,"\\'") + '\')">';
-        html += '<img class="album-card-img" src="' + img + '" alt="' + a.name + '" loading="lazy" onerror="this.src=\'data:image/svg+xml,' + encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#E8E0D0\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"110\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#999\\">No Art</text></svg>') + '\'">';
-        html += '<div class="album-card-body">';
-        html += '<div class="album-card-artist">' + a.artist + '</div>';
-        html += '<div class="album-card-name">' + a.name + '</div>';
-        html += '<div class="album-card-plays">' + a.playcount.toLocaleString() + ' plays</div>';
-        html += '</div></div>';
-      });
-      html += '</div>';
-    }
-  } else {
-    if (tagsList.length === 0) { html = '<div class="picks-empty"><p>No genres loaded. Search an artist first.</p></div>'; }
-    else {
-      html += '<div class="genre-chips">';
-      tagsList.forEach(function(t) {
-        html += '<span class="genre-chip" onclick="exploreGenre(\'' + t.name.replace(/'/g,"\\'") + '\')">' + t.name + ' (' + t.count + ')</span>';
-      });
-      html += '</div>';
-      html += '<p style="text-align:center;color:var(--subtle);font-size:0.7rem;margin-top:8px;">Click a genre to find top artists in that scene</p>';
-    }
+  // Hero
+  var heroHtml='<div class="artist-hero-name">'+artistName+'</div>';
+  if(tgs&&tgs.length>0){
+    heroHtml+='<div class="artist-hero-tags">'+tgs.slice(0,6).map(function(t){return'<span class="artist-hero-tag">'+t.name+'</span>'}).join("")+'</div>';
   }
-  picksContent.innerHTML = html;
+  if(info&&info.bio) heroHtml+='<div class="artist-hero-bio">'+info.bio+'</div>';
+  if(info&&info.listeners){
+    heroHtml+='<div class="artist-hero-stats"><span class="artist-hero-stat"><strong>'+parseInt(info.listeners).toLocaleString()+'</strong> listeners</span><span class="artist-hero-stat"><strong>'+parseInt(info.playcount).toLocaleString()+'</strong> plays</span></div>';
+  }
+  artistHero.innerHTML=heroHtml;
+
+  // Similar artists horizontal scroll
+  document.getElementById("simCount").textContent=sim.length;
+  similarScroll.innerHTML=sim.map(function(a){return'<div class="similar-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><div class="similar-card-avatar">'+(a.name.charAt(0)+a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'</div><div class="similar-card-name">'+a.name+'</div><div class="similar-card-match">'+Math.round(a.match)+'% match</div></div>'}).join("");
+
+  // Albums grid
+  document.getElementById("albCount").textContent=albs.length;
+  albumGrid.innerHTML=albs.map(function(a){
+    var img=a.img||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#242424" width="200" height="200"/><text x="100" y="115" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#555">No Art</text></svg>');
+    return'<div class="album-card" onclick="qa(\''+a.artist.replace(/'/g,"\\'")+'\')"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+a.artist+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div></div></div>';
+  }).join("");
+
+  // Genre chips
+  genreChips.innerHTML=tgs.map(function(t){return'<span class="genre-chip" onclick="exploreGenre(\''+t.name.replace(/'/g,"\\'")+'\')">'+t.name+'</span>'}).join("");
 }
 
-async function exploreGenre(tag) {
+async function exploreGenre(tag){
   showTyping();
-  var artists = await getTagTopArtists(tag);
+  var artists=await getTagArt(tag);
   hideTyping();
-  if (artists.length > 0) {
-    artistsData = artists.map(function(a) { return { name: a.name, match: 100 }; });
-    var topTags = await getTags(tag);
-    if (topTags.length > 0) tagsList = topTags;
-    switchTab("artists");
-    addMessage("Exploring <strong>" + tag + "</strong>. Found " + artists.length + " top artists. Click any name to dive deeper!", 'bot');
-  } else {
-    addMessage("Couldn't find artists for \"" + tag + "\". Try another genre!", 'bot');
-  }
+  if(artists.length>0){
+    var sim=artists.map(function(a){return{name:a.name,match:100}});
+    var tgs2=await getTgs(tag);
+    var tgs=[{name:tag,count:artists.length}];
+    if(tgs2.length>0)tgs=tgs.concat(tgs2.slice(0,8));
+    artistName=tag.charAt(0).toUpperCase()+tag.slice(1);
+    renderDiscovery(sim,tgs,[],null);
+    addMsg("Exploring <strong>"+tag+"</strong>. Found "+artists.length+" top artists. Click any name or genre chip to keep digging!",'bot');
+  }else{addMsg("Couldn't find artists for &quot;"+tag+"&quot;. Try another genre!",'bot')}
 }
 
-// === Extract artist name from natural language ===
-function extractArtistName(text) {
-  var t = text.toLowerCase().replace(/[.,!?;:'"()]/g, " ").trim();
-  t = t.replace(/^(i |we )?(really |kinda |sort of |pretty |absolutely )?(like|love|enjoy|adore|rate|dig|fancy|into |fan of |listening to )/i, "");
-  t = t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for |tell me about )/i, "");
-  var words = t.split(/\s+/).filter(function(w) { return w.length > 1; });
-  return words.slice(0, 3).join(" ");
+function extractArtist(txt){
+  var t=txt.toLowerCase().replace(/[.,!?;:'"()]/g," ").trim();
+  t=t.replace(/^(i |we )?(really |kinda |sort of |pretty |absolutely )?(like|love|enjoy|adore|rate|dig|fancy|into |fan of |listening to )/i,"");
+  t=t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for |tell me about )/i,"");
+  var w=t.split(/\s+/).filter(function(x){return x.length>1});
+  return w.slice(0,3).join(" ");
 }
 
-// === Call the LLM ===
-async function callLLM(userMessage, artistName, similarArtists, tags, topAlbums, artistInfo, events) {
-  if (!LLM_KEY || !LLM_URL || !LLM_MODEL) return null;
+// === LLM ===
+async function callLLM(msg,sim,tgs,albs,info,evts){
+  if(!LLM_KEY||!LLM_URL||!LLM_MODEL)return null;
+  var b="ARTIST: "+artistName+"\n";
+  if(info&&info.bio)b+="BIO: "+info.bio.slice(0,400)+"\n";
+  if(info&&info.listeners)b+="Listeners: "+parseInt(info.listeners).toLocaleString()+"\n";
+  if(sim&&sim.length)b+="SIMILAR: "+sim.map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+"\n";
+  if(albs&&albs.length)b+="TOP ALBUMS: "+albs.slice(0,5).map(function(a){return a.name+" ("+a.playcount.toLocaleString()+" plays)"}).join(" | ")+"\n";
+  if(tgs&&tgs.length)b+="GENRES: "+tgs.map(function(t){return t.name}).join(", ")+"\n";
+  if(evts&&evts.length)b+="EVENTS: "+evts.map(function(e){return e.title+" at "+e.venue+", "+e.city+" ("+e.date+")"}).join(" | ")+"\n";
+  b+="\nYou are Bob, a music guru at Round & Round Records, Dublin. Be expansive. Share the most interesting bio facts. Suggest specific similar artists and explain WHY they connect. Mention top albums by name. If there are live shows, tell the customer. Tell a story, not just a list. Warm, Dublin-flavoured: 'grand','deadly','class','craic'. 3-6 sentences, longer for good stories. No em dashes.";
 
-  var block = "";
-  block += "QUERY: " + userMessage + "\n\n";
-  block += "ARTIST: " + artistName + "\n";
-
-  if (artistInfo && artistInfo.bio) {
-    block += "BIO: " + artistInfo.bio.slice(0, 400) + "\n";
-    if (artistInfo.listeners) block += "Last.fm listeners: " + parseInt(artistInfo.listeners).toLocaleString() + "\n";
-  }
-
-  if (similarArtists && similarArtists.length > 0) {
-    block += "SIMILAR ARTISTS: " + similarArtists.map(function(a) { return a.name + " (" + Math.round(a.match) + "%)"; }).join(", ") + "\n";
-  }
-  if (tags && tags.length > 0) {
-    block += "GENRE TAGS: " + tags.map(function(t) { return t.name; }).join(", ") + "\n";
-  }
-  if (topAlbums && topAlbums.length > 0) {
-    block += "TOP ALBUMS: " + topAlbums.slice(0,5).map(function(a) { return a.name + " (" + a.playcount.toLocaleString() + " plays)"; }).join(" | ") + "\n";
-  }
-  if (events && events.length > 0) {
-    block += "UPCOMING EVENTS: " + events.map(function(e) { return e.title + " at " + e.venue + ", " + e.city + " (" + e.date + ")"; }).join(" | ") + "\n";
-  }
-
-  block += "\nINSTRUCTIONS: You are Bob, a music guru at Round & Round Records in Dublin. Be expansive and knowledgeable. Share the most interesting facts from the bio. Suggest specific similar artists and explain WHY they connect (shared genre, era, producer, label, influence). Mention top albums by name. If there are upcoming live shows, tell the customer. Don't just say 'if you like X you'll like Y' - tell a story. Be warm, Dublin-flavoured: 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic'. 3-6 sentences usually, longer for good stories. No em dashes.";
-
-  var messages = [{ role: "system", content: block }];
-  for (var i = 0; i < conversationHistory.length; i++) { messages.push(conversationHistory[i]); }
-  messages.push({ role: "user", content: userMessage });
-
-  try {
-    console.log("[Bob] LLM req:", artistName, "similars:", similarArtists.length, "albums:", topAlbums ? topAlbums.length : 0);
-    var resp = await fetch(LLM_URL, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + LLM_KEY }, body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.85, max_tokens: 500 }) });
-    if (!resp.ok) { var et = await resp.text(); console.error("[Bob] err:", resp.status, et.slice(0,200)); return null; }
-    var data = await resp.json();
-    var reply = data.choices[0].message.content.trim();
-    console.log("[Bob] reply:", reply.slice(0,200));
-    conversationHistory.push({ role: "user", content: userMessage });
-    conversationHistory.push({ role: "assistant", content: reply });
-    if (conversationHistory.length > 12) conversationHistory = conversationHistory.slice(-12);
+  var msgs=[{role:"system",content:b}];
+  for(var i=0;i<conv.length;i++)msgs.push(conv[i]);
+  msgs.push({role:"user",content:msg});
+  try{
+    console.log("[Bob] LLM:",artistName,"sim:",sim.length,"alb:",albs?albs.length:0,"evt:",evts?evts.length:0);
+    var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.85,max_tokens:500})});
+    if(!r.ok){var et=await r.text();console.error("[Bob] err:",r.status,et.slice(0,200));return null}
+    var d=await r.json();var reply=d.choices[0].message.content.trim();
+    console.log("[Bob] reply:",reply.slice(0,200));
+    conv.push({role:"user",content:msg});conv.push({role:"assistant",content:reply});
+    if(conv.length>12)conv=conv.slice(-12);
     return reply;
-  } catch (e) { console.warn("[Bob] fail:", e.message); return null; }
+  }catch(e){console.warn("[Bob] fail:",e.message);return null}
 }
 
-// === Main send ===
-async function sendMessage() {
-  var text = chatInput.value.trim();
-  if (!text) return;
-  addMessage(text, 'user');
-  chatInput.value = '';
-  showTyping();
-
-  var artistName = extractArtistName(text);
-  if (!artistName || artistName.length < 2) {
-    hideTyping();
-    addMessage("Give me an artist name and I'll dig up similar acts, top albums, genres to explore, the works!", 'bot');
-    addSuggestions(["Radiohead", "Pixies", "Kendrick Lamar", "Miles Davis", "Aphex Twin", "Daft Punk"]);
-    return;
-  }
-
-  currentArtist = artistName;
-
-  // Fetch all data in parallel
-  var similarArtists = getSimilar(artistName);
-  var tags = getTags(artistName);
-  var topAlbums = getTopAlbums(artistName);
-  var artistInfo = getArtistInfo(artistName);
-  var events = getArtistEvents(artistName);
-
-  var sim = await similarArtists;
-  var tgs = await tags;
-  var albs = await topAlbums;
-  var info = await artistInfo;
-  var evts = await events;
-
-  // Update picks
-  artistsData = sim;
-  albumsData = albs;
-  tagsList = tgs;
-  activeTab = "artists";
-  renderPicks();
-
-  // Call LLM
-  var llmReply = null;
-  if (LLM_KEY && LLM_URL && LLM_MODEL) {
-    llmReply = await callLLM(text, artistName, sim, tgs, albs, info, evts);
-  }
-
+// === Send ===
+async function send(){
+  var txt=chatInput.value.trim();if(!txt)return;
+  addMsg(txt,"user");chatInput.value="";showTyping();
+  var an=extractArtist(txt);
+  if(!an||an.length<2){hideTyping();addMsg("Give me an artist name and I'll dig up similar acts, top albums, genres, bio, the works!",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Miles Davis","Aphex Twin","Daft Punk"]);return}
+  artistName=an;
+  var sim=getSim(an),tgs=getTgs(an),albs=getAlb(an),info=getBio(an),evts=getEvt(an);
+  var s=await sim,tg=await tgs,al=await albs,inf=await info,ev=await evts;
+  renderDiscovery(s,tg,al,inf);
+  var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL)llm=await callLLM(txt,s,tg,al,inf,ev);
   hideTyping();
-
-  if (llmReply) {
-    addMessage(llmReply, 'bot');
-  } else {
-    var parts = [];
-    parts.push("Right, " + artistName + "!");
-    if (sim.length > 0) parts.push("Top similar acts: " + sim.slice(0,3).map(function(a){return a.name + " ("+Math.round(a.match)+"%)";}).join(", "));
-    if (albs.length > 0) parts.push("Essential albums include " + albs.slice(0,3).map(function(a){return a.name;}).join(", "));
-    if (tgs.length > 0) parts.push("Explore genres: " + tgs.slice(0,5).map(function(t){return t.name;}).join(", "));
-    parts.push("Check the tabs on the right for artists, albums, and genres!");
-    addMessage(parts.join(". ") + ".", 'bot');
+  if(llm){addMsg(llm,"bot")}else{
+    var p=[];p.push("Right, <strong>"+artistName+"</strong>!");
+    if(s.length)p.push(s.slice(0,3).map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+" are the closest matches");
+    if(al.length)p.push("Essential albums: "+al.slice(0,3).map(function(a){return a.name}).join(", "));
+    if(tg.length)p.push("Explore: "+tg.slice(0,5).map(function(t){return t.name}).join(", "));
+    addMsg(p.join(". ")+". Scroll the panel on the right!",'bot');
   }
 }
-
-// === Event listeners ===
-document.getElementById('chatSend').addEventListener('click', sendMessage);
-chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendMessage(); });
 
 // === Init ===
-(function() {
-  var badge = document.getElementById("bobMode");
-  if (LLM_KEY && LLM_URL && LLM_MODEL) { badge.textContent = "LLM"; badge.style.background = "#2E7D32"; }
-  else { badge.textContent = "basic"; badge.style.background = "#555"; }
-  addMessage("Hey there! I'm <strong>Bob</strong>, your personal music guide here at Round &amp; Round Records. Powered by Last.fm's massive database, I can find you similar artists, top albums, genres to explore, bios, even upcoming live shows!", 'bot');
-  setTimeout(function() {
-    addMessage("Tell me an artist you're into and I'll dig up the full picture. Fire away!", 'bot');
-    addSuggestions(["Radiohead", "Pixies", "Kendrick Lamar", "Miles Davis", "Aphex Twin", "Daft Punk"]);
-  }, 1200);
+document.getElementById("chatSend").addEventListener("click",send);
+chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
+(function(){
+  var b=document.getElementById("bobBadge"),l=document.getElementById("bobLabel");
+  if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM";b.classList.add("live");l.textContent="Music guru · AI-powered"}
+  else{b.textContent="basic";l.textContent="Music guru & vinyl hunter"}
+  addMsg("Hey! I'm <strong>Bob</strong>, your personal music guru. Powered by Last.fm's massive database, I find similar artists, top albums, genres to explore, artist bios, even upcoming live shows. All in one space!",'bot');
+  setTimeout(function(){addMsg("Tell me an artist you love and I'll fill the discovery panel on the right. Fire away!",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Miles Davis","Aphex Twin","Daft Punk"])},1200);
 })();
 </script>
 </body>
