@@ -382,6 +382,83 @@ body {
 </footer>
 
 <script>
+// ============================================================
+// LLM CONFIGURATION
+// Set your API key and endpoint below. Leave blank to use
+// the built-in rule-based engine as a fallback.
+//
+// Groq (free tier, fast, OpenAI-compatible):
+//   LLM_KEY = "gsk_your-key-here"
+//   LLM_URL = "https://api.groq.com/openai/v1/chat/completions"
+//   LLM_MODEL = "llama-3.1-8b-instant"
+//
+// OpenAI:
+//   LLM_KEY = "sk-your-key-here"
+//   LLM_URL = "https://api.openai.com/v1/chat/completions"
+//   LLM_MODEL = "gpt-4o-mini"
+//
+// Together.ai (free trial credits):
+//   LLM_KEY = "your-key-here"
+//   LLM_URL = "https://api.together.xyz/v1/chat/completions"
+//   LLM_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+// ============================================================
+const LLM_KEY = "";
+const LLM_URL = "";
+const LLM_MODEL = "";
+
+// === Conversation history (for LLM context) ===
+let conversationHistory = [];
+
+// === Build a compact catalogue summary for the LLM system prompt ===
+function buildCatalogueSummary() {
+  var genres = {};
+  catalogue.forEach(function(p) {
+    p.genres.forEach(function(g) {
+      if (!genres[g]) genres[g] = [];
+      if (genres[g].length < 3) genres[g].push(p.artist + " - " + p.title);
+    });
+  });
+  var lines = ["You have access to the Spindizzy Records catalogue. Here is a summary:"];
+  lines.push("Total products: " + catalogue.length);
+  lines.push("Available genres: " + Object.keys(genres).sort().join(", "));
+  lines.push("Notable artists: Radiohead, Joy Division, Dinosaur Jr., Herbie Hancock, Chet Baker, Art Blakey, Pixies, The Breeders, 2Pac, Damien Dempsey, Glen Hansard, Morrissey, Camel, Simple Minds, BABYMETAL, Bananarama, beabadoobee, Blondshell, AFI, and more.");
+  lines.push("Formats: Vinyl, CD, Vinyl Boxset. Prices range from EUR 2 to EUR 156.");
+  lines.push("Special knowledge: Kim Deal formed The Breeders after Pixies. Also had side project The Amps.");
+  return lines.join("\n");
+}
+
+// === Call the LLM ===
+async function callLLM(userMessage) {
+  if (!LLM_KEY || !LLM_URL || !LLM_MODEL) return null;
+  var systemPrompt = "You are Bob, a super friendly, super knowledgeable music guide at Round & Round Records, a small independent record shop in Dublin, Ireland (established 2005). Your vibe: warm, passionate, a bit of a crate-digger. You speak like the best record shop staff member ever: know your stuff, never pretentious, always excited to help someone find their next favourite album.\n\n";
+  systemPrompt += "Rules:\n- Keep responses warm and conversational (2-4 sentences usually)\n- Use details: catalogue numbers, pressing info, era context when you can\n- NEVER make up a product that is not mentioned below\n- If a customer asks about something not in the summary below, be honest: offer to help them search or suggest something adjacent\n- If you don't know, say so and pivot to something you can help with\n- Mention that the customer should check 'Bob's Picks' panel for what's actually in stock\n- No em dashes. Use commas, colons, or full stops instead.\n\n";
+  systemPrompt += "You work with the Spindizzy Records catalogue in Dublin. Here is a summary of what's available right now:\n" + buildCatalogueSummary();
+
+  var messages = [{ role: "system", content: systemPrompt }];
+  for (var i = 0; i < conversationHistory.length; i++) {
+    messages.push(conversationHistory[i]);
+  }
+  messages.push({ role: "user", content: userMessage });
+
+  try {
+    var resp = await fetch(LLM_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + LLM_KEY },
+      body: JSON.stringify({ model: LLM_MODEL, messages: messages, temperature: 0.8, max_tokens: 300 })
+    });
+    if (!resp.ok) throw new Error("API error: " + resp.status);
+    var data = await resp.json();
+    var reply = data.choices[0].message.content.trim();
+    conversationHistory.push({ role: "user", content: userMessage });
+    conversationHistory.push({ role: "assistant", content: reply });
+    if (conversationHistory.length > 12) conversationHistory = conversationHistory.slice(-12);
+    return reply;
+  } catch (e) {
+    console.warn("LLM call failed, falling back to rule-based:", e.message);
+    return null;
+  }
+}
+
 // === Catalogue: real Spindizzy Records products ===
 const catalogue = [
   { artist:"Radiohead", title:"OK Computer", price:"31.99", format:"Vinyl", img:"https://cdn.shopify.com/s/files/1/0588/3455/0945/files/Radiohead-OKComputer-LP.jpg", genres:["rock","alternative","indie"], era:"90s", url:"https://spindizzyrecords.com/products/radiohead-ok-computer" },
@@ -594,63 +671,100 @@ function searchByName(names) {
 }
 
 // === Conversation engine ===
-function processInput(input) {
-  var text = input.trim();
-
-  // Check special knowledge
+function getSearchResults(userInput) {
+  var text = userInput.trim();
   var textLower = text.toLowerCase();
-  var handled = false;
+
+  // Check special knowledge maps for search expansions
   for (var key in knowledge) {
     if (knowledge.hasOwnProperty(key) && textLower.indexOf(key) > -1) {
-      handled = true;
-      var k = knowledge[key];
-      addMessage(k.response, 'bot');
-      if (k.searches && k.searches.length > 0) {
-        var found = searchByName(k.searches);
-        if (found.length > 0) {
-          addPicks(found);
-          var countMsg = found.length === 1 ? "Found 1 match in the catalogue!" : "Found " + found.length + " matches!";
-          addMessage(countMsg + " Check Bob's Picks on the right.", 'bot');
-          if (found.length > 4) {
-            addSuggestions(k.searches.slice(0, 4).map(function(s) { return s; }));
-          }
-        } else {
-          addMessage("I don't have those exact titles in the current Spindizzy catalogue, but try searching for them on the site directly. Want me to look for something else?", 'bot');
-          addSuggestions(["What genres do you like?", "New releases this week", "What's hot in Dublin?"]);
-        }
+      var searches = knowledge[key].searches;
+      if (searches && searches.length > 0) {
+        var found = searchByName(searches);
+        return { knowledgeHit: knowledge[key], results: found };
       }
-      break;
     }
   }
-  if (handled) return;
 
-  // General search
-  var results = searchCatalogue(text);
-  if (results.length > 0) {
-    addPicks(results);
-    var artistMap = {};
-    results.forEach(function(r) { artistMap[r.artist] = true; });
-    var artistCount = Object.keys(artistMap).length;
-    var msg = results.length === 1 ? "Got one for you!" : "Nice one! Found " + results.length + " matches across " + artistCount + " artist" + (artistCount > 1 ? "s" : "") + ".";
-    addMessage(msg + " Take a look at Bob's Picks on the right. Anything catch your eye?", 'bot');
-    addSuggestions(["New releases", "Rock classics", "Jazz essentials", "Electronic & dance", "Irish artists"]);
-  } else {
-    addMessage("Hmm, nothing jumping out at me for \"" + text + "\" in the Spindizzy catalogue right now. Could you try a different artist, genre, or style? I'm here to dig!", 'bot');
-    addSuggestions(["Jazz", "Rock", "Electronic", "Hip-Hop", "Metal", "Indie", "Irish artists", "90s classics"]);
+  // Check special knowledge response-only (no search expansion)
+  for (var k in knowledge) {
+    if (knowledge.hasOwnProperty(k) && textLower.indexOf(k) > -1) {
+      return { knowledgeHit: knowledge[k], results: [] };
+    }
+  }
+
+  // General catalogue search
+  return { knowledgeHit: null, results: searchCatalogue(text) };
+}
+
+function formatResultMessage(results) {
+  if (results.length === 0) return null;
+  var artistMap = {};
+  results.forEach(function(r) { artistMap[r.artist] = true; });
+  var artistCount = Object.keys(artistMap).length;
+  return results.length === 1
+    ? "Found 1 match in the Spindizzy catalogue:"
+    : "Found " + results.length + " matches across " + artistCount + " artist" + (artistCount > 1 ? "s" : "") + ":";
+}
+
+function showResults(searchResult) {
+  if (searchResult.results && searchResult.results.length > 0) {
+    addPicks(searchResult.results);
+    var msg = formatResultMessage(searchResult.results);
+    if (msg) addMessage(msg + " Check Bob's Picks on the right.", 'bot');
+    if (searchResult.results.length > 4) {
+      addSuggestions(["New releases", "Rock classics", "Jazz essentials", "Electronic & dance", "Irish artists"]);
+    }
   }
 }
 
 // === Main send ===
-function sendMessage() {
+async function sendMessage() {
   var text = chatInput.value.trim();
   if (!text) return;
   addMessage(text, 'user');
   chatInput.value = '';
   showTyping();
-  setTimeout(function() {
-    hideTyping();
-    processInput(text);
-  }, 600 + Math.random() * 800);
+
+  // Run catalogue search immediately (fast, no dependency on LLM)
+  var searchResult = getSearchResults(text);
+
+  var llmReply = null;
+  if (LLM_KEY && LLM_URL && LLM_MODEL) {
+    llmReply = await callLLM(text);
+  }
+
+  hideTyping();
+
+  if (llmReply) {
+    // LLM response for conversational tone
+    addMessage(llmReply, 'bot');
+    // Show search results in picks panel
+    showResults(searchResult);
+    // If no results from search, offer suggestions
+    if (!searchResult.results || searchResult.results.length === 0) {
+      addSuggestions(["Jazz", "Rock", "Electronic", "Hip-Hop", "Metal", "Indie", "Irish artists", "90s classics"]);
+    }
+  } else {
+    // Fallback to rule-based engine
+    if (searchResult.knowledgeHit && searchResult.knowledgeHit.response) {
+      addMessage(searchResult.knowledgeHit.response, 'bot');
+      showResults(searchResult);
+    } else if (searchResult.results.length > 0) {
+      showResults(searchResult);
+      var artistMap = {};
+      searchResult.results.forEach(function(r) { artistMap[r.artist] = true; });
+      var artistCount = Object.keys(artistMap).length;
+      var msg = searchResult.results.length === 1
+        ? "Got one for you!"
+        : "Nice one! Found " + searchResult.results.length + " matches across " + artistCount + " artist" + (artistCount > 1 ? "s" : "") + ".";
+      addMessage(msg + " Take a look at Bob's Picks on the right. Anything catch your eye?", 'bot');
+      addSuggestions(["New releases", "Rock classics", "Jazz essentials", "Electronic & dance", "Irish artists"]);
+    } else {
+      addMessage("Hmm, nothing jumping out at me for \"" + text + "\" in the Spindizzy catalogue right now. Could you try a different artist, genre, or style? I'm here to dig!", 'bot');
+      addSuggestions(["Jazz", "Rock", "Electronic", "Hip-Hop", "Metal", "Indie", "Irish artists", "90s classics"]);
+    }
+  }
 }
 
 // === Event listeners ===
