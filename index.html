@@ -642,7 +642,7 @@ function extractArtists(txt){
   var parts=t.split(/\s+(?:and|or)\s+|,\s*/);
   var results=[];
   parts.forEach(function(p){
-    var w=p.trim().split(/\s+/).filter(function(x){return x.length>1&&!/^(the|and|or|but|for|nor|yet|so|in|on|at|to|by|from|with|about|into|upon|over|under|above|below|between|through|during|before|after|behind|beyond|near|off|out|up|down|of)$/i.test(x)});
+    var w=p.trim().split(/\s+/).filter(function(x){return x.length>1&&!/^(the|and|or|but|for|nor|yet|so|in|on|at|to|by|from|with|about|into|upon|over|under|above|below|between|through|during|before|after|behind|beyond|near|off|out|up|down|of|also|get|got|has|had|been|was|were|are|its|not|very|much|well|even|still|always|never|long|time|favorite|favourite|thing|things|stuff|way|lot|lots|bit|kind|sort)$/i.test(x)});
     if(w.length>=1)results.push(w.slice(0,3).join(" "));
   });
   return results.filter(function(r){return r&&r.length>=2});
@@ -650,7 +650,7 @@ function extractArtists(txt){
 
 function isRealArtistName(an,txt){
   if(!an||an.length<3)return false;
-  var nw="more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|favorite|good|bad|great|nice|cool|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|still|again|back|me|give|more|ever|heard|know|explain|describe|check|play|listen|into|really|kinda|sort|pretty|absolutely|and|or|but";
+  var nw="more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|get|got|has|had|been|was|were|are|its|not|very|much|well|even|still|always|never|long|time|favorite|favourite|thing|things|stuff|way|lot|lots|bit|kind|sort|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|good|bad|great|nice|cool|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|again|back|me|give|more|ever|heard|know|explain|describe|check|play|listen|into|really|kinda|sort|pretty|absolutely|lost|also|and|or|but";
   var words=an.split(/\s+/);
   var allNoise=words.every(function(w){return nw.indexOf(w)>-1});
   return !allNoise&&(txt?txt.split(/\s+/).length<=15:true);
@@ -874,6 +874,8 @@ async function enrichSimImages(sim){
       }).catch(function(){});
   });
   await Promise.allSettled(promises);
+  var loaded=document.querySelectorAll("#simav0 img,#simav1 img,#simav2 img,#simav3 img,#simav4 img,#simav5 img,#simav6 img,#simav7 img,#simav8 img,#simav9 img,#simav10 img,#simav11 img").length;
+  console.log("[Images] Loaded:",loaded,"/",sim.length);
 }
 
 // === Request-to-order modal ===
