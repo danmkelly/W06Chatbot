@@ -539,13 +539,22 @@ async function exploreGenre(tag){
   }else{addMsg("Couldn't find artists for &quot;"+tag+"&quot;. Try another genre!",'bot')}
 }
 
-function extractArtist(txt){
+function extractArtists(txt){
   var t=txt.toLowerCase().replace(/[.,!?;:'"()]/g," ").trim();
-  // Strip conversational lead-ins aggressively
   t=t.replace(/^(i |we )?(really |kinda |sort of |pretty |absolutely )?(like|love|enjoy|adore|rate|dig|fancy|into |fan of |listening to )/i,"");
   t=t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for |tell me about |tell me more about |what about |how about |give me |give me more on |more on |more about |more from |play me |put on |i want |i need |looking for |check out |ever heard of |do you know |can you |explain |describe )/i,"");
-  var w=t.split(/\s+/).filter(function(x){return x.length>1});
-  return w.slice(0,3).join(" ");
+  var parts=t.split(/\s+(?:and|or)\s+|,\s*/);
+  var results=[];
+  parts.forEach(function(p){var w=p.trim().split(/\s+/).filter(function(x){return x.length>1});if(w.length>=1)results.push(w.slice(0,3).join(" "))});
+  return results.filter(function(r){return r&&r.length>=2});
+}
+
+function isRealArtistName(an,txt){
+  if(!an||an.length<3)return false;
+  var nw="more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|favorite|favourite|good|bad|great|nice|cool|awesome|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|still|again|back|me|give|more|ever|heard|know|explain|describe|check|play|listen";
+  var words=an.split(/\s+/);
+  var allNoise=words.every(function(w){return nw.indexOf(w)>-1});
+  return !allNoise&&txt.split(/\s+/).length<=12;
 }
 
 // === LLM ===
@@ -635,34 +644,40 @@ async function send(){
   }
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL)hideTyping();
 
-  // STEP 2: Background search - try artist AND tag in parallel
-  var an=extractArtist(txt);
+  // STEP 2: Find artists to search - from user message AND from LLM reply
+  var artists=extractArtists(txt);
   var tag=findBestTag(txt);
-  var noiseWords="more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|favorite|favourite|good|bad|great|nice|cool|awesome|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|still|again|back|me|give|more|ever|heard|know|explain|describe|check|play|listen";
-  // isRealArtist: extracted name must be >2 chars, each word must NOT be noise, message must be fairly short
-  var artWords=an.split(/\s+/);
-  var allNoise=artWords.every(function(w){return noiseWords.split("|").indexOf(w)>-1});
-  var isRealArtist=an&&an.length>=3&&!allNoise&&txt.split(/\s+/).length<=12;
-  var isGenreQuery=tag&&!isRealArtist;
+  // Also check LLM reply for newly mentioned artists
+  if(llmReply&&LLM_KEY){
+    var extraFromLLM=extractArtists(llmReply);
+    extraFromLLM.forEach(function(a){if(artists.indexOf(a)===-1)artists.push(a)});
+  }
 
-  if(isRealArtist||isGenreQuery){
-    var artP=isRealArtist?Promise.all([getSim(an),getTgs(an),getAlb(an),getBio(an),getEvt(an)]):Promise.resolve([null,null,null,null,null]);
-    var tagP=(isGenreQuery||(tag&&!an))?Promise.all([getTagArt(tag),getTagAlb(tag)]):Promise.resolve([null,null]);
-    var ar=await artP,tr=await tagP;
-    var s=ar[0],tgR=ar[1],al=ar[2],inf=ar[3],ev=ar[4];
-    var ts=tr[0],ta=tr[1];
+  // Search for each real artist sequentially (first one shown, others enrich context)
+  var searchedAny=false;
+  for(var ai=0;ai<artists.length;ai++){
+    var an=artists[ai];
+    if(!isRealArtistName(an,txt)&&artists.length===1)continue; // Skip noise if it's the only candidate
+    if(!isRealArtistName(an,txt))continue; // Skip noise words
+    searchedAny=true;
+    var s=await getSim(an),tgR=await getTgs(an),al=await getAlb(an),inf=await getBio(an),ev=await getEvt(an);
+    if(s&&s.length>0){
+      artistName=an;lastArtistSearch=an;
+      if(ai===0){pushNav(an);renderDiscovery(s,tgR,al,inf)}
+      if(LLM_KEY){var dM=buildDataMsg(s,tgR,al,inf,ev);if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}}
+    }
+    // Fetch only first 2 artists to avoid too many API calls
+    if(ai>=1)break;
+  }
 
-    if(isRealArtist&&s&&s.length>0){
-      artistName=an;lastArtistSearch=an;pushNav(an);renderDiscovery(s,tgR,al,inf);
-    }else if(tag&&ta&&ta.length>0){
+  // Fallback to tag search if no artist found
+  if(!searchedAny&&tag){
+    var ts=await getTagArt(tag),ta=await getTagAlb(tag);
+    if(ta&&ta.length>0){
       artistName=tag.charAt(0).toUpperCase()+tag.slice(1);lastArtistSearch=artistName;pushNav(tag);
       if(ts&&ts.length>0)renderDiscovery(ts.map(function(x){return{name:x.name,match:100}}),[],ta,null);
       else renderDiscoveryTag(tag,ta,ts||[]);
-    }
-    if(LLM_KEY&&LLM_URL&&LLM_MODEL&&lastArtistSearch){
-      var s2=await getSim(lastArtistSearch);var a2=await getAlb(lastArtistSearch);var t2=await getTgs(lastArtistSearch);
-      var dM=buildDataMsg(s2,t2,a2,null,null);
-      if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}
+      if(LLM_KEY){var dM2=buildDataMsg(ts,[],ta,null,null);if(dM2){conv.push({role:"user",content:"[Panel: "+dM2+"]"});if(conv.length>20)conv=conv.slice(-20)}}
     }
   }
 
