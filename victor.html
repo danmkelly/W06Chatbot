@@ -126,6 +126,46 @@ body{
     </div>
   </div>
 
+  <!-- Limitations -->
+  <div class="section">
+    <div class="section-label">Limitations &amp; Known Weak Spots</div>
+    <h2>Where Bob still struggles</h2>
+    <p>Like any real-world AI project, Bob has rough edges. Here are the honest ones:</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">&#128270;</div>
+        <h4>NLP Entity Extraction</h4>
+        <p>Bob uses a <strong>second LLM call</strong> to extract artist and album names from his own responses for clickable links. This is far more accurate than regex, but it adds latency. The regex fallback (used when the LLM call is slow) is brittle: it strips common conversational words but can still extract phrases like "the early stuff" as artist names. Multi-word artist names with common words (e.g. "The The", "!!!") are particularly challenging.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128191;</div>
+        <h4>Discogs Data Quality</h4>
+        <p>The Discogs catalogue is <strong>community-maintained and messy</strong>. The same release often exists under multiple entries with different titles: "OK Computer", "OK Computer (1997 Release)", "OK Computer - Radiohead". Our fuzzy matching handles most cases, but some albums simply won't be found because the Last.fm album name doesn't match any Discogs title variant. The "Buy Now" detection also relies on a single release match, so if the top result is a bootleg or wrong pressing, the link may be suboptimal.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#9888;</div>
+        <h4>Conversation Context</h4>
+        <p>Bob maintains conversation history (last 10 exchanges), but <strong>loses context across page refreshes</strong>. Follow-up questions like "what about their early stuff?" rely on the LLM remembering the previous topic from the conversation array. If the user switches topics abruptly or asks ambiguous follow-ups ("more like that"), Bob can misinterpret the intent and search for the wrong thing. The "is this a refinement or a new query?" detection uses simple keyword matching, not semantic understanding.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#9200;</div>
+        <h4>API Latency</h4>
+        <p>A single user query triggers up to <strong>4 parallel API calls</strong> (Last.fm similar artists, Last.fm top albums, Last.fm tags, and the main LLM response). The entity extraction adds a 5th LLM call. On slow connections, the discovery panel can take 2-4 seconds to populate. The LLM response appears first (STEP 1), but the album grid and purchase badges fill in later (STEP 2), creating a two-phase load experience.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#127760;</div>
+        <h4>No Persistent State</h4>
+        <p>Bob has <strong>no backend database</strong>. Everything runs client-side except the API proxy. This means no user accounts, no saved preferences, no order history, no analytics. The "Request to Order" form captures data but doesn't send it anywhere (logged to console only). In a production deployment, these would need a proper backend with authentication, a database, and email integration.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#127911;</div>
+        <h4>Genre &amp; Discovery Accuracy</h4>
+        <p>Genre-based searches ("best Irish albums of the 80s") use Last.fm's <strong>community-applied tags</strong>, which are crowd-sourced and can be inconsistent. An album tagged "irish" might be Irish folk, Irish rock, or just by an artist who once played in Dublin. There's no era filtering at the API level, so "80s Irish albums" returns all Irish-tagged albums regardless of decade. Bob's LLM compensates with its own knowledge, but the panel data is unfiltered.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Technical Architecture -->
   <div class="section">
     <div class="section-label">Technical Architecture</div>
