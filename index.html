@@ -605,51 +605,68 @@ function goBack(){
 }
 
 // === Send ===
+var lastArtistSearch="";
+
 async function send(){
   var txt=chatInput.value.trim();if(!txt)return;
   addMsg(txt,"user");chatInput.value="";showTyping();
 
-  // Follow-up to Bob's question: pass to LLM as conversation continuation, no search
-  if(isFollowUp(txt)&&LLM_KEY&&LLM_URL&&LLM_MODEL){
-    lastBobAsked=false;
-    var freply=await chatLLM(txt,null);
-    if(freply){hideTyping();addMsg(freply,"bot");bobAskedQ(freply);return}
+  // STEP 1: ALWAYS let the LLM respond first. No gatekeeping.
+  if(LLM_KEY&&LLM_URL&&LLM_MODEL){
+    var llmReply=await chatLLM(txt,null);
+    hideTyping();
+    if(llmReply){addMsg(llmReply,"bot");bobAskedQ(llmReply)}
+    // If LLM failed, fall through to rule-based below
   }
-  lastBobAsked=false;
+  if(!LLM_KEY||!LLM_URL||!LLM_MODEL)hideTyping();
 
+  // STEP 2: Background search to populate the discovery panel
+  // Only search if this looks like an artist/discovery query, not pure chat
   var an=extractArtist(txt);
+  var tag=extractTag(txt);
+  var doSearch=false;
 
-  // Discovery query: genre/era/list, no artist name
-  if(isDiscoveryQuery(txt)||(!an||an.length<2)){
-    var tag=extractTag(txt);
-    if(!tag){hideTyping();addMsg("I need a genre, era, or style to search! Try something like 'best Irish albums of the 90s' or 'top indie rock artists'.",'bot');addSugg(["Irish rock","90s indie","French electronic","British punk","Best jazz albums"]);return}
+  if(isDiscoveryQuery(txt)&&tag){
+    doSearch=true;
     artistName=tag.charAt(0).toUpperCase()+tag.slice(1);
+    lastArtistSearch=artistName;
     pushNav(tag);
     var tagSim=getTagArt(tag),tagAlb=getTagAlb(tag);
     var ts=await tagSim,ta=await tagAlb;
     renderDiscoveryTag(tag,ta,ts);
-    var dataMsg="["+tag+" genre] Top artists: "+(ts.length?ts.map(function(x){return x.name}).slice(0,8).join(", "):"none")+". Top albums: "+(ta.length?ta.slice(0,8).map(function(a){return a.artist+" - "+a.name}).join(" | "):"none");
-    var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL)llm=await chatLLM(txt,dataMsg);
-    hideTyping();
-    if(llm){addMsg(llm,"bot");bobAskedQ(llm)}else{addMsg("Exploring <strong>"+tag+"</strong>! I've pulled "+ta.length+" top albums and "+ts.length+" artists from Last.fm. Scroll through the discovery panel and see what catches your eye. What kind of sound within this genre are you after?",'bot')}
-    return;
+    if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
+      addMsg("Exploring <strong>"+tag+"</strong>! "+ta.length+" albums and "+ts.length+" artists. Scroll the panel to browse, and click any name to chat about it.",'bot');
+      addSugg(["Irish rock","90s indie","French electronic","Best jazz albums"]);
+    }
+  }else if(an&&an.length>=2){
+    // Check if this is a real artist name or just random words from a follow-up
+    var noiseWords=/^(more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|favorite|favourite|good|bad|great|nice|cool|awesome|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|still|again|back)$/i;
+    var isRealArtist=an.length>3&&!noiseWords.test(an)&&txt.split(/\s+/).length<=8;
+    if(isRealArtist){
+      artistName=an;
+      lastArtistSearch=an;
+      pushNav(an);
+      var sim=getSim(an),tgs=getTgs(an),albs=getAlb(an),info=getBio(an),evts=getEvt(an);
+      var s=await sim,tg=await tgs,al=await albs,inf=await info,ev=await evts;
+      renderDiscovery(s,tg,al,inf);
+      if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
+        addMsg("Ah, <strong>"+artistName+"</strong>! I've pulled similar artists, albums, and genres. What catches your eye?",'bot');
+        addSugg(["Their best album","Similar artists","What genre are they?","Tell me about them"]);
+        lastBobAsked=true;
+      }
+    }
   }
 
-  // Artist query
-  artistName=an;
-  pushNav(an);
-  var sim=getSim(an),tgs=getTgs(an),albs=getAlb(an),info=getBio(an),evts=getEvt(an);
-  var s=await sim,tg=await tgs,al=await albs,inf=await info,ev=await evts;
-  renderDiscovery(s,tg,al,inf);
-  var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL)llm=await chatLLM(txt,buildDataMsg(s,tg,al,inf,ev));
-  hideTyping();
-  if(llm){addMsg(llm,"bot");bobAskedQ(llm)}else{
-    var p=[];p.push("Ah, <strong>"+artistName+"</strong>! Deadly choice.");
-    if(s.length)p.push(s.slice(0,3).map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+" are your closest matches");
-    if(al.length)p.push("Essential albums: "+al.slice(0,3).map(function(a){return a.name}).join(", "));
-    if(tg.length)p.push("Tap the genre chips to explore "+tg.slice(0,3).map(function(t){return t.name}).join(", "));
-    addMsg(p.join(". ")+". What era are you most into - early stuff or the later work?",'bot');
-    lastBobAsked=true;
+  // STEP 3: If search found something new, feed data to LLM for a richer follow-up
+  if(doSearch&&LLM_KEY&&LLM_URL&&LLM_MODEL&&lastArtistSearch){
+    // Fetch fresh data to pass to LLM context
+    var s2=await getSim(lastArtistSearch);
+    var a2=await getAlb(lastArtistSearch);
+    var t2=await getTgs(lastArtistSearch);
+    var dMsg=buildDataMsg(s2,t2,a2,null,null);
+    // Feed this as context so LLM can reference it next time
+    conv.push({role:"user",content:"[Panel updated with "+lastArtistSearch+" results. "+dMsg+"]"});
+    if(conv.length>20)conv=conv.slice(-20);
   }
 }
 
