@@ -339,7 +339,7 @@ body{
 </div>
 
 <div class="foot">
-  Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a> &amp; <a href="https://spindizzyrecords.com" target="_blank">Spindizzy</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a>
+  Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a>
   <span class="key-link" onclick="setKey('llm','DeepSeek API key (leave blank to disable):','rr_llm_key')">LLM key</span>
   <span class="key-link" onclick="setKey('lfm','Last.fm API key:','rr_lfm_key')">Last.fm key</span>
 </div>
@@ -368,9 +368,9 @@ function setKey(type,msg,storeKey){
 }
 
 // === State ===
-var conv=[],artistName="",spindizzyStock={},spindizzyLoaded=false;
-var lastBobAsked=false; // Did Bob ask a question in his last response?
-var navHistory=[]; // Discovery panel navigation stack
+var conv=[],artistName="",discogsCache={};
+var lastBobAsked=false;
+var navHistory=[];
 
 // === DOM ===
 var chatMsgs=document.getElementById("chatMessages");
@@ -432,64 +432,43 @@ function renderDiscoveryTag(tag,albs,sim){
     return'<div class="album-card"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+(a.artist||tag)+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div>'+albumBadges(a.artist||tag,a.name)+'</div></div>';
   }).join("");
   genreChips.innerHTML='';
+  enrichAlbumBadges();
 }
 
-async function fetchSpindizzy(){
+// === Discogs marketplace check ===
+async function checkDiscogs(artist,title){
+  var key=artist+"|"+title;
+  if(discogsCache[key]!==undefined)return discogsCache[key];
+  if(typeof DGS_KEY==="undefined"||!DGS_KEY)return null;
   try{
-    var r=await fetch("https://spindizzyrecords.com/collections/all/products.json?limit=250");
-    if(!r.ok)return;
+    var q=encodeURIComponent((artist+" "+title).replace(/\([^)]*\)/g,"").trim());
+    var r=await fetch("https://api.discogs.com/database/search?q="+q+"&type=release&per_page=1&token="+DGS_KEY);
+    if(!r.ok)return null;
     var d=await r.json();
-    if(d&&d.products){
-      d.products.forEach(function(p){
-        var key=(p.title||"").toLowerCase();
-        // Normalize: remove extra info in parens, standardize separators
-        key=key.replace(/\([^)]*\)/g,"").replace(/\s+/g," ").trim();
-        spindizzyStock[key]=p.handle||"";
-      });
-      spindizzyLoaded=true;
-      console.log("[Spindizzy] Loaded",Object.keys(spindizzyStock).length,"products");
-      // Re-render any existing albums with new stock data
-      refreshAlbumBadges();
+    if(d&&d.results&&d.results.length>0&&d.results[0].id){
+      var url="https://www.discogs.com/sell/release/"+d.results[0].id;
+      discogsCache[key]=url;return url;
     }
-  }catch(e){console.warn("[Spindizzy] fetch failed:",e.message)}
+    discogsCache[key]=null;return null;
+  }catch(e){discogsCache[key]=null;return null}
 }
-fetchSpindizzy();
 
-function checkSpindizzy(artist,title){
-  if(!spindizzyLoaded)return null;
-  var q=((artist||"")+" - "+(title||"")).toLowerCase().replace(/\([^)]*\)/g,"").replace(/\s+/g," ").trim();
-  // Direct match
-  if(spindizzyStock[q])return "https://spindizzyrecords.com/products/"+spindizzyStock[q];
-  // Fuzzy: check if any key contains both artist and title
-  var a=(artist||"").toLowerCase(),t=(title||"").toLowerCase();
-  for(var k in spindizzyStock){
-    if(k.indexOf(a)>-1&&k.indexOf(t)>-1)return "https://spindizzyrecords.com/products/"+spindizzyStock[k];
+async function enrichAlbumBadges(){
+  var cards=document.querySelectorAll(".album-card");
+  for(var i=0;i<cards.length;i++){
+    var c=cards[i];
+    var a=c.querySelector(".album-card-artist"),t=c.querySelector(".album-card-name"),b=c.querySelector(".album-badges");
+    if(!a||!t||!b)continue;
+    var artist=a.textContent.trim(),title=t.textContent.trim();
+    var url=await checkDiscogs(artist,title);
+    if(url)b.innerHTML='<a class="album-badge album-badge-buy" href="'+url+'" target="_blank" onclick="event.stopPropagation()">Buy Now</a><a class="album-badge album-badge-discogs" href="https://www.discogs.com/sell/release/'+url.split('/').pop()+'" target="_blank" onclick="event.stopPropagation()">Discogs</a>';
   }
-  return null;
-}
-
-function refreshAlbumBadges(){
-  // Update all existing album badges with fresh Spindizzy data
-  document.querySelectorAll(".album-card-body").forEach(function(card){
-    var artistEl=card.querySelector(".album-card-artist");
-    var titleEl=card.querySelector(".album-card-name");
-    var badgesEl=card.querySelector(".album-badges");
-    if(!artistEl||!titleEl||!badgesEl)return;
-    var artist=artistEl.textContent.trim();
-    var title=titleEl.textContent.trim();
-    badgesEl.innerHTML=albumBadgesHTML(artist,title);
-  });
 }
 
 function albumBadgesHTML(artist,title){
-  var sz=checkSpindizzy(artist,title);
-  var buyHtml=sz
-    ?'<a class="album-badge album-badge-buy" href="'+sz+'" target="_blank" onclick="event.stopPropagation()">Buy Now</a>'
-    :'<span class="album-badge album-badge-req" onclick="event.stopPropagation();openReq(\''+(artist||"").replace(/'/g,"\\'")+'\',\''+(title||"").replace(/'/g,"\\'")+'\')">Request to order</span>';
   var dq=encodeURIComponent((artist||"")+" "+(title||""));
-  return'<div class="album-badges">'+buyHtml+'<a class="album-badge album-badge-discogs" href="https://www.discogs.com/search/?q='+dq+'&type=release" target="_blank" onclick="event.stopPropagation()">View on Discogs</a></div>';
+  return'<div class="album-badges"><span class="album-badge album-badge-req" onclick="event.stopPropagation();openReq(\''+(artist||"").replace(/'/g,"\\'")+'\',\''+(title||"").replace(/'/g,"\\'")+'\')">Order</span><a class="album-badge album-badge-discogs" href="https://www.discogs.com/search/?q='+dq+'&type=release" target="_blank" onclick="event.stopPropagation()">Discogs</a></div>';
 }
-
 function albumBadges(artist,title){return albumBadgesHTML(artist,title)}
 
 // === Render discovery ===
@@ -521,6 +500,7 @@ function renderDiscovery(sim,tgs,albs,info){
 
   // Genre chips
   genreChips.innerHTML=tgs.map(function(t){return'<span class="genre-chip" onclick="exploreGenre(\''+t.name.replace(/'/g,"\\'")+'\')">'+t.name+'</span>'}).join("");
+  enrichAlbumBadges();
 }
 
 async function exploreGenre(tag){
