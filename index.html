@@ -646,7 +646,14 @@ async function send(){
   if(LLM_KEY&&LLM_URL&&LLM_MODEL){
     var llmReply=await chatLLM(txt,null);
     hideTyping();
-    if(llmReply){addMsg(llmReply,"bot");bobAskedQ(llmReply)}
+    if(llmReply){addMsg(llmReply,"bot");bobAskedQ(llmReply);
+      // Scan LLM reply for any newly mentioned artists, add to knownNames immediately
+      var replyNames=extractArtists(llmReply);
+      replyNames.forEach(function(n){if(knownNames.indexOf(n)===-1)knownNames.push(n)});
+      // Re-scan this message now that we have names
+      var lastBubble=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
+      if(lastBubble)lastBubble.innerHTML=enrichLinks(lastBubble.innerHTML);
+    }
     // If LLM failed, fall through to rule-based below
   }
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL)hideTyping();
