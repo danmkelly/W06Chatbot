@@ -111,6 +111,12 @@ body{
 }
 .chat-send:hover{background:#D14A30;transform:scale(1.05)}
 
+/* Back button */
+.back-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.back-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:16px;font-size:0.7rem;cursor:pointer;font-family:inherit;transition:all .15s}
+.back-btn:hover{color:var(--text);border-color:var(--accent)}
+.back-label{font-size:0.65rem;color:var(--text-dim)}
+
 /* DISCOVERY PANEL */
 .discovery{
   background:var(--surface);overflow-y:auto;overflow-x:hidden;
@@ -300,6 +306,7 @@ body{
       </div>
     </div>
     <div id="dContent" style="display:none">
+      <div class="back-bar" id="backBar" style="display:none"><button class="back-btn" onclick="goBack()">&#8592; Back</button><span class="back-label" id="backLabel"></span></div>
       <div class="artist-hero" id="artistHero"></div>
       <div class="section">
         <div class="section-hdr"><span class="section-hdr-icon">&#128101;</span><h4>Similar Artists</h4><span class="section-count" id="simCount">0</span></div>
@@ -354,6 +361,8 @@ function setKey(type,msg,storeKey){
 
 // === State ===
 var conv=[],artistName="",spindizzyStock={},spindizzyLoaded=false;
+var lastBobAsked=false; // Did Bob ask a question in his last response?
+var navHistory=[]; // Discovery panel navigation stack
 
 // === DOM ===
 var chatMsgs=document.getElementById("chatMessages");
@@ -510,6 +519,7 @@ async function exploreGenre(tag){
     var tgs=[{name:tag,count:artists.length}];
     if(tgs2.length>0)tgs=tgs.concat(tgs2.slice(0,8));
     artistName=tag.charAt(0).toUpperCase()+tag.slice(1);
+    pushNav(tag);
     renderDiscovery(sim,tgs,[],null);
     addMsg("Exploring <strong>"+tag+"</strong>. Found "+artists.length+" top artists. Click any name or genre chip to keep digging!",'bot');
   }else{addMsg("Couldn't find artists for &quot;"+tag+"&quot;. Try another genre!",'bot')}
@@ -581,10 +591,63 @@ async function callLLM(msg,sim,tgs,albs,info,evts){
   }catch(e){console.warn("[Bob] fail:",e.message);return null}
 }
 
+// === Context-aware follow-up detection ===
+function isFollowUp(txt){
+  if(!lastBobAsked)return false;
+  var t=txt.toLowerCase().trim();
+  var words=t.split(/\s+/);
+  // Short response to a question Bob asked
+  if(words.length<=3)return true;
+  // Common follow-up patterns
+  if(/^(yeah|yes|no|maybe|not really|kind of|sort of|i think|probably|the (first|second|third|last|early|late|later|newer|older)|both|either|neither|all of them|none|don't know|not sure)/i.test(t))return true;
+  return false;
+}
+function bobAskedQ(reply){lastBobAsked=/[?]/.test(reply)||/\b(what|which|when|where|who|how|do you|have you|are you|would you|fancy|prefer|into|like)\b/i.test(reply)}
+
+// === Save/restore navigation ===
+function pushNav(label){navHistory.push({artist:artistName,label:label});updateBackBar()}
+function updateBackBar(){
+  var bb=document.getElementById("backBar"),bl=document.getElementById("backLabel");
+  if(navHistory.length>1){bb.style.display="flex";var prev=navHistory[navHistory.length-2];bl.textContent=prev.label}else{bb.style.display="none"}
+}
+function goBack(){
+  if(navHistory.length<2)return;
+  navHistory.pop(); // Remove current
+  var prev=navHistory[navHistory.length-1]; // Peek previous
+  artistName=prev.artist;
+  updateBackBar();
+  // Notify chat
+  addMsg("I went back to <strong>"+prev.label+"</strong>.",'bot');
+  // Re-search
+  showTyping();
+  getSim(prev.artist).then(function(s){
+    getTgs(prev.artist).then(function(tg){
+      getAlb(prev.artist).then(function(al){
+        getBio(prev.artist).then(function(inf){renderDiscovery(s,tg,al,inf);hideTyping()})
+      })
+    })
+  })
+}
+
 // === Send ===
 async function send(){
   var txt=chatInput.value.trim();if(!txt)return;
   addMsg(txt,"user");chatInput.value="";showTyping();
+
+  // Follow-up to Bob's question: pass to LLM as conversation continuation, no search
+  if(isFollowUp(txt)&&LLM_KEY&&LLM_URL&&LLM_MODEL){
+    lastBobAsked=false;
+    var fMsg="The user said: \""+txt+"\" - this is a follow-up to our last exchange about "+artistName+". Respond conversationally. Don't search or list data, just chat naturally. Keep the conversation flowing. Ask a follow-up question to keep them engaged.";
+    var msgs=[{role:"system",content:BOB_VOICE+"\n\nCURRENT TOPIC: "+artistName+"\n\nThe user is responding to your last question. Have a natural conversation. Ask follow-ups."}];
+    for(var i=0;i<conv.length;i++)msgs.push(conv[i]);
+    msgs.push({role:"user",content:txt});
+    try{
+      var fr=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.9,max_tokens:300})});
+      if(fr.ok){var fd=await fr.json();var freply=fd.choices[0].message.content.trim();conv.push({role:"user",content:txt});conv.push({role:"assistant",content:freply});if(conv.length>12)conv=conv.slice(-12);hideTyping();addMsg(freply,"bot");bobAskedQ(freply);return}
+    }catch(e){}
+  }
+  lastBobAsked=false;
+
   var an=extractArtist(txt);
 
   // Discovery query: genre/era/list, no artist name
@@ -592,6 +655,7 @@ async function send(){
     var tag=extractTag(txt);
     if(!tag){hideTyping();addMsg("I need a genre, era, or style to search! Try something like 'best Irish albums of the 90s' or 'top indie rock artists'.",'bot');addSugg(["Irish rock","90s indie","French electronic","British punk","Best jazz albums"]);return}
     artistName=tag.charAt(0).toUpperCase()+tag.slice(1);
+    pushNav(tag);
     var tagSim=getTagArt(tag),tagAlb=getTagAlb(tag);
     var ts=await tagSim,ta=await tagAlb;
     renderDiscoveryTag(tag,ta,ts);
@@ -601,23 +665,25 @@ async function send(){
       try{var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.85,max_tokens:500})});if(r.ok){var d=await r.json();llm=d.choices[0].message.content.trim();conv.push({role:"user",content:txt});conv.push({role:"assistant",content:llm});if(conv.length>12)conv=conv.slice(-12)}}catch(e){}
     }
     hideTyping();
-    if(llm){addMsg(llm,"bot")}else{addMsg("Exploring <strong>"+tag+"</strong>! I've pulled "+ta.length+" top albums and "+ts.length+" artists from Last.fm. Scroll through the discovery panel and see what catches your eye. What kind of sound within this genre are you after?",'bot')}
+    if(llm){addMsg(llm,"bot");bobAskedQ(llm)}else{addMsg("Exploring <strong>"+tag+"</strong>! I've pulled "+ta.length+" top albums and "+ts.length+" artists from Last.fm. Scroll through the discovery panel and see what catches your eye. What kind of sound within this genre are you after?",'bot')}
     return;
   }
 
   // Artist query
   artistName=an;
+  pushNav(an);
   var sim=getSim(an),tgs=getTgs(an),albs=getAlb(an),info=getBio(an),evts=getEvt(an);
   var s=await sim,tg=await tgs,al=await albs,inf=await info,ev=await evts;
   renderDiscovery(s,tg,al,inf);
   var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL)llm=await callLLM(txt,s,tg,al,inf,ev);
   hideTyping();
-  if(llm){addMsg(llm,"bot")}else{
+  if(llm){addMsg(llm,"bot");bobAskedQ(llm)}else{
     var p=[];p.push("Ah, <strong>"+artistName+"</strong>! Deadly choice.");
     if(s.length)p.push(s.slice(0,3).map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+" are your closest matches");
     if(al.length)p.push("Essential albums: "+al.slice(0,3).map(function(a){return a.name}).join(", "));
     if(tg.length)p.push("Tap the genre chips to explore "+tg.slice(0,3).map(function(t){return t.name}).join(", "));
     addMsg(p.join(". ")+". What era are you most into - early stuff or the later work?",'bot');
+    lastBobAsked=true;
   }
 }
 
@@ -669,7 +735,7 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
   if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM";b.classList.add("live");l.textContent="Music guru · AI-powered"}
   else{b.textContent="basic";l.textContent="Music guru & vinyl hunter"}
   addMsg("Hey! I'm <strong>Bob</strong>, your music guide at Round &amp; Round Records. Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot');
-  setTimeout(function(){addMsg("What are you into right now?",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"])},1200);
+  setTimeout(function(){addMsg("What are you into right now?",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},1200);
 })();
 </script>
 </body>
