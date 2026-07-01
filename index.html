@@ -28,18 +28,25 @@ body{
   min-height:100vh;overflow:hidden;
 }
 .app{
-  display:grid;grid-template-columns:1fr 440px;height:calc(100vh - 52px);
+  display:grid;grid-template-columns:1fr 440px;height:calc(100vh - 160px);
 }
 /* Brand bar */
 .app-brand{
-  height:52px;display:flex;align-items:center;justify-content:center;gap:12px;
-  background:linear-gradient(135deg,#2A1506,#1A0A02);border-bottom:2px solid var(--accent);
-  padding:0 24px;
+  height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(180deg,#3D1C0A 0%,#1A0A02 60%,#0D0D0D 100%);border-bottom:2px solid var(--accent);
+  padding:0 24px;position:relative;overflow:hidden;
 }
-.app-brand-icon{font-size:1.6rem;filter:drop-shadow(0 0 6px rgba(232,93,63,0.5))}
-.app-brand-name{font-size:0.9rem;font-weight:800;color:#F5E6D3;letter-spacing:1.2px;text-transform:uppercase}
-.app-brand-name span{color:var(--accent);text-shadow:0 0 8px var(--accent-glow)}
-.app-brand-tagline{font-size:0.68rem;color:#C4A44A;margin-left:4px}
+.app-brand::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse at 50% 80%,rgba(232,93,63,0.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.app-brand-icon{font-size:2.4rem;filter:drop-shadow(0 0 12px rgba(232,93,63,0.5))}
+.app-brand-name{font-size:1.6rem;font-weight:900;color:#F5E6D3;letter-spacing:2px;text-transform:uppercase}
+.app-brand-name span{color:var(--accent);text-shadow:0 0 12px var(--accent-glow)}
+.app-brand-tagline{font-size:0.82rem;color:#C4A44A;letter-spacing:0.8px;margin-top:2px}
+.app-brand-sub{font-size:0.62rem;color:var(--text-dim);margin-top:0;letter-spacing:0.5px;display:flex;gap:16px}
+.app-brand-sub span{color:var(--text-dim)}
 /* CHAT PANEL */
 .chat{
   display:flex;flex-direction:column;border-right:1px solid var(--border);
@@ -276,6 +283,7 @@ body{
   <span class="app-brand-icon">&#119070;</span>
   <span class="app-brand-name">Round <span>&amp;</span> Round Records</span>
   <span class="app-brand-tagline">Independent since 2005 &bull; 32 Market Arcade, Dublin</span>
+  <div class="app-brand-sub"><span>Vinyl &bull; CD &bull; Expert Advice</span><span>AI-Powered Music Discovery</span></div>
 </div>
 <div class="app">
 
