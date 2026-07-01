@@ -770,6 +770,12 @@ async function send(){
   else if(/^(yes|no|ok|okay|yeah|yep|nope|maybe|sure|idk|dunno|hello|hi|hey|thanks|thx|ty|bye|cya|lol|haha|hehe|what|why|when|who|how|help|test|testing|asdf|fdsa)$/i.test(txt))isGibberish=true;
   // Very short and doesn't look like an artist name
   else if(txt.split(/\s+/).length===1&&txt.length<5&&!/^[A-Z]/.test(txt))isGibberish=true;
+  // Consonant-heavy gibberish: ratio > 3:1 or no vowels (skip all-caps acronyms)
+  else if(clean.length>=4&&!/^[A-Z]{2,6}$/.test(txt.trim())){
+    var vowels=clean.match(/[aeiou]/g);var vCount=vowels?vowels.length:0;
+    var cCount=clean.length-vCount;
+    if(vCount===0||cCount/vCount>3)isGibberish=true;
+  }
   if(isGibberish){
     hideTyping();
     addMsg("I didn't quite catch that! Give me an artist name to explore, a genre you're curious about, or just tell me what kind of music you're into. I'm all ears!",'bot');
