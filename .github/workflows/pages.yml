@@ -28,11 +28,13 @@ jobs:
       - name: Build static site
         run: |
           mkdir -p _site
-          shopt -s dotglob
-          cp -r * _site/ 2>/dev/null || true
-          shopt -u dotglob
-          # Ensure robots.txt and _headers are present
-          ls -la _site/robots.txt _site/_headers 2>/dev/null || true
+          # Copy all site files (exclude .git, .github, node_modules, tool-output)
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='_site' ./ _site/
+          # Verify critical files are present
+          echo "=== Checking deployed files ==="
+          ls -la _site/index.html _site/victor.html _site/_headers _site/robots.txt _site/.nojekyll _site/_config.yml 2>&1
+          echo "=== _headers content ==="
+          cat _site/_headers 2>/dev/null || echo "MISSING"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
