@@ -98,6 +98,8 @@ body{
   transition:all .15s;font-family:inherit;
 }
 .chat-sugg-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chat-link{color:var(--accent2);cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-weight:600}
+.chat-link:hover{color:#5FBFAF}
 
 .chat-input-wrap{
   padding:14px 20px;border-top:1px solid var(--border);
@@ -385,10 +387,31 @@ var albumGrid=document.getElementById("albumGrid");
 var genreChips=document.getElementById("genreChips");
 
 // === Helpers ===
+var knownNames=[]; // Artists/albums to make clickable in chat
+function enrichLinks(html){
+  if(!knownNames.length)return html;
+  // Sort by length descending so longer names match first
+  var names=knownNames.slice().sort(function(a,b){return b.length-a.length});
+  names.forEach(function(n){
+    var escaped=n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    var rx=new RegExp('(^|\\s)('+escaped+')(?=[\\s,.\!?;:]|$)','gi');
+    html=html.replace(rx,function(m,p1,p2){return p1+'<span class="chat-link" onclick="qa(\''+p2.replace(/'/g,"\\'")+'\')">'+p2+'</span>'});
+  });
+  return html;
+}
+function updateKnownNames(artists,albums,searchName){
+  knownNames=[];
+  if(searchName)knownNames.push(searchName);
+  if(artists)artists.forEach(function(a){knownNames.push(a.name)});
+  if(albums)albums.forEach(function(a){knownNames.push(a.name);if(a.artist)knownNames.push(a.artist)});
+  // Deduplicate
+  var seen={};knownNames=knownNames.filter(function(n){var k=n.toLowerCase();if(seen[k])return false;seen[k]=true;return n&&n.length>1});
+}
 function sc(){chatMsgs.scrollTop=chatMsgs.scrollHeight}
 function addMsg(t,s){
   var d=document.createElement("div");d.className="msg "+s;
   var now=new Date();var time=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
+  if(s==="bot")t=enrichLinks(t);
   d.innerHTML='<div class="msg-bubble">'+t+'</div><div class="msg-meta">'+(s==="bot"?"Bob":"You")+' &middot; '+time+'</div>';
   chatMsgs.appendChild(d);sc();
 }
@@ -435,6 +458,7 @@ function renderDiscoveryTag(tag,albs,sim){
   }).join("");
   genreChips.innerHTML='';
   enrichAlbumBadges();
+  updateKnownNames(sim,albs,label);
 }
 
 // === Discogs marketplace check ===
@@ -505,6 +529,7 @@ function renderDiscovery(sim,tgs,albs,info){
   // Genre chips
   genreChips.innerHTML=tgs.map(function(t){return'<span class="genre-chip" onclick="exploreGenre(\''+t.name.replace(/'/g,"\\'")+'\')">'+t.name+'</span>'}).join("");
   enrichAlbumBadges();
+  updateKnownNames(sim,albs,artistName);
 }
 
 async function exploreGenre(tag){
