@@ -126,13 +126,14 @@ body{
 
 /* Human exit ramp */
 .chat-human-ramp{
-  padding:8px 20px;text-align:center;font-size:0.68rem;color:var(--text-dim);
-  cursor:pointer;transition:all .2s;border-top:1px solid rgba(255,255,255,0.04);
-  background:linear-gradient(180deg,rgba(196,164,74,0.04),transparent);
+  padding:12px 20px;text-align:center;font-size:0.78rem;color:var(--text-dim);
+  cursor:pointer;transition:all .2s;border-top:1px solid rgba(196,164,74,0.15);
+  background:linear-gradient(180deg,rgba(196,164,74,0.06),rgba(196,164,74,0.02));
+  font-weight:500;letter-spacing:0.3px;
 }
-.chat-human-ramp:hover{color:#C4A44A;background:rgba(196,164,74,0.08)}
-.human-ramp-icon{font-size:0.85rem;vertical-align:middle;margin-right:2px}
-.human-ramp-cta{color:var(--accent3);text-decoration:underline;font-weight:600}
+.chat-human-ramp:hover{color:#F5E6D3;background:rgba(196,164,74,0.12);border-top-color:rgba(196,164,74,0.3)}
+.human-ramp-icon{font-size:1rem;vertical-align:middle;margin-right:4px}
+.human-ramp-cta{color:var(--accent3);text-decoration:underline;font-weight:700}
 
 /* Back button */
 .back-bar{display:flex;align-items:center;gap:10px;padding:10px 20px;background:var(--surface2);border-bottom:1px solid var(--border)}
@@ -694,11 +695,15 @@ async function send(){
     var llmReply=await chatLLM(txt,null);
     hideTyping();
     if(llmReply){addMsg(llmReply,"bot");bobAskedQ(llmReply);
-      // Use LLM to extract entities for accurate link enrichment
+      // Always add regex-extracted names synchronously first
+      var replyNames=extractArtists(llmReply);
+      replyNames.forEach(function(n){if(knownNames.indexOf(n)===-1)knownNames.push(n)});
+      var lb=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
+      if(lb)lb.innerHTML=enrichLinks(lb.innerHTML);
+      // Then augment with LLM entity extraction asynchronously
       extractEntities(llmReply).then(function(ents){
         ents.forEach(function(n){if(knownNames.indexOf(n)===-1)knownNames.push(n)});
-        var lastBubble=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
-        if(lastBubble)lastBubble.innerHTML=enrichLinks(lastBubble.innerHTML);
+        if(lb)lb.innerHTML=enrichLinks(lb.innerHTML);
       });
     }
     // If LLM failed, fall through to rule-based below
@@ -734,8 +739,7 @@ async function send(){
   // Sort albums by playcount (descending) to mix artists naturally
   mergedAlb.sort(function(a,b){return b.playcount-a.playcount});
   if(searchedAny&&(mergedSim.length||mergedAlb.length)){
-    var allNames=artists.filter(function(a){return isRealArtistName(a,null)}).slice(0,3);
-    var displayName=allNames.length>1?allNames.map(function(n){return n.charAt(0).toUpperCase()+n.slice(1)}).join(" + "):(allNames[0]?allNames[0].charAt(0).toUpperCase()+allNames[0].slice(1):firstArtist);
+    var displayName=firstArtist.charAt(0).toUpperCase()+firstArtist.slice(1);
     artistName=displayName;lastArtistSearch=firstArtist;pushNav(displayName);
     var finalTags=mergedTags.sort(function(a,b){return b.count-a.count}).slice(0,12);
     renderDiscovery(mergedSim.slice(0,12),finalTags,mergedAlb.slice(0,16),mergedBio);
@@ -760,10 +764,14 @@ async function send(){
 
 // === Discogs image enrichment for similar artists ===
 async function enrichSimImages(sim){
-  if(typeof DGS_KEY==="undefined"||!DGS_KEY||!sim||!sim.length)return;
+  if(!sim||!sim.length)return;
+  var hasKey=typeof DGS_KEY!=="undefined"&&DGS_KEY;
+  console.log("[Images] Sim artists:",sim.length,"DGS_KEY:",hasKey,"proxy:",!!API_PROXY);
+  if(!hasKey&&!API_PROXY)return;
   var promises=sim.map(function(a,i){
     var q=encodeURIComponent(a.name);
     var dgsUrl=API_PROXY?API_PROXY+"/api/discogs?q="+q+"&type=artist&per_page=1":"https://api.discogs.com/database/search?q="+q+"&type=artist&per_page=1&token="+DGS_KEY;
+    console.log("[Images] Fetching:",a.name,dgsUrl.slice(0,80));
     return fetch(dgsUrl)
       .then(function(r){return r.ok?r.json():null})
       .then(function(d){
