@@ -400,10 +400,16 @@ async function getBio(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.
 async function getEvt(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getevents&artist="+encodeURIComponent(a)+"&limit=2");if(!d||!d.events||!d.events.event)return[];var ev=d.events.event;if(!Array.isArray(ev))ev=[ev];return ev.map(function(e){return{title:e.title,venue:e.venue?e.venue.name:"",city:e.venue&&e.venue.city?e.venue.city.name:"",date:e.startDate,url:e.url}})}
 async function getTagArt(tag){if(!LFM_KEY)return[];var d=await lfm("method=tag.gettopartists&tag="+encodeURIComponent(tag)+"&limit=10");return(d&&d.topartists&&d.topartists.artist)?d.topartists.artist.map(function(x){return{name:x.name}}):[]}
 async function getTagAlb(tag){if(!LFM_KEY)return[];var d=await lfm("method=tag.gettopalbums&tag="+encodeURIComponent(tag)+"&limit=15");if(!d||!d.albums||!d.albums.album)return[];return d.albums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:"",playcount:parseInt(x.playcount)||0,img:img}})}
+var DISCOVERY_TAGS=["irish","french","british","american","canadian","australian","german","italian","spanish","japanese","swedish","norwegian","dutch","brazilian","african","indian","latin","celtic","rock","pop","indie","folk","punk","metal","jazz","electronic","hip-hop","dance","blues","soul","funk","reggae","classical","ambient","experimental","progressive","psychedelic","garage","shoegaze","post-punk","new wave","synthpop","grunge","britpop","trip-hop","drum and bass","house","techno","trance","dubstep","ska","2 tone","rockabilly","rocksteady","dub","disco","hardcore","emo","screamo","post-rock","math rock","slowcore","dream pop","noise","industrial","ebm","idm","breakbeat","jungle","uk garage","gabber","hardstyle","vaporwave","lo-fi","hyperpop","alt-country","americana","bluegrass","zydeco","gospel","r&b","motown","doo-wop","crooner","swing","bebop","cool jazz","fusion","bossa nova","samba","tango","flamenco","rebetiko"];
 
-var DISCOVERY_TAGS=["irish","french","british","american","canadian","australian","german","italian","spanish","japanese","swedish","norwegian","rock","pop","indie","folk","punk","metal","jazz","electronic","hip-hop","dance","blues","soul","funk","reggae","classical","ambient","experimental","progressive","psychedelic","garage","shoegaze","post-punk","new wave","synthpop","grunge","britpop","trip-hop","drum and bass","house","techno","trance","dubstep"];
-function isDiscoveryQuery(txt){var t=txt.toLowerCase();return /^(list|show|find|name|give|what|top|best|greatest|essential|classic|recommend|suggest)/i.test(t)||/(best|top|greatest|essential|classic|favourite|favorite) (irish|french|british|american|canadian|australian)/i.test(t)||/(irish|french|british|american) (music|rock|pop|indie|folk|punk|electronic|hip.hop|jazz|metal|dance)/i.test(t)||/albums (from|of|in) the (80s|90s|70s|60s|00s)/i.test(t)}
-function extractTag(txt){var t=txt.toLowerCase();for(var i=0;i<DISCOVERY_TAGS.length;i++){if(t.indexOf(DISCOVERY_TAGS[i])>-1)return DISCOVERY_TAGS[i]}return""}
+function findBestTag(txt){
+  var t=txt.toLowerCase();var best="";var bestLen=0;
+  for(var i=0;i<DISCOVERY_TAGS.length;i++){
+    var tag=DISCOVERY_TAGS[i];
+    if(t.indexOf(tag)>-1&&tag.length>bestLen){best=tag;bestLen=tag.length}
+  }
+  return best;
+}
 
 function renderDiscoveryTag(tag,albs,sim){
   dEmpty.style.display="none";dContent.style.display="block";
@@ -620,53 +626,36 @@ async function send(){
   }
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL)hideTyping();
 
-  // STEP 2: Background search to populate the discovery panel
-  // Only search if this looks like an artist/discovery query, not pure chat
+  // STEP 2: Background search - try artist AND tag in parallel
   var an=extractArtist(txt);
-  var tag=extractTag(txt);
-  var doSearch=false;
+  var tag=findBestTag(txt);
+  var noiseWords=/^(more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|favorite|favourite|good|bad|great|nice|cool|awesome|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|still|again|back)$/i;
+  var isRealArtist=an&&an.length>=3&&!noiseWords.test(an)&&txt.split(/\s+/).length<=10;
+  var isGenreQuery=tag&&!isRealArtist;
 
-  if(isDiscoveryQuery(txt)&&tag){
-    doSearch=true;
-    artistName=tag.charAt(0).toUpperCase()+tag.slice(1);
-    lastArtistSearch=artistName;
-    pushNav(tag);
-    var tagSim=getTagArt(tag),tagAlb=getTagAlb(tag);
-    var ts=await tagSim,ta=await tagAlb;
-    renderDiscoveryTag(tag,ta,ts);
-    if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
-      addMsg("Exploring <strong>"+tag+"</strong>! "+ta.length+" albums and "+ts.length+" artists. Scroll the panel to browse, and click any name to chat about it.",'bot');
-      addSugg(["Irish rock","90s indie","French electronic","Best jazz albums"]);
+  if(isRealArtist||isGenreQuery){
+    var artP=isRealArtist?Promise.all([getSim(an),getTgs(an),getAlb(an),getBio(an),getEvt(an)]):Promise.resolve([null,null,null,null,null]);
+    var tagP=(isGenreQuery||(tag&&!an))?Promise.all([getTagArt(tag),getTagAlb(tag)]):Promise.resolve([null,null]);
+    var ar=await artP,tr=await tagP;
+    var s=ar[0],tgR=ar[1],al=ar[2],inf=ar[3],ev=ar[4];
+    var ts=tr[0],ta=tr[1];
+
+    if(isRealArtist&&s&&s.length>0){
+      artistName=an;lastArtistSearch=an;pushNav(an);renderDiscovery(s,tgR,al,inf);
+    }else if(tag&&ta&&ta.length>0){
+      artistName=tag.charAt(0).toUpperCase()+tag.slice(1);lastArtistSearch=artistName;pushNav(tag);
+      if(ts&&ts.length>0)renderDiscovery(ts.map(function(x){return{name:x.name,match:100}}),[],ta,null);
+      else renderDiscoveryTag(tag,ta,ts||[]);
     }
-  }else if(an&&an.length>=2){
-    // Check if this is a real artist name or just random words from a follow-up
-    var noiseWords=/^(more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|favorite|favourite|good|bad|great|nice|cool|awesome|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|still|again|back)$/i;
-    var isRealArtist=an.length>3&&!noiseWords.test(an)&&txt.split(/\s+/).length<=8;
-    if(isRealArtist){
-      artistName=an;
-      lastArtistSearch=an;
-      pushNav(an);
-      var sim=getSim(an),tgs=getTgs(an),albs=getAlb(an),info=getBio(an),evts=getEvt(an);
-      var s=await sim,tg=await tgs,al=await albs,inf=await info,ev=await evts;
-      renderDiscovery(s,tg,al,inf);
-      if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
-        addMsg("Ah, <strong>"+artistName+"</strong>! I've pulled similar artists, albums, and genres. What catches your eye?",'bot');
-        addSugg(["Their best album","Similar artists","What genre are they?","Tell me about them"]);
-        lastBobAsked=true;
-      }
+    if(LLM_KEY&&LLM_URL&&LLM_MODEL&&lastArtistSearch){
+      var s2=await getSim(lastArtistSearch);var a2=await getAlb(lastArtistSearch);var t2=await getTgs(lastArtistSearch);
+      var dM=buildDataMsg(s2,t2,a2,null,null);
+      if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}
     }
   }
 
-  // STEP 3: If search found something new, feed data to LLM for a richer follow-up
-  if(doSearch&&LLM_KEY&&LLM_URL&&LLM_MODEL&&lastArtistSearch){
-    // Fetch fresh data to pass to LLM context
-    var s2=await getSim(lastArtistSearch);
-    var a2=await getAlb(lastArtistSearch);
-    var t2=await getTgs(lastArtistSearch);
-    var dMsg=buildDataMsg(s2,t2,a2,null,null);
-    // Feed this as context so LLM can reference it next time
-    conv.push({role:"user",content:"[Panel updated with "+lastArtistSearch+" results. "+dMsg+"]"});
-    if(conv.length>20)conv=conv.slice(-20);
+  if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
+    if(!isRealArtist&&!isGenreQuery){addMsg("I'm listening! Tell me about an artist or genre you love and I'll dig in.",'bot');addSugg(["Radiohead","Irish rock","90s indie","Jazz","Ska","Electronic"])}
   }
 }
 
