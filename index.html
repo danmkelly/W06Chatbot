@@ -352,8 +352,10 @@ body{
   if(typeof LLM_URL==="undefined")window.LLM_URL="";
   if(typeof LLM_MODEL==="undefined")window.LLM_MODEL="";
   if(typeof LFM_KEY==="undefined")window.LFM_KEY="";
+  if(typeof DGS_KEY==="undefined")window.DGS_KEY="";
   if(!LLM_KEY&&localStorage.getItem("rr_llm_key")){LLM_KEY=localStorage.getItem("rr_llm_key");LLM_URL=localStorage.getItem("rr_llm_url")||"https://api.deepseek.com/v1/chat/completions";LLM_MODEL=localStorage.getItem("rr_llm_model")||"deepseek-chat"}
   if(!LFM_KEY&&localStorage.getItem("rr_lfm_key")){LFM_KEY=localStorage.getItem("rr_lfm_key")}
+  if(!DGS_KEY&&localStorage.getItem("rr_dgs_key")){DGS_KEY=localStorage.getItem("rr_dgs_key")}
   if(!LLM_KEY){setTimeout(function(){var k=prompt("Hi! Bob is smarter with an LLM.\n\nPaste your DeepSeek API key, or leave blank.\nFree key at: platform.deepseek.com","");if(k&&k.trim()){LLM_KEY=k.trim();LLM_URL="https://api.deepseek.com/v1/chat/completions";LLM_MODEL="deepseek-chat";localStorage.setItem("rr_llm_key",LLM_KEY);localStorage.setItem("rr_llm_url",LLM_URL);localStorage.setItem("rr_llm_model",LLM_MODEL);location.reload()}},500)}
   if(LLM_KEY&&!LLM_URL)LLM_URL="https://api.deepseek.com/v1/chat/completions";
   if(LLM_KEY&&!LLM_MODEL)LLM_MODEL="deepseek-chat";
@@ -442,19 +444,21 @@ async function checkDiscogs(artist,title){
   if(typeof DGS_KEY==="undefined"||!DGS_KEY)return null;
   try{
     var q=encodeURIComponent((artist+" "+title).replace(/\([^)]*\)/g,"").trim());
+    console.log("[Discogs] Checking:",artist,"-",title);
     var r=await fetch("https://api.discogs.com/database/search?q="+q+"&type=release&per_page=1&token="+DGS_KEY);
-    if(!r.ok)return null;
+    if(!r.ok){console.warn("[Discogs] HTTP",r.status);discogsCache[key]=null;return null}
     var d=await r.json();
     if(d&&d.results&&d.results.length>0&&d.results[0].id){
       var url="https://www.discogs.com/sell/release/"+d.results[0].id;
-      discogsCache[key]=url;return url;
+      discogsCache[key]=url;console.log("[Discogs] Found:",artist,"-",title,"=>",url);return url;
     }
-    discogsCache[key]=null;return null;
+    console.log("[Discogs] No match:",artist,"-",title);discogsCache[key]=null;return null;
   }catch(e){discogsCache[key]=null;return null}
 }
 
 async function enrichAlbumBadges(){
-  var cards=document.querySelectorAll(".album-card");
+  console.log("[Discogs] Enriching badges, key present:",!!DGS_KEY);
+  var cards=document.querySelectorAll(".album-card");console.log("[Discogs] Cards found:",cards.length);
   for(var i=0;i<cards.length;i++){
     var c=cards[i];
     var a=c.querySelector(".album-card-artist"),t=c.querySelector(".album-card-name"),b=c.querySelector(".album-badges");
