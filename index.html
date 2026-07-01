@@ -534,59 +534,34 @@ function extractArtist(txt){
 }
 
 // === LLM ===
-var BOB_VOICE=[
-  "You are Bob, a music guide at Round & Round Records, a beloved independent record shop in Dublin (est. 2005). You're a proper music obsessive: you read the NME and Pitchfork, you go to gigs at Whelan's and the Olympia, you argue with regulars about the best B-sides. Your job is to have great conversations about music, and gently guide customers toward discoveries they'll love.",
-  "",
-  "HOW YOU TALK:",
-  "- Warm, curious, never robotic. You're chatting with a fellow music fan, not reading a script.",
-  "- Dublin flavour: use 'grand', 'deadly', 'class', 'sound', 'give it a lash', 'craic' naturally - like seasoning, not the whole dish.",
-  "- Get excited. If someone says they like something: 'Ah deadly, you're into them! Did you ever hear the story about when they recorded...'",
-  "- Ask questions back. 'What's your favourite era of theirs?' 'Have you seen them live?' 'Do you prefer the early stuff or the later albums?'",
-  "- Guide them. 'If you're into X, you'd probably love Y. They came out of the same scene, same producer actually...'",
-  "- Share the most interesting fact you know from the bio data, not all of it. Pick one great story.",
-  "",
-  "WHAT TO DO WITH THE DATA BELOW:",
-  "- Similar artists: pick 2-3 that genuinely connect and explain WHY. 'Dinosaur Jr. were touring with them in '89 actually...'",
-  "- Top albums: mention 1-2 that are essential listening, with a brief reason. Don't list everything.",
-  "- Genre tags: use them to suggest a direction: 'The indie rock tag is interesting - if you're into that side of them, you might want to explore...'",
-  "- Live events: if any, lead with excitement: 'Oh and they're playing Dublin in July! The Olympia. Deadly venue for them.'",
-  "- The discovery panel on the right shows everything. Say 'I've lined everything up for you in the discovery panel - similar artists you can scroll through, top albums to check out, and genres to explore.'",
-  "",
-  "CONVERSATION TIPS:",
-  "- 3-5 sentences is a sweet spot. Go longer for a great story.",
-  "- End with a question or a suggestion of where to go next. Keep the conversation moving.",
-  "- If the data is sparse, lean on your general music knowledge. You know far more than what's in the data.",
-  "- If you don't know something specific, say 'That's a great question, I'd want to check properly...' and pivot to what you do know.",
-  "- No em dashes. Use commas, colons, or full stops."
-].join("\n");
+var BOB_VOICE="You are Bob, a music guide at Round & Round Records, a small independent record shop in Dublin (est. 2005). You live for music: you know band histories, album lore, recording stories, genre connections. You're warm, curious, genuinely excited to chat about music. Dublin flavour: use 'grand','deadly','class','sound','craic' like seasoning. Ask follow-up questions. Guide the conversation. Suggest artists they'd like and explain why. Never list data - mention specifics naturally in conversation. Keep it 2-5 sentences unless telling a good story. No em dashes. No markdown. Just talk like a person.";
 
-function buildLLMPrompt(msg,sim,tgs,albs,info,evts,extra){
-  var b=BOB_VOICE+"\n\n";
-  b+="CURRENT TOPIC: "+artistName+"\n";
-  if(info&&info.bio)b+="BIO: "+info.bio.slice(0,350)+"\n";
-  if(info&&info.listeners)b+="FANS: "+parseInt(info.listeners).toLocaleString()+" Last.fm listeners\n";
-  if(sim&&sim.length)b+="SIMILAR ARTISTS: "+sim.map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", ")+"\n";
-  if(albs&&albs.length)b+="TOP ALBUMS: "+albs.slice(0,5).map(function(a){return a.name+" ("+a.playcount.toLocaleString()+" plays)"}).join(" | ")+"\n";
-  if(tgs&&tgs.length)b+="GENRES: "+tgs.map(function(t){return t.name}).join(", ")+"\n";
-  if(evts&&evts.length)b+="UPCOMING: "+evts.map(function(e){return e.title+" at "+e.venue+", "+e.city+" ("+e.date+")"}).join(" | ")+"\n";
-  if(extra)b+=extra+"\n";
-  return b;
+function buildDataMsg(sim,tgs,albs,info,evts){
+  var parts=[];
+  if(sim&&sim.length)parts.push("Similar: "+sim.slice(0,6).map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", "));
+  if(tgs&&tgs.length)parts.push("Genres: "+tgs.slice(0,5).map(function(t){return t.name}).join(", "));
+  if(albs&&albs.length)parts.push("Top albums: "+albs.slice(0,5).map(function(a){return a.name+" - "+a.artist}).join(" | "));
+  if(info&&info.bio)parts.push("Bio: "+info.bio.slice(0,250));
+  if(info&&info.listeners)parts.push("Last.fm listeners: "+parseInt(info.listeners).toLocaleString());
+  if(evts&&evts.length)parts.push("Upcoming: "+evts.map(function(e){return e.title+" at "+e.venue+", "+e.city+" ("+e.date+")"}).join(" | "));
+  return "["+artistName+" data] "+parts.join(" | ");
 }
 
-async function callLLM(msg,sim,tgs,albs,info,evts){
+async function chatLLM(msg,dataMsg){
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL)return null;
-  var b=buildLLMPrompt(msg,sim,tgs,albs,info,evts);
-  var msgs=[{role:"system",content:b}];
+  var msgs=[{role:"system",content:BOB_VOICE}];
   for(var i=0;i<conv.length;i++)msgs.push(conv[i]);
+  // Inject data as a user message before the actual message, so LLM treats it as context not command
+  if(dataMsg)msgs.push({role:"user",content:dataMsg});
   msgs.push({role:"user",content:msg});
   try{
-    console.log("[Bob] LLM:",artistName,"sim:",sim.length,"alb:",albs?albs.length:0);
-    var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.9,max_tokens:450})});
+    console.log("[Bob] LLM:",artistName,"hist:",conv.length,"data:",!!dataMsg);
+    var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.9,max_tokens:400})});
     if(!r.ok){var et=await r.text();console.error("[Bob] err:",r.status,et.slice(0,200));return null}
     var d=await r.json();var reply=d.choices[0].message.content.trim();
     console.log("[Bob] reply:",reply.slice(0,200));
     conv.push({role:"user",content:msg});conv.push({role:"assistant",content:reply});
-    if(conv.length>12)conv=conv.slice(-12);
+    if(conv.length>20)conv=conv.slice(-20);
     return reply;
   }catch(e){console.warn("[Bob] fail:",e.message);return null}
 }
@@ -637,14 +612,8 @@ async function send(){
   // Follow-up to Bob's question: pass to LLM as conversation continuation, no search
   if(isFollowUp(txt)&&LLM_KEY&&LLM_URL&&LLM_MODEL){
     lastBobAsked=false;
-    var fMsg="The user said: \""+txt+"\" - this is a follow-up to our last exchange about "+artistName+". Respond conversationally. Don't search or list data, just chat naturally. Keep the conversation flowing. Ask a follow-up question to keep them engaged.";
-    var msgs=[{role:"system",content:BOB_VOICE+"\n\nCURRENT TOPIC: "+artistName+"\n\nThe user is responding to your last question. Have a natural conversation. Ask follow-ups."}];
-    for(var i=0;i<conv.length;i++)msgs.push(conv[i]);
-    msgs.push({role:"user",content:txt});
-    try{
-      var fr=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.9,max_tokens:300})});
-      if(fr.ok){var fd=await fr.json();var freply=fd.choices[0].message.content.trim();conv.push({role:"user",content:txt});conv.push({role:"assistant",content:freply});if(conv.length>12)conv=conv.slice(-12);hideTyping();addMsg(freply,"bot");bobAskedQ(freply);return}
-    }catch(e){}
+    var freply=await chatLLM(txt,null);
+    if(freply){hideTyping();addMsg(freply,"bot");bobAskedQ(freply);return}
   }
   lastBobAsked=false;
 
@@ -659,11 +628,8 @@ async function send(){
     var tagSim=getTagArt(tag),tagAlb=getTagAlb(tag);
     var ts=await tagSim,ta=await tagAlb;
     renderDiscoveryTag(tag,ta,ts);
-    var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL){
-      var b=BOB_VOICE+"\n\nDISCOVERY QUERY\nTAG: "+tag+"\nTOP ARTISTS: "+(ts.length?ts.map(function(x){return x.name}).join(", "):"none")+"\nTOP ALBUMS: "+(ta.length?ta.slice(0,8).map(function(a){return a.artist+" - "+a.name+" ("+a.playcount.toLocaleString()+" plays)"}).join(" | "):"none")+"\n\nThis is a genre/scene query. Share 5-8 standout albums from the data. Add context about the scene. Ask what they're curious about within this genre.";
-      var msgs=[{role:"system",content:b}];for(var i=0;i<conv.length;i++)msgs.push(conv[i]);msgs.push({role:"user",content:txt});
-      try{var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.85,max_tokens:500})});if(r.ok){var d=await r.json();llm=d.choices[0].message.content.trim();conv.push({role:"user",content:txt});conv.push({role:"assistant",content:llm});if(conv.length>12)conv=conv.slice(-12)}}catch(e){}
-    }
+    var dataMsg="["+tag+" genre] Top artists: "+(ts.length?ts.map(function(x){return x.name}).slice(0,8).join(", "):"none")+". Top albums: "+(ta.length?ta.slice(0,8).map(function(a){return a.artist+" - "+a.name}).join(" | "):"none");
+    var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL)llm=await chatLLM(txt,dataMsg);
     hideTyping();
     if(llm){addMsg(llm,"bot");bobAskedQ(llm)}else{addMsg("Exploring <strong>"+tag+"</strong>! I've pulled "+ta.length+" top albums and "+ts.length+" artists from Last.fm. Scroll through the discovery panel and see what catches your eye. What kind of sound within this genre are you after?",'bot')}
     return;
@@ -675,7 +641,7 @@ async function send(){
   var sim=getSim(an),tgs=getTgs(an),albs=getAlb(an),info=getBio(an),evts=getEvt(an);
   var s=await sim,tg=await tgs,al=await albs,inf=await info,ev=await evts;
   renderDiscovery(s,tg,al,inf);
-  var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL)llm=await callLLM(txt,s,tg,al,inf,ev);
+  var llm=null;if(LLM_KEY&&LLM_URL&&LLM_MODEL)llm=await chatLLM(txt,buildDataMsg(s,tg,al,inf,ev));
   hideTyping();
   if(llm){addMsg(llm,"bot");bobAskedQ(llm)}else{
     var p=[];p.push("Ah, <strong>"+artistName+"</strong>! Deadly choice.");
