@@ -755,17 +755,24 @@ async function send(){
   var txt=chatInput.value.trim();if(!txt)return;
   addMsg(txt,"user");chatInput.value="";showTyping();
 
-  // Gibberish detection: random chars, keyboard mashing, nonsense
+  // Gibberish/unclear input detection
   var isGibberish=false;
+  var clean=txt.replace(/[^a-zA-Z]/g,'').toLowerCase();
   if(txt.length<2)isGibberish=true;
-  else if(/^[^a-zA-Z0-9\s]{3,}$/.test(txt))isGibberish=true; // Only symbols
-  else if(/(.)\1{4,}/.test(txt))isGibberish=true; // Repeated chars: "aaaaaa"
-  else if(/^(.)\1*$/.test(txt.replace(/\s/g,'')))isGibberish=true; // Same char repeated
-  else if(txt.replace(/[^a-zA-Z]/g,'').length<2&&txt.length>2)isGibberish=true; // Mostly non-letters
-  else if(/^[a-z]{1,2}$/i.test(txt))isGibberish=true; // Single 1-2 letter word
+  else if(/^[^a-zA-Z0-9\s]{3,}$/.test(txt))isGibberish=true;
+  else if(/(.)\1{4,}/.test(txt))isGibberish=true;
+  else if(/^(.)\1*$/.test(txt.replace(/\s/g,'')))isGibberish=true;
+  else if(clean.length<2&&txt.length>2)isGibberish=true;
+  // Keyboard mashing patterns
+  else if(/^(asdf|qwer|zxcv|uiop|hjkl|nm,.)/i.test(clean))isGibberish=true;
+  else if(/(asdf|qwer|zxcv|uiop|hjkl|tyui|ghjk|bnm,|vbnm|dfgh|wert|sdfg|xcvb)/i.test(clean))isGibberish=true;
+  // Bare conversational words with no artist intent
+  else if(/^(yes|no|ok|okay|yeah|yep|nope|maybe|sure|idk|dunno|hello|hi|hey|thanks|thx|ty|bye|cya|lol|haha|hehe|what|why|when|who|how|help|test|testing|asdf|fdsa)$/i.test(txt))isGibberish=true;
+  // Very short and doesn't look like an artist name
+  else if(txt.split(/\s+/).length===1&&txt.length<5&&!/^[A-Z]/.test(txt))isGibberish=true;
   if(isGibberish){
     hideTyping();
-    addMsg("Hmm, that didn't quite make sense to me! Try telling me an artist you love, or a genre you're curious about. I'm here to chat about music!",'bot');
+    addMsg("I didn't quite catch that! Give me an artist name to explore, a genre you're curious about, or just tell me what kind of music you're into. I'm all ears!",'bot');
     addSugg(["Radiohead","Pixies","Jazz","Irish artists","90s indie"]);
     return;
   }
