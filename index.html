@@ -784,14 +784,10 @@ async function send(){
     var llmReply=await chatLLM(txt,null);
     hideTyping();
     if(llmReply){addMsg(llmReply,"bot");bobAskedQ(llmReply);
-      // Always add regex-extracted names synchronously first
-      var replyNames=extractArtists(llmReply);
-      replyNames.forEach(function(n){if(knownNames.indexOf(n)===-1)knownNames.push(n)});
-      var lb=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
-      if(lb)lb.innerHTML=enrichLinks(lb.innerHTML);
-      // Then augment with LLM entity extraction asynchronously
+      // Use LLM entity extraction for accurate links (no regex - too many false positives)
       extractEntities(llmReply).then(function(ents){
         ents.forEach(function(n){if(knownNames.indexOf(n)===-1)knownNames.push(n)});
+        var lb=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
         if(lb)lb.innerHTML=enrichLinks(lb.innerHTML);
       });
     }
