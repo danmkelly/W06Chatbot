@@ -163,6 +163,11 @@ body{
         <h4>Genre &amp; Discovery Accuracy</h4>
         <p>Genre-based searches ("best Irish albums of the 80s") use Last.fm's <strong>community-applied tags</strong>, which are crowd-sourced and can be inconsistent. An album tagged "irish" might be Irish folk, Irish rock, or just by an artist who once played in Dublin. There's no era filtering at the API level, so "80s Irish albums" returns all Irish-tagged albums regardless of decade. Bob's LLM compensates with its own knowledge, but the panel data is unfiltered.</p>
       </div>
+      <div class="card">
+        <div class="card-icon">&#128241;</div>
+        <h4>Mobile Responsiveness</h4>
+        <p>The site uses basic CSS media queries but <strong>does not scale down well to smaller screens</strong>. The two-panel layout collapses to a stacked view at narrow widths, but the discovery panel becomes cramped, album cards overflow, and the chat input can be obscured on very small viewports. The experience is designed for desktop and tablet; proper mobile adaptation would require a redesigned single-column flow with a slide-out discovery drawer.</p>
+      </div>
     </div>
   </div>
 

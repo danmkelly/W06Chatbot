@@ -42,15 +42,13 @@ export default {
         const lfmUrl = `https://ws.audioscrobbler.com/2.0/?${params}&api_key=${env.LFM_KEY}&format=json`;
         response = await fetch(lfmUrl);
       } else if (url.pathname === "/api/discogs") {
-        // Discogs proxy (passes through query params)
-        const params = url.searchParams.toString();
-        const dgsUrl = `https://api.discogs.com/${url.search ? "?" + url.searchParams.toString() : ""}`;
-        // Reconstruct the Discogs URL properly
         const q = url.searchParams.get("q") || "";
         const type = url.searchParams.get("type") || "release";
         const perPage = url.searchParams.get("per_page") || "1";
         const dgsApiUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=${type}&per_page=${perPage}&token=${env.DGS_KEY}`;
-        response = await fetch(dgsApiUrl);
+        response = await fetch(dgsApiUrl, {
+          headers: { "User-Agent": "R&RRecords/1.0" }
+        });
       } else {
         return new Response("Not found", { status: 404, headers });
       }
