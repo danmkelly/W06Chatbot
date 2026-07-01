@@ -635,6 +635,25 @@ function goBack(){
   })
 }
 
+async function extractEntities(text){
+  if(!LLM_KEY)return[];
+  var msgs=[{role:"system",content:"Extract all artist/band names and album titles mentioned in this text. Return ONLY a JSON array of strings, nothing else. Example: [\"Radiohead\",\"OK Computer\",\"Thom Yorke\"]. If none found, return []."},{role:"user",content:text}];
+  try{
+    var llmUrl=API_PROXY?API_PROXY+"/api/llm":(LLM_URL||"https://api.deepseek.com/v1/chat/completions");
+    var opts={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:LLM_MODEL||"deepseek-chat",messages:msgs,temperature:0,max_tokens:200,response_format:{type:"json_object"}})};
+    if(!API_PROXY)opts.headers.Authorization="Bearer "+LLM_KEY;
+    var r=await fetch(llmUrl,opts);
+    if(!r.ok)return[];
+    var d=await r.json();
+    var content=d.choices[0].message.content.trim();
+    try{
+      var parsed=JSON.parse(content);
+      var arr=Array.isArray(parsed)?parsed:(parsed.artists||parsed.names||parsed.entities||[]);
+      return arr.filter(function(x){return typeof x==="string"&&x.length>1});
+    }catch(e){return[]}
+  }catch(e){return[]}
+}
+
 // === Send ===
 var lastArtistSearch="";
 
@@ -647,24 +666,24 @@ async function send(){
     var llmReply=await chatLLM(txt,null);
     hideTyping();
     if(llmReply){addMsg(llmReply,"bot");bobAskedQ(llmReply);
-      // Scan LLM reply for any newly mentioned artists, add to knownNames immediately
-      var replyNames=extractArtists(llmReply);
-      replyNames.forEach(function(n){if(knownNames.indexOf(n)===-1)knownNames.push(n)});
-      // Re-scan this message now that we have names
-      var lastBubble=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
-      if(lastBubble)lastBubble.innerHTML=enrichLinks(lastBubble.innerHTML);
+      // Use LLM to extract entities for accurate link enrichment
+      extractEntities(llmReply).then(function(ents){
+        ents.forEach(function(n){if(knownNames.indexOf(n)===-1)knownNames.push(n)});
+        var lastBubble=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
+        if(lastBubble)lastBubble.innerHTML=enrichLinks(lastBubble.innerHTML);
+      });
     }
     // If LLM failed, fall through to rule-based below
   }
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL)hideTyping();
 
-  // STEP 2: Find artists to search - from user message AND from LLM reply
+  // STEP 2: Find artists to search - from LLM entity extraction
   var artists=extractArtists(txt);
   var tag=findBestTag(txt);
-  // Also check LLM reply for newly mentioned artists
+  // Augment with LLM-extracted entities for better accuracy
   if(llmReply&&LLM_KEY){
-    var extraFromLLM=extractArtists(llmReply);
-    extraFromLLM.forEach(function(a){if(artists.indexOf(a)===-1)artists.push(a)});
+    var ents=await extractEntities(llmReply);
+    ents.forEach(function(a){var lower=a.toLowerCase();if(artists.indexOf(lower)===-1)artists.push(lower)});
   }
 
   // Search for each real artist, collect all results then render merged
