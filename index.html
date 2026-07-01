@@ -342,34 +342,22 @@ body{
 
 <div class="foot">
   Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a>
-  <span class="key-link" onclick="setKey('llm','DeepSeek API key (leave blank to disable):','rr_llm_key')">LLM key</span>
-  <span class="key-link" onclick="setKey('lfm','Last.fm API key:','rr_lfm_key')">Last.fm key</span>
 </div>
 
 <script src="config.js"></script>
 <script>
-// === Key setup ===
+// === API Proxy (Cloudflare Worker URL - set after deploying worker) ===
+// Leave blank to use direct API access with config.js keys (local dev only)
+var API_PROXY="";
+// Example after deploy: var API_PROXY="https://rr-records-proxy.your-subdomain.workers.dev";
+
+// === Key setup (only needed when API_PROXY is empty) ===
 (function(){
   if(typeof LLM_KEY==="undefined")window.LLM_KEY="";
-  if(typeof LLM_URL==="undefined")window.LLM_URL="";
-  if(typeof LLM_MODEL==="undefined")window.LLM_MODEL="";
   if(typeof LFM_KEY==="undefined")window.LFM_KEY="";
   if(typeof DGS_KEY==="undefined")window.DGS_KEY="";
-  if(!LLM_KEY&&localStorage.getItem("rr_llm_key")){LLM_KEY=localStorage.getItem("rr_llm_key");LLM_URL=localStorage.getItem("rr_llm_url")||"https://api.deepseek.com/v1/chat/completions";LLM_MODEL=localStorage.getItem("rr_llm_model")||"deepseek-chat"}
-  if(!LFM_KEY&&localStorage.getItem("rr_lfm_key")){LFM_KEY=localStorage.getItem("rr_lfm_key")}
-  if(!DGS_KEY&&localStorage.getItem("rr_dgs_key")){DGS_KEY=localStorage.getItem("rr_dgs_key")}
-  if(!LLM_KEY){setTimeout(function(){var k=prompt("Hi! Bob is smarter with an LLM.\n\nPaste your DeepSeek API key, or leave blank.\nFree key at: platform.deepseek.com","");if(k&&k.trim()){LLM_KEY=k.trim();LLM_URL="https://api.deepseek.com/v1/chat/completions";LLM_MODEL="deepseek-chat";localStorage.setItem("rr_llm_key",LLM_KEY);localStorage.setItem("rr_llm_url",LLM_URL);localStorage.setItem("rr_llm_model",LLM_MODEL);location.reload()}},500)}
-  if(LLM_KEY&&!LLM_URL)LLM_URL="https://api.deepseek.com/v1/chat/completions";
-  if(LLM_KEY&&!LLM_MODEL)LLM_MODEL="deepseek-chat";
+  if(API_PROXY){LLM_KEY="proxy";LFM_KEY="proxy";DGS_KEY="proxy"}
 })();
-function setKey(type,msg,storeKey){
-  var cur=localStorage.getItem(storeKey)||"";
-  var k=prompt(msg,cur);if(k===null)return;
-  var ck=k.trim();
-  if(ck){localStorage.setItem(storeKey,ck);if(type==="llm"){localStorage.setItem("rr_llm_url","https://api.deepseek.com/v1/chat/completions");localStorage.setItem("rr_llm_model","deepseek-chat")}}
-  else{localStorage.removeItem(storeKey)}
-  location.reload();
-}
 
 // === State ===
 var conv=[],artistName="",discogsCache={};
@@ -426,7 +414,7 @@ function hideTyping(){var e=document.getElementById("t");if(e)e.remove()}
 function qa(t){chatInput.value=t;send()}
 
 // === Last.fm ===
-function lfm(p){return fetch("https://ws.audioscrobbler.com/2.0/?api_key="+LFM_KEY+"&format=json&"+p).then(function(r){return r.ok?r.json():null}).catch(function(e){console.warn("LFM",e.message);return null})}
+function lfm(p){var u=API_PROXY?API_PROXY+"/api/lastfm?"+p:"https://ws.audioscrobbler.com/2.0/?api_key="+LFM_KEY+"&format=json&"+p;return fetch(u).then(function(r){return r.ok?r.json():null}).catch(function(e){console.warn("LFM",e.message);return null})}
 async function getSim(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getsimilar&artist="+encodeURIComponent(a)+"&limit=12");return(d&&d.similarartists&&d.similarartists.artist)?d.similarartists.artist.map(function(x){var m=parseFloat(x.match);return{name:x.name,match:m<=1?Math.round(m*100):Math.round(m)}}):[]}
 async function getTgs(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettoptags&artist="+encodeURIComponent(a)+"&limit=10");return(d&&d.toptags&&d.toptags.tag)?d.toptags.tag.map(function(x){return{name:x.name,count:parseInt(x.count)}}):[]}
 async function getAlb(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettopalbums&artist="+encodeURIComponent(a)+"&limit=10");if(!d||!d.topalbums||!d.topalbums.album)return[];return d.topalbums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:a,playcount:parseInt(x.playcount)||0,img:img}})}
@@ -470,7 +458,8 @@ async function checkDiscogs(artist,title){
   try{
     var q=encodeURIComponent((artist+" "+title).replace(/\([^)]*\)/g,"").trim());
     console.log("[Discogs] Checking:",artist,"-",title);
-    var r=await fetch("https://api.discogs.com/database/search?q="+q+"&type=release&per_page=1&token="+DGS_KEY);
+    var dgsUrl=API_PROXY?API_PROXY+"/api/discogs?q="+q+"&type=release&per_page=1":"https://api.discogs.com/database/search?q="+q+"&type=release&per_page=1&token="+DGS_KEY;
+    var r=await fetch(dgsUrl);
     if(!r.ok){console.warn("[Discogs] HTTP",r.status);discogsCache[key]=null;return null}
     var d=await r.json();
     if(d&&d.results&&d.results.length>0&&d.results[0].id){
@@ -588,15 +577,17 @@ function buildDataMsg(sim,tgs,albs,info,evts){
 }
 
 async function chatLLM(msg,dataMsg){
-  if(!LLM_KEY||!LLM_URL||!LLM_MODEL)return null;
+  if(!LLM_KEY)return null;
   var msgs=[{role:"system",content:BOB_VOICE}];
   for(var i=0;i<conv.length;i++)msgs.push(conv[i]);
-  // Inject data as a user message before the actual message, so LLM treats it as context not command
   if(dataMsg)msgs.push({role:"user",content:dataMsg});
   msgs.push({role:"user",content:msg});
   try{
-    console.log("[Bob] LLM:",artistName,"hist:",conv.length,"data:",!!dataMsg);
-    var r=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+LLM_KEY},body:JSON.stringify({model:LLM_MODEL,messages:msgs,temperature:0.9,max_tokens:400})});
+    var llmUrl=API_PROXY?API_PROXY+"/api/llm":(LLM_URL||"https://api.deepseek.com/v1/chat/completions");
+    var fetchOpts={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:LLM_MODEL||"deepseek-chat",messages:msgs,temperature:0.9,max_tokens:400})};
+    if(!API_PROXY)fetchOpts.headers.Authorization="Bearer "+LLM_KEY;
+    console.log("[Bob] LLM:",artistName,"proxy:",!!API_PROXY);
+    var r=await fetch(llmUrl,fetchOpts);
     if(!r.ok){var et=await r.text();console.error("[Bob] LLM err:",r.status,et.slice(0,200));if(et.indexOf("Insufficient")>-1||et.indexOf("balance")>-1||r.status===402){var b=document.getElementById("bobBadge");b.textContent="no credits";b.style.background="#C0392B";b.classList.remove("live")}return null}
     var d=await r.json();var reply=d.choices[0].message.content.trim();
     console.log("[Bob] reply:",reply.slice(0,200));
@@ -717,7 +708,9 @@ async function send(){
 async function enrichSimImages(sim){
   if(typeof DGS_KEY==="undefined"||!DGS_KEY||!sim||!sim.length)return;
   var promises=sim.map(function(a,i){
-    return fetch("https://api.discogs.com/database/search?q="+encodeURIComponent(a.name)+"&type=artist&per_page=1&token="+DGS_KEY)
+    var q=encodeURIComponent(a.name);
+    var dgsUrl=API_PROXY?API_PROXY+"/api/discogs?q="+q+"&type=artist&per_page=1":"https://api.discogs.com/database/search?q="+q+"&type=artist&per_page=1&token="+DGS_KEY;
+    return fetch(dgsUrl)
       .then(function(r){return r.ok?r.json():null})
       .then(function(d){
         if(d&&d.results&&d.results.length>0&&d.results[0].cover_image){
@@ -758,7 +751,8 @@ document.getElementById("chatSend").addEventListener("click",send);
 chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
 (function(){
   var b=document.getElementById("bobBadge"),l=document.getElementById("bobLabel");
-  if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM";b.classList.add("live");l.textContent="Music guru · AI-powered"}
+  if(API_PROXY){b.textContent="LLM";b.classList.add("live");l.textContent="Music guru · AI-powered"}
+  else if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM";b.classList.add("live");l.textContent="Music guru · AI-powered"}
   else{b.textContent="basic";l.textContent="Music guru & vinyl hunter"}
   addMsg("Hey! I'm <strong>Bob</strong>, your music guide at Round &amp; Round Records. Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot');
   setTimeout(function(){addMsg("What are you into right now?",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},1200);
