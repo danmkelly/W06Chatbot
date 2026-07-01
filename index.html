@@ -389,12 +389,10 @@ var genreChips=document.getElementById("genreChips");
 // === Helpers ===
 var knownNames=[]; // Artists/albums to make clickable in chat
 function enrichLinks(html){
-  if(!knownNames.length)return html;
-  // Sort by length descending so longer names match first
+  if(!knownNames.length||html.indexOf("chat-link")>-1)return html;
   var names=knownNames.slice().sort(function(a,b){return b.length-a.length});
   names.forEach(function(n){
-    var escaped=n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    var rx=new RegExp('(^|\\s)('+escaped+')(?=[\\s,.\!?;:]|$)','gi');
+    var rx=new RegExp('(^|\\s|>)('+n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')(?=[\\s,.\!?;:<]|$)','gi');
     html=html.replace(rx,function(m,p1,p2){return p1+'<span class="chat-link" onclick="qa(\''+p2.replace(/'/g,"\\'")+'\')">'+p2+'</span>'});
   });
   return html;
@@ -404,8 +402,11 @@ function updateKnownNames(artists,albums,searchName){
   if(searchName)knownNames.push(searchName);
   if(artists)artists.forEach(function(a){knownNames.push(a.name)});
   if(albums)albums.forEach(function(a){knownNames.push(a.name);if(a.artist)knownNames.push(a.artist)});
-  // Deduplicate
   var seen={};knownNames=knownNames.filter(function(n){var k=n.toLowerCase();if(seen[k])return false;seen[k]=true;return n&&n.length>1});
+  // Re-scan all existing bot bubbles now that we have names
+  document.querySelectorAll(".msg.bot .msg-bubble").forEach(function(b){
+    b.innerHTML=enrichLinks(b.innerHTML);
+  });
 }
 function sc(){chatMsgs.scrollTop=chatMsgs.scrollHeight}
 function addMsg(t,s){
