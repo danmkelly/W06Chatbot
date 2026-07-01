@@ -541,17 +541,23 @@ async function exploreGenre(tag){
 
 function extractArtists(txt){
   var t=txt.toLowerCase().replace(/[.,!?;:'"()]/g," ").trim();
-  t=t.replace(/^(i |we )?(really |kinda |sort of |pretty |absolutely )?(like|love|enjoy|adore|rate|dig|fancy|into |fan of |listening to )/i,"");
-  t=t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for |tell me about |tell me more about |what about |how about |give me |give me more on |more on |more about |more from |play me |put on |i want |i need |looking for |check out |ever heard of |do you know |can you |explain |describe )/i,"");
+  // Normalize contractions
+  t=t.replace(/\bi'm\b/g,"i am").replace(/\byou're\b/g,"you are").replace(/\bwe're\b/g,"we are");
+  // Strip lead-in phrases
+  t=t.replace(/^(i am |we are |i |we )(really |kinda |sort of |pretty |absolutely |so |super )?(into |a fan of |loving |enjoying |listening to |liking |digging |feeling |getting into )/i,"");
+  t=t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for |tell me about |tell me more about |what about |how about |give me |give me more on |more on |more about |more from |play me |put on |i want |i need |looking for |check out |ever heard of |do you know |can you |explain |describe |i like |i love |i enjoy |i adore |i fancy |i am into |i'm into )/i,"");
   var parts=t.split(/\s+(?:and|or)\s+|,\s*/);
   var results=[];
-  parts.forEach(function(p){var w=p.trim().split(/\s+/).filter(function(x){return x.length>1});if(w.length>=1)results.push(w.slice(0,3).join(" "))});
+  parts.forEach(function(p){
+    var w=p.trim().split(/\s+/).filter(function(x){return x.length>1&&!/^(the|and|or|but|for|nor|yet|so|in|on|at|to|by|from|with|about|into|upon|over|under|above|below|between|through|during|before|after|behind|beyond|near|off|out|up|down|of)$/i.test(x)});
+    if(w.length>=1)results.push(w.slice(0,3).join(" "));
+  });
   return results.filter(function(r){return r&&r.length>=2});
 }
 
 function isRealArtistName(an,txt){
   if(!an||an.length<3)return false;
-  var nw="more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|favorite|favourite|good|bad|great|nice|cool|awesome|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|still|again|back|me|give|more|ever|heard|know|explain|describe|check|play|listen";
+  var nw="more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|favorite|good|bad|great|nice|cool|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|still|again|back|me|give|more|ever|heard|know|explain|describe|check|play|listen|into|really|kinda|sort|pretty|absolutely|and|or|but";
   var words=an.split(/\s+/);
   var allNoise=words.every(function(w){return nw.indexOf(w)>-1});
   return !allNoise&&txt.split(/\s+/).length<=12;
@@ -671,7 +677,9 @@ async function send(){
     }
   }
   if(searchedAny&&(mergedSim.length||mergedAlb.length)){
-    artistName=firstArtist;lastArtistSearch=firstArtist;pushNav(firstArtist);
+    var allNames=artists.filter(function(a){return isRealArtistName(a,txt)}).slice(0,3);
+    var displayName=allNames.length>1?allNames.map(function(n){return n.charAt(0).toUpperCase()+n.slice(1)}).join(" + "):(allNames[0]?allNames[0].charAt(0).toUpperCase()+allNames[0].slice(1):firstArtist);
+    artistName=displayName;lastArtistSearch=firstArtist;pushNav(displayName);
     var finalTags=mergedTags.sort(function(a,b){return b.count-a.count}).slice(0,12);
     renderDiscovery(mergedSim.slice(0,12),finalTags,mergedAlb.slice(0,16),mergedBio);
     if(LLM_KEY){var dM=buildDataMsg(mergedSim.slice(0,6),finalTags,mergedAlb.slice(0,8),mergedBio,null);if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}}
