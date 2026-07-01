@@ -135,6 +135,59 @@ body{
 .human-ramp-icon{font-size:1rem;vertical-align:middle;margin-right:4px}
 .human-ramp-cta{color:var(--accent3);text-decoration:underline;font-weight:700}
 
+/* Record loading overlay */
+.disc-loading{
+  position:absolute;inset:0;background:rgba(13,13,13,0.92);
+  display:none;align-items:center;justify-content:center;z-index:10;
+  flex-direction:column;gap:16px;
+}
+.disc-loading.active{display:flex}
+.disc-turntable{perspective:400px}
+.disc-record{
+  width:100px;height:100px;position:relative;
+  transform:rotateX(55deg);transform-style:preserve-3d;
+}
+.disc-platter{
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%,#444 0%,#222 60%,#111 100%);
+  box-shadow:0 0 30px rgba(0,0,0,0.5),inset 0 0 20px rgba(0,0,0,0.3);
+  position:absolute;
+}
+.disc-vinyl{
+  width:90px;height:90px;border-radius:50%;
+  background:#111;
+  position:absolute;top:5px;left:5px;
+  animation:spin 1.5s linear infinite;
+  box-shadow:0 2px 15px rgba(0,0,0,0.6);
+}
+.disc-vinyl::before{
+  content:'';position:absolute;top:8px;left:8px;right:8px;bottom:8px;
+  border-radius:50%;border:1px solid rgba(255,255,255,0.04);
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,0.02),inset 0 0 0 9px rgba(255,255,255,0.015);
+}
+.disc-label{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),#C0392B);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  box-shadow:0 0 8px rgba(232,93,63,0.4);
+}
+.disc-label::after{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:#333;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+}
+.disc-tonearm{
+  width:2px;height:50px;background:linear-gradient(180deg,#999,#666);
+  position:absolute;top:-14px;right:8px;border-radius:1px;
+  transform:rotate(25deg);transform-origin:top center;
+}
+.disc-tonearm::after{
+  content:'';width:12px;height:3px;background:#888;border-radius:1px;
+  position:absolute;bottom:0;left:-5px;
+}
+.disc-text{color:var(--text-dim);font-size:0.72rem;letter-spacing:0.5px;animation:pulse-text 2s ease-in-out infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse-text{0%,100%{opacity:0.5}50%{opacity:1}}
+
 /* Back button */
 .back-bar{display:flex;align-items:center;gap:10px;padding:10px 20px;background:var(--surface2);border-bottom:1px solid var(--border)}
 .back-btn{background:var(--accent);border:none;color:#fff;padding:6px 16px;border-radius:16px;font-size:0.75rem;cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s;letter-spacing:0.3px}
@@ -326,6 +379,16 @@ body{
 
   <!-- DISCOVERY PANEL -->
   <div class="discovery" id="discovery">
+    <div class="disc-loading" id="discLoading">
+      <div class="disc-turntable">
+        <div class="disc-record">
+          <div class="disc-platter"></div>
+          <div class="disc-vinyl"><div class="disc-label"></div></div>
+          <div class="disc-tonearm"></div>
+        </div>
+      </div>
+      <div class="disc-text">Digging through the crates...</div>
+    </div>
     <div class="d-empty" id="dEmpty">
       <div class="d-empty-inner">
         <div class="d-empty-icon">&#127925;</div>
@@ -452,6 +515,7 @@ function findBestTag(txt){
 }
 
 function renderDiscoveryTag(tag,albs,sim){
+  document.getElementById("discLoading").classList.remove("active");
   dEmpty.style.display="none";dContent.style.display="block";
   var label=tag.charAt(0).toUpperCase()+tag.slice(1);
   artistHero.innerHTML='<div class="artist-hero-name">'+label+'</div><div class="artist-hero-sub">Top albums &amp; artists on Last.fm</div><div class="artist-hero-tags"><span class="artist-hero-tag">'+tag+'</span></div>';
@@ -511,6 +575,7 @@ function albumBadges(artist,title){return albumBadgesHTML(artist,title)}
 
 // === Render discovery ===
 function renderDiscovery(sim,tgs,albs,info){
+  document.getElementById("discLoading").classList.remove("active");
   dEmpty.style.display="none";dContent.style.display="block";
 
   // Hero
@@ -718,6 +783,9 @@ async function send(){
     var ents=await extractEntities(llmReply);
     ents.forEach(function(a){var lower=a.toLowerCase();if(artists.indexOf(lower)===-1)artists.push(lower)});
   }
+
+  // Show loading if we're about to search
+  if(artists.length||(tag&&!searchedAny))document.getElementById("discLoading").classList.add("active");
 
   // Search for each real artist, collect all results then render merged
   var searchedAny=false;
