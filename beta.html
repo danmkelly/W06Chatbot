@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bob's Orbit — Round &amp; Round Records</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050508;--surface:#0D0D14;--text:#E8E4DD;--text-dim:#6B6770;
+  --accent:#E85D3F;--accent2:#4A9E8E;--accent3:#C4A44A;
+  --glow:rgba(232,93,63,0.3);--glow2:rgba(74,158,142,0.3);
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{position:fixed;inset:0;z-index:0}
+.ui{position:fixed;inset:0;z-index:1;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:16px;gap:12px}
+.ui>*{pointer-events:auto}
+
+/* Bob center */
+.center-glow{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:0;pointer-events:none}
+.center-record{width:80px;height:80px;border-radius:50%;background:#111;box-shadow:0 0 60px var(--glow),0 0 120px rgba(232,93,63,0.12);animation:pulse-glow 3s ease-in-out infinite;position:relative}
+.center-record::before{content:'';position:absolute;top:6px;left:6px;right:6px;bottom:6px;border-radius:50%;border:1px solid rgba(255,255,255,0.06);box-shadow:inset 0 0 0 4px rgba(255,255,255,0.03),inset 0 0 0 8px rgba(255,255,255,0.015)}
+.center-label{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#C0392B);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px var(--glow);z-index:1}
+.center-label::after{content:'';width:5px;height:5px;border-radius:50%;background:#333;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.center-label-text{position:fixed;top:calc(50% + 56px);left:50%;transform:translateX(-50%);color:var(--text);font-size:0.85rem;font-weight:800;text-shadow:0 0 20px rgba(0,0,0,0.8);z-index:0;pointer-events:none;white-space:nowrap}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 60px var(--glow),0 0 120px rgba(232,93,63,0.12)}50%{box-shadow:0 0 80px var(--glow),0 0 160px rgba(232,93,63,0.2)}}
+
+/* Chat bubble floating */
+.bubble{position:fixed;z-index:2;max-width:320px;background:rgba(13,13,20,0.92);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:12px 16px;font-size:0.8rem;line-height:1.5;color:var(--text);backdrop-filter:blur(12px);animation:fadeIn .4s ease;box-shadow:0 8px 32px rgba(0,0,0,0.5);pointer-events:auto}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.bubble .speak-btn{display:inline-flex;width:20px;height:20px;border-radius:50%;border:none;background:transparent;color:var(--text-dim);cursor:pointer;font-size:0.65rem;align-items:center;justify-content:center;vertical-align:middle;margin-left:4px;opacity:0.5;transition:all .15s}
+.bubble .speak-btn:hover{opacity:1;color:var(--accent2)}
+.bubble .speak-btn.speaking{opacity:1;color:var(--accent2);animation:pulse-glow 0.8s ease-in-out infinite}
+
+/* Input bar */
+.input-bar{display:flex;gap:8px;background:rgba(13,13,20,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:28px;padding:6px 8px 6px 18px;backdrop-filter:blur(16px);max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.4);transition:border-color .2s}
+.input-bar:focus-within{border-color:var(--accent)}
+.input-bar input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:0.85rem;font-family:inherit;min-width:0}
+.input-bar input::placeholder{color:var(--text-dim)}
+.input-bar button{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all .15s}
+.send-btn{background:var(--accent);color:#fff}
+.send-btn:hover{background:#D14A30}
+.mic-btn{background:rgba(255,255,255,0.06);color:var(--text-dim);font-size:0.9rem}
+.mic-btn:hover{color:var(--text)}
+.mic-btn.listening{background:var(--accent);color:#fff;animation:pulse-glow 0.8s ease-in-out infinite}
+
+/* Human ramp */
+.human-ramp{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:2;font-size:0.65rem;color:var(--text-dim);cursor:pointer;padding:6px 16px;border-radius:14px;background:rgba(196,164,74,0.08);border:1px solid rgba(196,164,74,0.15);transition:all .2s;white-space:nowrap}
+.human-ramp:hover{color:var(--text);background:rgba(196,164,74,0.15);border-color:rgba(196,164,74,0.3)}
+
+/* Disclosure bar */
+.disclosure{position:fixed;top:0;left:0;right:0;z-index:3;background:rgba(5,5,8,0.9);border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 16px;text-align:center;font-size:0.62rem;color:var(--text-dim);backdrop-filter:blur(12px);pointer-events:none}
+.disclosure strong{color:var(--accent2)}
+
+/* Brand mark */
+.brand-mark{position:fixed;top:12px;left:16px;z-index:3;font-size:0.65rem;color:var(--text-dim);letter-spacing:1px;font-weight:700;pointer-events:none}
+
+/* Mobile */
+@media(max-width:600px){
+  .center-record{width:60px;height:60px}
+  .center-label{width:18px;height:18px}
+  .center-label-text{font-size:0.72rem;top:calc(50% + 44px)}
+  .bubble{max-width:260px;font-size:0.72rem;padding:10px 14px}
+  .input-bar{width:calc(100vw - 32px);padding:5px 6px 5px 14px}
+  .human-ramp{bottom:64px}
+  .disclosure{font-size:0.58rem}
+}
+</style>
+</head>
+<body>
+
+<div class="disclosure">&#129302; Bob is an AI chatbot — not a real person. He remembers a few things on your device to make visits friendlier. <strong>Never stored on a server.</strong></div>
+<div class="brand-mark">ROUND &amp; ROUND RECORDS</div>
+
+<canvas id="orbit"></canvas>
+
+<div class="center-glow">
+  <div class="center-record"><div class="center-label"></div></div>
+</div>
+<div class="center-label-text" id="centerLabel">Bob</div>
+
+<div class="human-ramp" onclick="betaChat('human')">&#128100; Prefer a real human? Click here for contact details</div>
+
+<div class="ui">
+  <div class="input-bar" id="inputBar">
+    <input id="betaInput" placeholder="Tell Bob about an artist or genre..." autofocus>
+    <button class="mic-btn" id="betaMic" aria-label="Voice">&#127908;</button>
+    <button class="send-btn" id="betaSend" aria-label="Send">&#8594;</button>
+  </div>
+</div>
+
+<div id="bubbleContainer"></div>
+
+<script src="config.js"></script>
+<script>
+// === Beta namespace — fully isolated from index.html ===
+(function(){
+"use strict";
+var API_PROXY="https://rr-records-proxy.dan-m-kelly.workers.dev";
+(function(){if(typeof LLM_KEY==="undefined")window.LLM_KEY="";if(typeof LFM_KEY==="undefined")window.LFM_KEY="";if(typeof DGS_KEY==="undefined")window.DGS_KEY="";if(API_PROXY){LLM_KEY="proxy";LLM_URL="proxy";LLM_MODEL="deepseek-chat";LFM_KEY="proxy";DGS_KEY="proxy"}})();
+
+// === State ===
+var conv=[],artistName="",lastSearch="";
+var expectingName=false,spokeLast=false;
+var bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};
+
+// === DOM ===
+var input=document.getElementById("betaInput");
+var centerLabel=document.getElementById("centerLabel");
+var bubbleContainer=document.getElementById("bubbleContainer");
+
+// === Canvas (star field) ===
+var canvas=document.getElementById("orbit");
+var ctx=canvas.getContext("2d");
+var stars=[],w,h;
+function resize(){w=canvas.width=window.innerWidth;h=canvas.height=window.innerHeight}
+resize();window.addEventListener("resize",resize);
+for(var i=0;i<200;i++)stars.push({x:Math.random()*2-1,y:Math.random()*2-1,z:Math.random()*0.8+0.2,r:Math.random()*1.5+0.5});
+function drawStars(){
+  ctx.clearRect(0,0,w,h);
+  var cx=w/2,cy=h/2;
+  stars.forEach(function(s){
+    var px=cx+s.x*w*0.5,py=cy+s.y*h*0.5;
+    var alpha=s.z*0.6;
+    ctx.beginPath();ctx.arc(px,py,s.r,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,"+alpha+")";ctx.fill();
+    s.y+=s.z*0.0003;if(s.y>1)s.y=-1;
+  });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+// === Memory ===
+function loadMemory(){
+  try{var raw=localStorage.getItem("bob_beta_memory");if(raw){var p=JSON.parse(raw);bobMemory=p}}catch(e){}
+  bobMemory.visits=(bobMemory.visits||0)+1;bobMemory.lastVisit=new Date().toISOString();
+  bobMemory.recentArtists=bobMemory.recentArtists||[];bobMemory.recentGenres=bobMemory.recentGenres||[];
+  bobMemory.totalSearches=bobMemory.totalSearches||0;bobMemory.userName=bobMemory.userName||"";
+  expectingName=!bobMemory.userName;saveMemory();
+}
+function saveMemory(){try{localStorage.setItem("bob_beta_memory",JSON.stringify(bobMemory))}catch(e){}}
+function rememberArtist(a){if(!a)return;var ix=bobMemory.recentArtists.indexOf(a);if(ix>-1)bobMemory.recentArtists.splice(ix,1);bobMemory.recentArtists.unshift(a);if(bobMemory.recentArtists.length>10)bobMemory.recentArtists.pop();bobMemory.totalSearches++;saveMemory()}
+function getPreamble(){
+  var p=[];if(bobMemory.userName)p.push("User's name is "+bobMemory.userName+". Use it occasionally.");
+  if(bobMemory.visits>1)p.push("Visit #"+bobMemory.visits+". We've chatted before.");
+  if(bobMemory.recentArtists.length)p.push("Past searches: "+bobMemory.recentArtists.slice(0,5).join(", "));
+  return p.length?"[Returning customer] "+p.join(" ")+" ":"";
+}
+
+// === Bubbles ===
+function showBubble(txt,speaker){
+  var d=document.createElement("div");d.className="bubble";
+  d.innerHTML='<div>'+txt+'</div>'+'<button class="speak-btn" onclick="betaSpeak(this)" title="Listen">&#128266;</button>';
+  var bx=Math.random()*60+20,by=Math.random()*30+10;
+  d.style.top=by+"%";d.style.left=bx+"%";
+  if(Math.random()>0.5)d.style.right=(Math.random()*20+10)+"%",d.style.left="auto";
+  // Don't overlap center
+  d.addEventListener("click",function(){this.remove()});
+  bubbleContainer.appendChild(d);
+  if(bubbleContainer.children.length>6)bubbleContainer.firstChild.remove();
+  setTimeout(function(){if(d.parentNode)d.remove()},15000);
+}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+// === TTS ===
+window.betaSpeak=function(btn){
+  var s=window.speechSynthesis;
+  if(s.speaking){s.cancel();document.querySelectorAll(".speak-btn.speaking").forEach(function(b){b.classList.remove("speaking")});return}
+  var txt=(btn.previousElementSibling.textContent||btn.previousElementSibling.innerText).trim();
+  document.querySelectorAll(".speak-btn.speaking").forEach(function(b){b.classList.remove("speaking")});
+  btn.classList.add("speaking");
+  function speak(t){
+    var u=new SpeechSynthesisUtterance(t);u.lang="en-IE";u.rate=1;u.pitch=1;
+    var voices=s.getVoices();
+    if(voices.length){
+      var en=voices.filter(function(v){return v.lang.indexOf("en")===0});
+      var female=["female","moira","fiona","zira","samantha","karen"];
+      en=en.filter(function(v){var n=v.name.toLowerCase();return !female.some(function(f){return n.indexOf(f)>-1})});
+      if(!en.length)en=voices.filter(function(v){return v.lang.indexOf("en")===0});
+      var best=null;en.forEach(function(v){var sc=3;if(v.lang==="en-IE")sc=10;else if(v.lang==="en-GB")sc=7;if(!best||sc>best._score){v._score=sc;best=v}});
+      u.voice=best||voices[0];
+    }
+    u.onend=function(){btn.classList.remove("speaking")};u.onerror=function(){btn.classList.remove("speaking")};s.speak(u);
+  }
+  if(s.getVoices().length===0){s.onvoiceschanged=function(){s.onvoiceschanged=null;speak(txt)}}
+  else speak(txt);
+};
+
+// === STT ===
+var micBtn=document.getElementById("betaMic"),recognition=null;
+if("webkitSpeechRecognition" in window||"SpeechRecognition" in window){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang="en-IE";
+  recognition.onresult=function(e){
+    var t="";for(var i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;
+    input.value=t;if(e.results[0].isFinal){micBtn.classList.remove("listening");spokeLast=true;send()}
+  };
+  recognition.onerror=function(){micBtn.classList.remove("listening")};
+  recognition.onend=function(){micBtn.classList.remove("listening")};
+}
+if(!recognition)micBtn.style.display="none";
+micBtn.onclick=function(){
+  if(!recognition)return;
+  if(micBtn.classList.contains("listening")){recognition.stop();micBtn.classList.remove("listening")}
+  else{try{recognition.start();micBtn.classList.add("listening")}catch(e){}}
+};
+
+// === API ===
+function lfm(p){var u=API_PROXY?API_PROXY+"/api/lastfm?"+p:"https://ws.audioscrobbler.com/2.0/?api_key="+LFM_KEY+"&format=json&"+p;return fetch(u).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}
+async function getSim(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getsimilar&artist="+encodeURIComponent(a)+"&limit=8");return(d&&d.similarartists&&d.similarartists.artist)?d.similarartists.artist.map(function(x){var m=parseFloat(x.match);return{name:x.name,match:m<=1?Math.round(m*100):Math.round(m)}}):[]}
+async function getAlb(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettopalbums&artist="+encodeURIComponent(a)+"&limit=8");if(!d||!d.topalbums||!d.topalbums.album)return[];return d.topalbums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:a,playcount:parseInt(x.playcount)||0,img:img}})}
+async function getBio(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist)return null;var bio=(d.artist.bio&&d.artist.bio.summary)?d.artist.bio.summary.replace(/<[^>]+>/g,"").replace(/<a[^>]*>.*?read more.*?<\/a>/gi,"").replace(/read more on last\.fm\.?/i,"").trim().slice(0,400):"";return{name:d.artist.name,bio:bio,listeners:d.artist.stats?d.artist.stats.listeners:"",playcount:d.artist.stats?d.artist.stats.playcount:""}}
+
+// === LLM ===
+var BOB_VOICE_BASE="You are Bob, an AI chatbot music guide at Round & Round Records, a small indie record shop in Dublin (est. 2005). You know band histories, album lore, and genre connections. Dublin flavour: use 'grand','deadly','class','sound','craic'. Keep it 1-3 sentences. Warm, curious, excited about music. Never list data — mention specifics naturally. No em dashes, no markdown. You ARE a bot — never pretend to be human.";
+async function chatLLM(msg){
+  if(!LLM_KEY)return null;
+  var msgs=[{role:"system",content:getPreamble()+BOB_VOICE_BASE}];
+  for(var i=0;i<conv.length;i++)msgs.push(conv[i]);msgs.push({role:"user",content:msg});
+  try{
+    var llmUrl=API_PROXY?API_PROXY+"/api/llm":(LLM_URL||"https://api.deepseek.com/v1/chat/completions");
+    var opts={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:LLM_MODEL||"deepseek-chat",messages:msgs,temperature:0.9,max_tokens:300})};
+    if(!API_PROXY)opts.headers.Authorization="Bearer "+LLM_KEY;
+    var r=await fetch(llmUrl,opts);if(!r.ok)return null;
+    var d=await r.json();var reply=d.choices[0].message.content.trim();
+    conv.push({role:"user",content:msg});conv.push({role:"assistant",content:reply});if(conv.length>16)conv=conv.slice(-16);
+    return reply;
+  }catch(e){return null}
+}
+
+// === Orbit suggestion nodes ===
+var orbitNodes=[];
+var DEFAULT_SUGGEST=["Radiohead","Pixies","Kendrick Lamar","Irish artists","90s indie","Daft Punk","Jazz","Ska"];
+
+function setOrbitNodes(names){
+  orbitNodes=names.map(function(n,i){return{label:n,angle:(Math.PI*2/names.length)*i,radius:120+Math.random()*60,speed:0.0002+Math.random()*0.0003,size:0.7+Math.random()*0.3}});
+}
+setOrbitNodes(DEFAULT_SUGGEST);
+
+canvas.addEventListener("click",function(e){
+  var cx=w/2,cy=h/2;
+  for(var i=orbitNodes.length-1;i>=0;i--){
+    var n=orbitNodes[i],nx=cx+Math.cos(n.angle)*n.radius,ny=cy+Math.sin(n.angle)*n.radius;
+    var dx=e.clientX-nx,dy=e.clientY-ny;
+    if(Math.sqrt(dx*dx+dy*dy)<24){betaChat(n.label);return}
+  }
+});
+
+function drawOrbitNodes(){
+  var cx=w/2,cy=h/2;
+  orbitNodes.forEach(function(n){
+    n.angle+=n.speed;
+    var nx=cx+Math.cos(n.angle)*n.radius,ny=cy+Math.sin(n.angle)*n.radius;
+    ctx.beginPath();ctx.arc(nx,ny,4,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.5)";ctx.fill();
+    ctx.beginPath();ctx.arc(nx,ny,18,0,Math.PI*2);ctx.strokeStyle="rgba(255,255,255,0.08)";ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="10px Inter,system-ui";ctx.textAlign="center";
+    ctx.fillText(n.label,nx,ny+26);
+  });
+}
+
+// Override drawStars to also draw orbit
+var _drawStars=drawStars;
+drawStars=function(){
+  ctx.clearRect(0,0,w,h);
+  var cx=w/2,cy=h/2;
+  // Connection lines
+  orbitNodes.forEach(function(n){
+    var nx=cx+Math.cos(n.angle)*n.radius,ny=cy+Math.sin(n.angle)*n.radius;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(nx,ny);
+    ctx.strokeStyle="rgba(255,255,255,0.03)";ctx.lineWidth=0.5;ctx.stroke();
+  });
+  stars.forEach(function(s){
+    var px=cx+s.x*w*0.5,py=cy+s.y*h*0.5;
+    var alpha=s.z*0.6;
+    ctx.beginPath();ctx.arc(px,py,s.r,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,"+alpha+")";ctx.fill();
+    s.y+=s.z*0.0003;if(s.y>1)s.y=-1;
+  });
+  drawOrbitNodes();
+  requestAnimationFrame(drawStars);
+};
+drawStars();
+
+// === Gibberish check ===
+function isGibberish(txt){
+  if(txt.length<2)return true;
+  var clean=txt.replace(/[^a-zA-Z]/g,'').toLowerCase();
+  if(/^[^a-zA-Z0-9\s]{3,}$/.test(txt))return true;
+  if(/(.)\1{4,}/.test(txt))return true;
+  if(clean.length<2&&txt.length>2)return true;
+  if(/^(asdf|qwer|zxcv|uiop|hjkl)/i.test(clean))return true;
+  if(/^(yes|no|ok|okay|yeah|yep|nope|maybe|sure|idk|dunno|hello|hi|hey|thanks|thx|ty|bye|cya|lol|haha|hehe|what|why|when|who|how|help|test|testing)$/i.test(txt))return true;
+  if(txt.split(/\s+/).length===1&&txt.length<5&&!/^[A-Z]/.test(txt))return true;
+  if(clean.length>=4&&!/^[A-Z]{2,6}$/.test(txt.trim())){var vowels=clean.match(/[aeiou]/g);var vc=vowels?vowels.length:0;if(vc===0||(clean.length-vc)/vc>3)return true}
+  return false;
+}
+
+// === Main send ===
+window.betaChat=function(t){input.value=t;send()};
+
+async function send(){
+  var txt=input.value.trim();if(!txt)return;
+  input.value="";
+
+  if(txt==="CLS"){localStorage.removeItem("bob_beta_memory");bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};expectingName=true;centerLabel.textContent="Bob";showBubble("All clear! Fresh start.","bot");return}
+
+  var userTxt=esc(txt);
+  showBubble(userTxt,"user");
+
+  if(expectingName&&!bobMemory.userName){
+    var name=txt.replace(/^(i'm|i am|my name is|call me|it's|name's)\s+/i,"").replace(/[.!?,]$/,"").trim();
+    if(name&&name.split(/\s+/).length<=3&&name.length>=2){
+      bobMemory.userName=name;expectingName=false;saveMemory();centerLabel.textContent=name;
+      showBubble("Class, nice to meet you <strong>"+esc(name)+"</strong>! What are you into?",'bot');
+      setOrbitNodes(DEFAULT_SUGGEST);return;
+    }
+  }
+
+  if(isGibberish(txt)){
+    showBubble("Didn't quite catch that! Give me an artist name or genre to explore.",'bot');
+    setOrbitNodes(["Radiohead","Pixies","Jazz","Irish artists","90s indie"]);
+    return;
+  }
+
+  // Human handoff
+  if(txt.toLowerCase()==="human"){
+    showBubble("Of course! Round &amp; Round Records, 32 Main Street, Dublin. Phone: +353 1 671 1711. Email: hello@roundandroundrecords.ie. Mon-Sat 10-6, Sun 12-5.","bot");
+    showBubble("Anything else I can help with?",'bot');return;
+  }
+
+  // LLM
+  var llmReply=null;
+  if(LLM_KEY&&LLM_MODEL)llmReply=await chatLLM(txt);
+  if(llmReply)showBubble(llmReply,'bot');
+
+  // Artist search
+  var artists=extractArtists(txt);
+  if(artists.length){
+    var an=artists[0];
+    var sim=await getSim(an),albs=await getAlb(an),bio=await getBio(an);
+    if(sim.length||albs.length){
+      artistName=an;lastSearch=an;rememberArtist(an);
+      var nodeNames=sim.slice(0,6).map(function(s){return s.name});
+      if(!nodeNames.length)nodeNames=albs.slice(0,6).map(function(a){return a.name});
+      if(nodeNames.length)setOrbitNodes(nodeNames);
+      centerLabel.textContent=artistName;
+      if(bio&&bio.bio)showBubble("<strong>"+esc(artistName.charAt(0).toUpperCase()+artistName.slice(1))+"</strong>: "+esc(bio.bio.slice(0,200))+(bio.bio.length>200?"…":""),'bot');
+      if(albs.length){
+        var albMsg="Top albums: "+albs.slice(0,5).map(function(a){return '<a href="https://www.discogs.com/search/?q='+encodeURIComponent(a.artist+" "+a.name)+'&type=release" target="_blank" style="color:var(--accent2)">'+esc(a.name)+'</a>'}).join(", ");
+        showBubble(albMsg,'bot');
+      }
+    }
+  }
+  if(!artists.length&&!llmReply)showBubble("Try an artist name or genre — I'll find you something good!",'bot');
+}
+
+function extractArtists(txt){
+  var t=txt.toLowerCase().replace(/[.,!?;:'"()]/g," ").trim();
+  t=t.replace(/^(i am |we are |i |we )(really |kinda |sort of |pretty |absolutely |so |super )?(into |a fan of |loving |enjoying |listening to |liking |digging )/i,"");
+  t=t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for |tell me about |give me |i like |i love |i enjoy )/i,"");
+  var parts=t.split(/\s+(?:and|or)\s+|,\s*/);
+  var results=[];
+  parts.forEach(function(p){
+    var w=p.trim().split(/\s+/).filter(function(x){return x.length>1&&!/^(the|and|or|but|for|nor|yet|so|in|on|at|to|by|from|with|about|into|upon|over|under|also|get|got|has|had|been|was|were|are|its|not|very|much|well|even|still|always|never|long|time|favorite|favourite|thing|things|stuff|way|lot|lots|bit|kind|sort)$/i.test(x)});
+    if(w.length>=1)results.push(w.slice(0,3).join(" "));
+  });
+  return results.filter(function(r){return r&&r.length>=2});
+}
+
+// === Init ===
+document.getElementById("betaSend").addEventListener("click",send);
+input.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
+loadMemory();
+
+if(bobMemory.userName)centerLabel.textContent=bobMemory.userName;
+if(bobMemory.recentArtists.length)setOrbitNodes(bobMemory.recentArtists.slice(0,8));
+
+(function(){
+  if(bobMemory.visits>1&&bobMemory.userName){
+    showBubble("Welcome back, <strong>"+esc(bobMemory.userName)+"</strong>! I'm Bob, an AI chatbot — your music guide.",'bot');
+    setTimeout(function(){showBubble("What are you in the mood for today?",'bot')},1500);
+  }else{
+    showBubble("Hey! I'm <strong>Bob</strong>, an AI chatbot — not a real person. I'm your music guide at Round &amp; Round Records.",'bot');
+    setTimeout(function(){showBubble("I remember a few things on your device to make visits better. Never stored on a server.",'bot')},1800);
+    setTimeout(function(){showBubble("Tell me an artist you love, or ask about a genre!",'bot')},3000);
+    setTimeout(function(){
+      if(!bobMemory.userName){showBubble("What's your name? (Just on your device, nowhere else)",'bot');expectingName=true}
+    },4200);
+  }
+})();
+})();
+</script>
+</body>
+</html>
