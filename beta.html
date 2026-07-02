@@ -57,7 +57,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 
 /* Artist tile — absolute positioned in arcs */
 .artist-grid{position:absolute;inset:0;pointer-events:none}
-.artist-tile{position:absolute;text-align:center;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center;pointer-events:auto;width:72px;transform:translate(-50%,-50%)}.artist-tile:hover{transform:translate(-50%,-50%) scale(1.1);z-index:2}
+.artist-tile{position:absolute;text-align:center;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center;pointer-events:auto;width:72px;bottom:0;left:0;transform:translate(-50%,50%)}.artist-tile:hover{transform:translate(-50%,50%) scale(1.1);z-index:2}
 .artist-tile .ar-img{border-radius:50%;object-fit:cover;display:block;width:100%;aspect-ratio:1;border:2px solid rgba(255,255,255,0.08)}.artist-tile .ar-placeholder{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;width:100%;aspect-ratio:1}
 .artist-tile .ar-label{font-size:0.5rem;color:var(--text);margin-top:3px;line-height:1.25;height:1.25em;overflow:hidden;width:100%;white-space:nowrap;text-overflow:ellipsis}
 .artist-tile .ar-match{font-size:0.55rem;color:var(--accent3);margin-top:1px;height:1.25em}
@@ -330,11 +330,11 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
     return'<div class="album-tile" onclick="betaChat(\''+a.name.replace(/'/g,"\\'")+'\')">'+(img?'<img class="at-img" src="'+img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="at-placeholder" style="display:none;background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>':'<div class="at-placeholder" style="background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>')+'<div class="at-label">'+esc(a.name)+'</div>'+badges+'</div>';
   }).join("");
 
-  // Artists — positioned in concentric arcs by match %
+  // Artists — positioned in concentric arcs by match % (pixel coords from center)
   var arc=document.getElementById("artistsContent");
   arc.innerHTML="";
   var sorted=sim.slice(0,12).sort(function(a,b){return b.match-a.match});
-  var arcDefs=[{r:155,spread:0.55,count:3},{r:230,spread:0.6,count:4},{r:310,spread:0.65,count:5}];
+  var arcDefs=[{r:150,spread:0.55,count:3},{r:225,spread:0.6,count:4},{r:300,spread:0.65,count:5}];
   var idx=0;
   arcDefs.forEach(function(def){
     var count=Math.min(def.count,sorted.length-idx);
@@ -342,10 +342,10 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
     for(var i=0;i<count;i++){
       var s=sorted[idx+i];if(!s)break;
       var angle=startAngle+(def.spread/(count-1||1))*i;
-      var xp=50+Math.cos(angle)*def.r,yp=50-Math.sin(angle)*def.r;
       var init=(s.name.charAt(0)+(s.name.indexOf(" ")>-1?s.name.charAt(s.name.indexOf(" ")+1):"")).toUpperCase();
       var el=document.createElement("div");el.className="artist-tile";
-      el.style.left=xp+"%";el.style.top=yp+"%";
+      el.style.left=Math.round(Math.cos(angle)*def.r)+"px";
+      el.style.bottom=Math.round(Math.sin(angle)*def.r)+"px";
       el.innerHTML='<div class="ar-placeholder" style="background:'+GENRE_PALETTE[(idx+i)%7]+'">'+init+'</div><div class="ar-label">'+esc(s.name)+'</div><div class="ar-match">'+Math.round(s.match)+'% match</div>';
       el.onclick=function(name){return function(){betaChat(name)}}(s.name);
       arc.appendChild(el);
