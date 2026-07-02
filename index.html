@@ -72,19 +72,21 @@ body{
   display:flex;align-items:center;justify-content:center;
   font-size:1.4rem;color:#fff;flex-shrink:0;
 }
+.chat-top-info{flex:1;min-width:0}
 .chat-top-info h2{font-size:0.95rem;font-weight:600;color:var(--text);}
-.chat-top-info span{font-size:0.65rem;color:var(--text-dim);}
+.chat-top-info span{font-size:0.65rem;color:var(--text-dim);display:block}
+.chat-top-right{margin-left:12px;display:flex;flex-direction:column;align-items:stretch;gap:4px;flex-shrink:0}
 .chat-top-badge{
-  margin-left:auto;font-size:0.7rem;padding:4px 14px;border-radius:12px;
+  font-size:0.7rem;padding:4px 14px;border-radius:12px;
   font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
-  background:#2A2A2A;color:var(--text-dim);
+  background:#2A2A2A;color:var(--text-dim);text-align:center;white-space:nowrap;
 }
 .chat-top-badge.live{background:rgba(74,158,142,0.25);color:var(--accent2);}
 .chat-clear-btn{
-  margin-left:8px;font-size:0.62rem;padding:3px 14px;border-radius:12px;
+  font-size:0.62rem;padding:3px 14px;border-radius:12px;
   font-weight:600;text-transform:uppercase;letter-spacing:0.5px;
   background:transparent;color:var(--text-dim);border:1px solid var(--border);
-  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;
+  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;text-align:center;
 }
 .chat-clear-btn:hover{color:var(--accent);border-color:var(--accent)}
 .chat-msgs{
@@ -476,8 +478,10 @@ body{
         <h2>Bob</h2>
         <span id="bobLabel">Music guru &amp; vinyl hunter</span>
       </div>
-      <span class="chat-top-badge" id="bobBadge">basic</span>
-      <button class="chat-clear-btn" id="clearMemBtn" onclick="clearMemory()" title="Clear what Bob remembers">Clear memory</button>
+      <div class="chat-top-right">
+        <span class="chat-top-badge" id="bobBadge">basic</span>
+        <button class="chat-clear-btn" id="clearMemBtn" onclick="clearMemory()" title="Clear what Bob remembers">Clear memory</button>
+      </div>
     </div>
     <div class="chat-msgs" id="chatMessages"></div>
     <div class="chat-input-wrap">
