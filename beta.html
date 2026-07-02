@@ -62,10 +62,11 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 /* Genre mind map */
 #genreMap{display:block;width:100%;height:calc(100% - 22px)}
 
-/* Center hero overlay */
-.hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;text-align:center;pointer-events:none}
-.hero-img{width:72px;height:72px;border-radius:50%;object-fit:cover;margin:0 auto;display:block;box-shadow:0 0 30px rgba(232,93,63,0.25),0 0 60px rgba(232,93,63,0.06);border:2px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--accent)}
-.hero-name{font-size:1rem;font-weight:900;color:var(--text);margin-top:6px;text-shadow:0 0 16px rgba(0,0,0,0.8)}
+/* Center hero — image exactly on intersection, name below */
+.hero-overlay{position:absolute;top:50%;left:50%;z-index:3;text-align:center;pointer-events:none}
+.hero-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;box-shadow:0 0 30px rgba(232,93,63,0.25),0 0 60px rgba(232,93,63,0.06);border:2px solid rgba(232,93,63,0.3)}
+.hero-img{width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;margin:0 auto}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--accent)}
+.hero-name{position:absolute;top:calc(50% + 38px);left:50%;transform:translateX(-50%);font-size:0.95rem;font-weight:900;color:var(--text);text-shadow:0 0 16px rgba(0,0,0,0.8);white-space:nowrap}
 
 /* Top bar */
 .disclosure{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(5,5,8,0.9);border-bottom:1px solid rgba(255,255,255,0.05);padding:5px 14px;text-align:center;font-size:0.55rem;color:var(--dim);backdrop-filter:blur(12px);pointer-events:none}.disclosure strong{color:var(--accent2)}
@@ -75,7 +76,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
   .chat-pane{width:100%;height:50%;flex-shrink:1}
   .disc-area{height:50%}
   .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
-  .hero-overlay{width:auto}.hero-img{width:48px;height:48px}.hero-name{font-size:0.8rem}
+  .hero-ring{width:48px;height:48px}.hero-img{width:48px;height:48px}.hero-name{font-size:0.72rem;top:calc(50% + 30px)}
   .artist-card .ac-av{width:28px;height:28px}.artist-card .ac-name{font-size:0.62rem}
 }
 </style>
@@ -117,8 +118,8 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
       <canvas id="genreMap" style="width:100%;height:100%"></canvas>
     </div>
     <div class="disc-section genres" style="background:rgba(123,104,238,0.04)">
-      <div class="section-label">Bob says</div>
-      <div id="chatContent" style="font-size:0.72rem;color:var(--dim);line-height:1.5;padding:4px"></div>
+      <div class="section-label">Artist Information</div>
+      <div id="artistInfoContent" style="font-size:0.65rem;color:var(--dim);line-height:1.55;padding:4px;overflow-y:auto;height:calc(100% - 22px)"></div>
     </div>
   </div>
   <div class="hero-overlay" id="heroOverlay">
@@ -157,6 +158,20 @@ function draw(){
     var px=n.x,py=n.y;
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(px,py);
     ctx.strokeStyle="rgba(255,255,255,0.04)";ctx.lineWidth=0.5;ctx.stroke();
+  });
+
+  // Outer ring + quadrant labels at hero position
+  var hr=document.getElementById("heroOverlay"),dr=hr.getBoundingClientRect();
+  var hcx=dr.left+dr.width/2,hcy=dr.top+dr.height/2;
+  ctx.beginPath();ctx.arc(hcx,hcy,100,0,Math.PI*2);
+  ctx.strokeStyle="rgba(255,255,255,0.08)";ctx.lineWidth=1.5;ctx.stroke();
+  ctx.beginPath();ctx.arc(hcx,hcy,90,0,Math.PI*2);
+  ctx.strokeStyle="rgba(255,255,255,0.04)";ctx.lineWidth=0.5;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+  var labels=["ALBUMS","ARTISTS","GENRES","ARTIST INFO"],angles=[-Math.PI*0.75,-Math.PI*0.25,Math.PI*0.25,Math.PI*0.75];
+  labels.forEach(function(l,i){
+    var a=angles[i],lx=hcx+Math.cos(a)*95,ly=hcy+Math.sin(a)*95;
+    ctx.fillStyle="rgba(255,255,255,0.13)";ctx.font="7px Inter,system-ui";ctx.textAlign="center";
+    ctx.fillText(l,lx,ly+3);
   });
   stars.forEach(function(s){
     var px=(s.x)*w,py=(s.y)*h;
@@ -316,10 +331,17 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
   // Genre mind map
   drawGenreMap(tgs.slice(0,14));
 
-  // Chat quadrant
-  var cc=document.getElementById("chatContent");
-  if(chatTexts&&chatTexts.length)cc.innerHTML=chatTexts.map(function(t){return'<p style="margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;font-size:0.72rem">'+esc(t.slice(0,250))+(t.length>250?"…":"")+'</p>'}).join("");
-  else cc.innerHTML='<p style="font-style:italic;font-size:0.7rem">Ask Bob about an artist to see his thoughts here</p>';
+  // Artist info quadrant
+  var ai=document.getElementById("artistInfoContent");
+  if(bio){
+    var parts=[];
+    if(bio.bio)parts.push('<p style="margin-bottom:10px;line-height:1.5">'+esc(bio.bio.slice(0,600))+'</p>');
+    if(bio.listeners)parts.push('<p style="font-size:0.58rem"><strong style="color:var(--text)">'+parseInt(bio.listeners).toLocaleString()+'</strong> listeners &middot; <strong style="color:var(--text)">'+parseInt(bio.playcount).toLocaleString()+'</strong> plays</p>');
+    if(chatTexts&&chatTexts.length)parts.push('<p style="margin-top:8px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:6px;font-size:0.62rem;font-style:italic">"'+esc(chatTexts[0].slice(0,300))+(chatTexts[0].length>300?'…"':'"')+'</p>');
+    ai.innerHTML=parts.join("");
+  }else{
+    ai.innerHTML='<p style="font-style:italic">Search an artist to see their info here</p>';
+  }
 
   // Hero overlay
   document.getElementById("heroName").textContent=artistName.charAt(0).toUpperCase()+artistName.slice(1);
