@@ -1060,7 +1060,7 @@ async function send(){
       return;
     }
     if(/^(no|nope|nah|no thanks)$/i.test(t)){
-      bobMemory.consent="no";expectingConsent=false;saveMemory();
+      bobMemory.consent="no";expectingConsent=false;expectingName=false;saveMemory();
       hideTyping();
       updateMemoryButtons();
       addMsg("No worries — I won't store anything about you. What are you into music-wise?",'bot');
