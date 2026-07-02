@@ -982,6 +982,8 @@ async function send(){
   var txt=chatInput.value.trim();if(!txt)return;
   addMsg(txt,"user");chatInput.value="";showTyping();
 
+  if(txt==="CLS"){hideTyping();clearMemory();return;}
+
   // Name capture — if Bob asked and user replies with something name-like
   if(expectingName&&!bobMemory.userName){
     var name=txt.replace(/^(i'm|i am|my name is|call me|it's|name's|the name's|people call me)\s+/i,"").replace(/[.!?,]$/,"").trim();
