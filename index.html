@@ -484,8 +484,9 @@ body{
         <span id="bobLabel">Music guru &amp; vinyl hunter</span>
       </div>
       <div class="chat-top-right">
-        <span class="chat-top-badge" id="bobBadge">basic</span>
-        <button class="chat-clear-btn" id="clearMemBtn" onclick="clearMemory()" title="Clear what Bob remembers">Clear memory</button>
+      <span class="chat-top-badge" id="bobBadge">basic</span>
+      <button class="chat-clear-btn" id="clearMemBtn" onclick="clearMemory()" title="Clear what Bob remembers" style="display:none">Clear memory</button>
+      <button class="chat-clear-btn" id="rememberBtn" onclick="rememberMe()" title="Let Bob remember you" style="display:none">Remember me</button>
       </div>
     </div>
     <div class="chat-msgs" id="chatMessages"></div>
@@ -568,28 +569,50 @@ var lastBobAsked=false;
 var navHistory=[];
 var spokeLast=false;
 var expectingName=false;
+var expectingConsent=false;
 
 // === Memory (localStorage) ===
-var bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};
+var bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:"",consent:""};
 function loadMemory(){
   try{var raw=localStorage.getItem("bob_memory");if(raw){var p=JSON.parse(raw);bobMemory=p}}catch(e){}
-  bobMemory.visits=(bobMemory.visits||0)+1;
-  bobMemory.lastVisit=new Date().toISOString();
-  bobMemory.recentArtists=bobMemory.recentArtists||[];
-  bobMemory.recentGenres=bobMemory.recentGenres||[];
-  bobMemory.totalSearches=bobMemory.totalSearches||0;
-  bobMemory.userName=bobMemory.userName||"";
-  expectingName=!bobMemory.userName;
-  saveMemory();
+  bobMemory.consent=bobMemory.consent||"";
+  if(bobMemory.consent!=="no"){
+    bobMemory.visits=(bobMemory.visits||0)+1;
+    bobMemory.lastVisit=new Date().toISOString();
+    bobMemory.recentArtists=bobMemory.recentArtists||[];
+    bobMemory.recentGenres=bobMemory.recentGenres||[];
+    bobMemory.totalSearches=bobMemory.totalSearches||0;
+    bobMemory.userName=bobMemory.userName||"";
+    expectingName=!bobMemory.userName;
+    if(bobMemory.consent==="yes")saveMemory();
+  }else{
+    bobMemory.visits=0;bobMemory.userName="";bobMemory.recentArtists=[];bobMemory.recentGenres=[];bobMemory.totalSearches=0;
+    expectingName=false;
+  }
+  updateMemoryButtons();
 }
-function saveMemory(){try{localStorage.setItem("bob_memory",JSON.stringify(bobMemory))}catch(e){}}
+function saveMemory(){if(bobMemory.consent==="yes")try{localStorage.setItem("bob_memory",JSON.stringify(bobMemory))}catch(e){}}
 function clearMemory(){
   localStorage.removeItem("bob_memory");
-  bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};
-  expectingName=true;
+  bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:"",consent:""};
+  expectingName=false;
   simImageCache={};discogsCache={};
   addMsg("All clear! I've forgotten everything about you. Fresh start.",'bot');
   document.getElementById("bobLabel").textContent="Music guru · AI-powered";
+  updateMemoryButtons();
+}
+function rememberMe(){
+  bobMemory.consent="yes";saveMemory();expectingName=true;
+  document.getElementById("bobLabel").textContent="Music guru · AI-powered";
+  addMsg("Grand! I'll remember you from now on. What should I call you?",'bot');
+  updateMemoryButtons();
+}
+function updateMemoryButtons(){
+  var clr=document.getElementById("clearMemBtn"),rem=document.getElementById("rememberBtn");
+  if(!clr||!rem)return;
+  if(bobMemory.consent==="yes"){clr.style.display="";rem.style.display="none"}
+  else if(bobMemory.consent==="no"){clr.style.display="none";rem.style.display=""}
+  else{clr.style.display="none";rem.style.display="none"}
 }
 function rememberArtist(a){
   if(!a)return;
@@ -1026,6 +1049,29 @@ async function send(){
 
   if(txt==="CLS"){hideTyping();clearMemory();return;}
 
+  // Consent handling — asked before any data is stored
+  if(expectingConsent&&!bobMemory.consent){
+    var t=txt.toLowerCase().trim();
+    if(/^(yes|yeah|yep|sure|ok|okay|grand|sound|go on)$/i.test(t)){
+      bobMemory.consent="yes";expectingConsent=false;saveMemory();expectingName=true;
+      hideTyping();
+      updateMemoryButtons();
+      addMsg("Class! I'll remember you. What should I call you?",'bot');
+      return;
+    }
+    if(/^(no|nope|nah|no thanks)$/i.test(t)){
+      bobMemory.consent="no";expectingConsent=false;saveMemory();
+      hideTyping();
+      updateMemoryButtons();
+      addMsg("No worries — I won't store anything about you. What are you into music-wise?",'bot');
+      addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);
+      lastBobAsked=true;return;
+    }
+    hideTyping();
+    addMsg("Just a simple <strong>yes</strong> or <strong>no</strong> — would you like me to remember you between visits? It stays on your device, never sent anywhere.",'bot');
+    return;
+  }
+
   // Name capture — if Bob asked and user replies with something name-like
   if(expectingName&&!bobMemory.userName){
     var name=txt.replace(/^(i'm|i am|my name is|call me|it's|name's|the name's|people call me)\s+/i,"").replace(/[.!?,]$/,"").trim();
@@ -1211,18 +1257,20 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
   loadMemory();
   if(bobMemory.userName)l.textContent="Music guru · knows "+bobMemory.userName;
 
-  if(bobMemory.visits>1&&bobMemory.userName){
+  if(bobMemory.consent==="yes"&&bobMemory.userName){
     addMsg("Welcome back, <strong>"+bobMemory.userName+"</strong>! Great to see you again.",'bot');
-    setTimeout(function(){addMsg("I'm <strong>Bob</strong>, your AI music guide at Round &amp; Round Records. What are you in the mood for today?",'bot')},800);
+    setTimeout(function(){addMsg("What are you in the mood for today? Type <strong>human</strong> any time to reach our team.",'bot')},800);
     setTimeout(function(){addSugg(bobMemory.recentArtists.length?bobMemory.recentArtists.slice(0,4).concat(["Human"]):["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},1600);
+  }else if(bobMemory.consent==="no"){
+    addMsg("Welcome back! I'm <strong>Bob</strong>, an AI chatbot. You asked me not to store anything, so this is a fresh start. Type <strong>human</strong> any time to reach our team.",'bot');
+    setTimeout(function(){addMsg("What are you into right now?",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},1000);
   }else{
-    addMsg("Hey! I'm <strong>Bob</strong>, an AI chatbot powered by DeepSeek. I'm your music guide here at Round &amp; Round Records.",'bot');
-    setTimeout(function(){addMsg("I remember a few things between visits to make your experience better &mdash; your name, what you've searched for, that kind of thing. It all stays on your device, never sent anywhere. You can clear it any time.",'bot')},800);
-    setTimeout(function(){addMsg("So! Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot')},1600);
+    // First visit — consent not yet given
+    addMsg("Hey! I'm <strong>Bob</strong>, an AI chatbot powered by DeepSeek. I'm your music guide here at Round &amp; Round Records. Type <strong>human</strong> any time to reach our team directly.",'bot');
     setTimeout(function(){
-      if(!bobMemory.userName){addMsg("I'd love to remember your name for next time (just on your device, nowhere else). What should I call you?",'bot');expectingName=true}
-      else{addMsg("What are you into right now? Type anything, or if you want to chat to a human just write <strong>human</strong> and I'll share our contact details.",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true}
-    },2400);
+      expectingConsent=true;
+      addMsg("Before we start — would you like me to remember your name and what we chat about for next time? It all stays on your device, never sent anywhere. Just say <strong>yes</strong> or <strong>no</strong>.",'bot');
+    },1200);
   }
 })();
 </script>
