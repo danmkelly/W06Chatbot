@@ -63,11 +63,9 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 .genre-cloud{display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
 .genre-chip{padding:5px 11px;border-radius:14px;font-size:0.63rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.04);color:var(--dim);border:1px solid rgba(255,255,255,0.05);transition:all .15s;letter-spacing:0.2px}.genre-chip:hover{background:rgba(74,158,142,0.2);color:var(--accent2);border-color:rgba(74,158,142,0.3)}
 
-/* Center hero — overlay centered, image above name */
-.hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;text-align:center;pointer-events:none}
-.hero-ring{width:68px;height:68px;border-radius:50%;margin:0 auto;box-shadow:0 0 30px rgba(232,93,63,0.25),0 0 60px rgba(232,93,63,0.06);border:2px solid rgba(232,93,63,0.3)}
-.hero-img{width:68px;height:68px;border-radius:50%;object-fit:cover;display:block}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--accent)}
-.hero-name{font-size:0.9rem;font-weight:900;color:var(--text);margin-top:5px;text-shadow:0 0 16px rgba(0,0,0,0.8);white-space:nowrap}
+/* Center hero — just the image, perfectly centered */
+.hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;pointer-events:none}
+.hero-img{width:68px;height:68px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 30px rgba(232,93,63,0.25),0 0 60px rgba(232,93,63,0.06);border:2px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--accent)}
 
 /* Top bar */
 .disclosure{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(5,5,8,0.9);border-bottom:1px solid rgba(255,255,255,0.05);padding:5px 14px;text-align:center;font-size:0.55rem;color:var(--dim);backdrop-filter:blur(12px);pointer-events:none}.disclosure strong{color:var(--accent2)}
@@ -77,7 +75,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
   .chat-pane{width:100%;height:50%;flex-shrink:1}
   .disc-area{height:50%}
   .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
-  .hero-ring{width:48px;height:48px}.hero-img{width:48px;height:48px}.hero-name{font-size:0.72rem;top:calc(50% + 30px)}
+  .hero-img{width:48px;height:48px}
   .artist-card .ac-av{width:28px;height:28px}.artist-card .ac-name{font-size:0.62rem}
 }
 </style>
@@ -125,7 +123,6 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
   </div>
   <div class="hero-overlay" id="heroOverlay">
     <div class="hero-img placeholder" id="heroImg">&#127925;</div>
-    <div class="hero-name" id="heroName">Bob</div>
   </div>
 </div>
 
@@ -335,9 +332,11 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
 
   // Artist info quadrant
   var ai=document.getElementById("artistInfoContent");
+  var name=artistName.charAt(0).toUpperCase()+artistName.slice(1);
   if(bio){
     var parts=[];
-    if(bio.bio)parts.push('<p style="margin-bottom:10px;line-height:1.5">'+esc(bio.bio.slice(0,600))+'</p>');
+    parts.push('<h3 style="font-size:0.85rem;font-weight:800;color:var(--text);margin-bottom:8px">'+esc(name)+'</h3>');
+    if(bio.bio)parts.push('<p style="margin-bottom:10px;line-height:1.5">'+esc(bio.bio.slice(0,500))+'</p>');
     if(bio.listeners)parts.push('<p style="font-size:0.58rem"><strong style="color:var(--text)">'+parseInt(bio.listeners).toLocaleString()+'</strong> listeners &middot; <strong style="color:var(--text)">'+parseInt(bio.playcount).toLocaleString()+'</strong> plays</p>');
     if(chatTexts&&chatTexts.length)parts.push('<p style="margin-top:8px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:6px;font-size:0.62rem;font-style:italic">"'+esc(chatTexts[0].slice(0,300))+(chatTexts[0].length>300?'…"':'"')+'</p>');
     ai.innerHTML=parts.join("");
@@ -345,8 +344,7 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
     ai.innerHTML='<p style="font-style:italic">Search an artist to see their info here</p>';
   }
 
-  // Hero overlay
-  document.getElementById("heroName").textContent=artistName.charAt(0).toUpperCase()+artistName.slice(1);
+  // Hero image
   var hi=document.getElementById("heroImg");
   if(artImg){hi.className="hero-img";hi.src=artImg;hi.onerror=function(){hi.className="hero-img placeholder";hi.innerHTML='&#127925;'}}
   else{hi.className="hero-img placeholder";hi.innerHTML='&#127925;'}
@@ -399,7 +397,6 @@ async function send(){
 document.getElementById("betaSend").addEventListener("click",send);
 input.addEventListener("keydown",function(e){if(e.key==="Enter")send()});loadMemory();
 if(bobMemory.userName)document.getElementById("bobLabel").textContent="Music guide · knows "+bobMemory.userName;
-if(bobMemory.recentArtists.length)document.getElementById("heroName").textContent=bobMemory.recentArtists[0];
 
 (function(){
   if(bobMemory.visits>1&&bobMemory.userName){addMsg("Welcome back, <strong>"+esc(bobMemory.userName)+"</strong>! I'm Bob, an AI chatbot — your music guide.","bot");setTimeout(function(){addMsg("What are you in the mood for today?","bot")},1200)}
