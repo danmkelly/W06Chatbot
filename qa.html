@@ -85,257 +85,6 @@ body{
     <p class="hero-sub">Maintained by <strong style="color:var(--accent3)">@Keelin</strong> &mdash; QA specialist for the Round &amp; Round Records chatbot. Grounded in <strong>three academic best-practice frameworks</strong> from the Customer Engagement &amp; AI module: chatbot taxonomy (Adamopoulou &amp; Moussiades 2020), CASA / Computers Are Social Actors (Reeves &amp; Nass 1996), and conversation flow anatomy. <strong>Design score: 3.0/5 (C+). Last reviewed:</strong> 2026-07-02.</p>
   </div>
 
-  <!-- Testing Approach -->
-  <div class="section">
-    <div class="section-label">Testing Methodology</div>
-    <h2>How Bob is tested</h2>
-    <p>All testing follows a <strong>real-user simulation</strong> model: tests are written as if a frustrated customer at 11pm on a Saturday is trying to use the bot. No test assumes a happy path. Every test includes a verification step that <strong>can be automated</strong> using a headless browser or simulated DOM interaction.</p>
-
-    <h3>Test categories</h3>
-    <p>The <strong>61-case test plan</strong> (test-plan.md) covers 11 categories:</p>
-    <ul>
-      <li><strong>Greeting flow</strong> &mdash; first visit, return visit, name capture</li>
-      <li><strong>Artist search</strong> &mdash; single/multi artist, misspelled, gibberish</li>
-      <li><strong>Genre exploration</strong> &mdash; chips, tags, keyword search</li>
-      <li><strong>Discovery panel</strong> &mdash; hero, similar artists, albums, genres, bio expander</li>
-      <li><strong>Human handoff</strong> &mdash; contact details, address verification</li>
-      <li><strong>Memory/persistence</strong> &mdash; localStorage, clear, CLS command</li>
-      <li><strong>Voice STT</strong> &mdash; mic, transcription, auto-send</li>
-      <li><strong>Voice TTS</strong> &mdash; speaker icon, playback, cancel</li>
-      <li><strong>Mobile</strong> &mdash; breakpoints, layout, touch targets</li>
-      <li><strong>Error handling</strong> &mdash; API failure, gibberish, fallbacks</li>
-      <li><strong>UI elements</strong> &mdash; modals, buttons, badges, addresses</li>
-    </ul>
-
-    <h3>Automated verification</h3>
-    <p>Each test case specifies <strong>what DOM element to check</strong>, <strong>what text to assert</strong>, and <strong>what network call to verify</strong>. Tests are designed to be run by a headless browser script (Puppeteer/Playwright) that:</p>
-    <ul>
-      <li>Sets the viewport to the target device width</li>
-      <li>Simulates clicks, typing, and voice input</li>
-      <li>Asserts DOM state after each interaction</li>
-      <li>Captures screenshots on failure</li>
-      <li>Logs console errors as test failures</li>
-    </ul>
-  </div>
-
-  <!-- Scoring -->
-  <div class="section">
-    <div class="section-label">Scoring Rubric</div>
-    <h2>Quality score: 3.5 / 5.0 &mdash; Grade B-</h2>
-    <p>Weighted across 6 categories (full rubric in scoring-rubric.md). Scores are versioned and tracked per deployment.</p>
-
-    <div class="scorecard">
-      <div class="sc-item">
-        <span class="sc-value">3.8</span>
-        <span class="sc-label">Conversation Accuracy</span>
-        <span class="sc-detail">25% weight<br>Entity extraction solid; gibberish exemptions improved</span>
-      </div>
-      <div class="sc-item">
-        <span class="sc-value">3.5</span>
-        <span class="sc-label">UI/UX Quality</span>
-        <span class="sc-detail">20% weight<br>Modals close on overlay click; dead mobile code removed</span>
-      </div>
-      <div class="sc-item">
-        <span class="sc-value">3.8</span>
-        <span class="sc-label">Memory &amp; Personalisation</span>
-        <span class="sc-detail">15% weight<br>localStorage solid; cache leaks resolved; clearMemory complete</span>
-      </div>
-      <div class="sc-item">
-        <span class="sc-value">3.5</span>
-        <span class="sc-label">Voice Interaction</span>
-        <span class="sc-detail">15% weight<br>STT + TTS functional; TTS orphan timeout added; male voice pref</span>
-      </div>
-      <div class="sc-item">
-        <span class="sc-value">2.5</span>
-        <span class="sc-label">Mobile Experience</span>
-        <span class="sc-detail">15% weight<br>50/50 split works; nested scroll fixed; no toggle but usable</span>
-      </div>
-      <div class="sc-item">
-        <span class="sc-value">3.5</span>
-        <span class="sc-label">Robustness</span>
-        <span class="sc-detail">10% weight<br>Race condition fixed; goBack catches; LLM error msg; Discogs dedup; XSS patched</span>
-      </div>
-    </div>
-
-    <div class="overall-score">
-      <span class="big">3.5</span><span class="grade">B-</span>
-      <div class="note">Updated score · 5 bugs remaining · 0 critical, 1 high, 0 medium, 4 low · 12 of 17 original bugs resolved</div>
-    </div>
-  </div>
-
-  <!-- Academic Framework Leverage -->
-  <div class="section">
-    <div class="section-label">Academic Best Practice</div>
-    <h2>How the team applies chatbot research</h2>
-    <p>The QA process is grounded in <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. Each specialist agent owns the dimensions relevant to their domain:</p>
-
-    <div class="card-grid" style="margin-top:20px">
-      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
-        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">Seven-Dimension Chatbot Taxonomy</h4>
-        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Adamopoulou &amp; Moussiades (2020). <strong>@Fionn</strong> owns domain closure and service scope. <strong>@Dot</strong> owns goals, response generation, and channel. <strong>@Niamh</strong> owns human-aid reachability and permissions. <strong>@Siobhan</strong> ensures the UI makes each dimension visible.</p>
-      </div>
-      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
-        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">CASA — Computers Are Social Actors</h4>
-        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Reeves &amp; Nass (1996). <strong>@Siobhan</strong> owns the disclosure-in-turn-1 bright line (badge vs spoken self-ID). <strong>@Dot</strong> owns frustration de-escalation as conversation engineering. <strong>@Niamh</strong> owns chummy-data-extraction consent (localStorage disclosure before collection). <strong>@Fionn</strong> verifies personality register matches actual capability.</p>
-      </div>
-      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
-        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">Conversation Flow Anatomy</h4>
-        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. <strong>@Dot</strong> implements the recovery ladder in code (reword &rarr; options &rarr; human). <strong>@Siobhan</strong> designs the closer UI (read-back + keep exploring + human path). <strong>@Cormac</strong> uses "design the unexpected first" as a sprint-planning rule.</p>
-      </div>
-    </div>
-
-    <p style="margin-top:20px"><strong>@Keelin</strong> (QA) cross-references all three frameworks in every review pass, flagging findings as [DESIGN] or [CODE] so ownership is clear. <strong>@Cormac</strong> (Manager) uses framework-alignment scores as delivery quality gates.</p>
-  </div>
-
-  <!-- Bug Register -->
-  <div class="section">
-    <div class="section-label">Bug Register</div>
-    <h2>18 bugs tracked (13 resolved, 5 open)</h2>
-    <p>Found via static code analysis of index.html (lines 1-1235). Updated per deployment. Fresh QA pass: 2026-07-02.</p>
-
-    <div class="bug-table-wrap">
-      <table class="bug-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Severity</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>How it was fixed</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="id">BUG-001</td>
-            <td><span class="sev-crit">Critical</span></td>
-            <td class="desc">XSS: user input in innerHTML. <code>&lt;img src=x onerror=alert(1)&gt;</code> executes as JS.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">HTML-escape user messages in <code>addMsg()</code> with <code>.replace(/&/g,...)</code> for <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>. Line 667.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-002</td>
-            <td><span class="sev-crit">Critical</span></td>
-            <td class="desc">ReferenceError: <code>isRealArtist</code> and <code>isGenreQuery</code> never defined. Blocks all non-LLM fallback.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Removed undefined variable check. Replaced with guardless fallback message at line 1137.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-003</td>
-            <td><span class="sev-high">High</span></td>
-            <td class="desc"><code>enrichLinks</code> rewrites innerHTML of existing bot bubbles, breaking any non-inline DOM references.</td>
-            <td class="status-open">Open</td>
-            <td class="fix">Use TreeWalker to wrap text nodes instead of reassigning innerHTML.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-004</td>
-            <td><span class="sev-high">High</span></td>
-            <td class="desc">Race condition: stale <code>enrichAlbumBadges</code> updates old DOM after new search renders.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Generation counter (<code>enrichGen</code>) increments on each render; stale passes abort immediately.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-005</td>
-            <td><span class="sev-high">High</span></td>
-            <td class="desc">TTS <code>speaking</code> class orphaned when voices never load (background tab, slow connection).</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">4-second timeout clears <code>speaking</code> class if <code>onvoiceschanged</code> never fires.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-006</td>
-            <td><span class="sev-med">Medium</span></td>
-            <td class="desc">Mobile: nested <code>overflow-y:auto</code> on discovery + children creates scroll traps.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Set <code>overflow-y:hidden</code> on <code>.discovery</code> in mobile media query; children scroll independently.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-007</td>
-            <td><span class="sev-med">Medium</span></td>
-            <td class="desc">"What I store" modal doesn't close on overlay click. Only "Got it" button works.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Added <code>onclick="if(event.target===this)this.classList.remove('open')"</code> to modal overlay HTML.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-008</td>
-            <td><span class="sev-med">Medium</span></td>
-            <td class="desc"><code>goBack()</code> leaves typing indicator stuck on API error in nested <code>.then()</code> chain.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Added <code>.catch(function(){hideTyping()})</code> to every level of the promise chain; shows recovery message to user.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-009</td>
-            <td><span class="sev-med">Medium</span></td>
-            <td class="desc"><code>checkDiscogs</code>: concurrent calls for same album bypass cache, causing duplicate API hits.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Added <code>discogsPending{}</code> promise cache; concurrent callers share single in-flight request.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-010</td>
-            <td><span class="sev-med">Medium</span></td>
-            <td class="desc">Mobile: <code>clearMemory</code> references <code>mobile-open</code> class that is never set (dead code).</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Removed dead <code>mobile-open</code> class check entirely from <code>clearMemory()</code>.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-011</td>
-            <td><span class="sev-low">Low</span></td>
-            <td class="desc"><code>simImageCache</code> + <code>discogsCache</code> never cleared: unbounded memory growth.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Added <code>simImageCache={};discogsCache={};</code> to <code>clearMemory()</code>.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-012</td>
-            <td><span class="sev-low">Low</span></td>
-            <td class="desc"><code>extractArtists</code> splits "Mumford and Sons" by "and", searching for "sons" as an artist.</td>
-            <td class="status-open">Open</td>
-            <td class="fix">Try full phrase first; use LLM entity extraction before regex splitting.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-013</td>
-            <td><span class="sev-low">Low</span></td>
-            <td class="desc">Gibberish detection flags lowercase "u2" (but not "U2"); short alphanumeric names catchable.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Added <code>&&!/^[a-z0-9]+$/i.test(txt)</code> — short alphanumeric names like "u2" or "m83" now pass.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-014</td>
-            <td><span class="sev-low">Low</span></td>
-            <td class="desc"><code>addSugg</code> suggestion text not HTML-escaped (defense-in-depth gap in localStorage recall).</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">HTML-escaped suggestion text with <code>.replace(/&/g...)</code> for <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-015</td>
-            <td><span class="sev-low">Low</span></td>
-            <td class="desc"><code>enrichLinks</code> regex can match inside HTML attributes if LLM outputs markup.</td>
-            <td class="status-open">Open</td>
-            <td class="fix">Walk text nodes with TreeWalker; only wrap names in text, not HTML.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-016</td>
-            <td><span class="sev-low">Low</span></td>
-            <td class="desc"><code>speechSynthesis.cancel()</code> cancels speech in all browser tabs, not just our utterances.</td>
-            <td class="status-open">Open</td>
-            <td class="fix">Document limitation. Web Speech API shares across browsing context.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-017</td>
-            <td><span class="sev-low">Low</span></td>
-            <td class="desc"><code>renderDiscoveryTag</code> relies on caller for nav state; inconsistent with <code>renderDiscovery</code>.</td>
-            <td class="status-open">Open</td>
-            <td class="fix">Make both render functions self-contained regarding navigation state.</td>
-          </tr>
-          <tr>
-            <td class="id">BUG-018</td>
-            <td><span class="sev-med">Medium</span></td>
-            <td class="desc">Silent LLM failure: when LLM keys are configured but API is unreachable or returns error, <code>chatLLM()</code> returns null and no error message is displayed to the user. User sees their message sent with no reply.</td>
-            <td class="status-fixed">Fixed</td>
-            <td class="fix">Added <code>else{addMsg("Hmm, I'm having trouble connecting...")}</code> after line 1081 when LLM returns null despite keys being configured.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
   <!-- Design & Pedagogical Review -->
   <div class="section">
     <div class="section-label">Design &amp; Pedagogical Review</div>
@@ -579,6 +328,257 @@ body{
     <p style="font-size:0.78rem;color:var(--text-dim);line-height:1.7">
       <strong style="color:var(--accent)">2026-07-02 (final review after recovery ladder + opener deployment):</strong> F11 (frustration handling) upgraded FAIL &rarr; PARTIAL. `gibberishCount` counter now tracks consecutive failures; after 2+ strikes, Bob shifts from cheerful to serious register ("I'm having trouble understanding...") and offers "Human" suggestion chip. LLM error fallback updated to include human path. F13 (opener) upgraded PARTIAL &rarr; PASS. Turn 1 now includes brief capabilities: "I can find similar artists, dig up albums, explore genres, and help you discover new music." Human handoff also disclosed in turn 1. F16 (recovery ladder) upgraded FAIL &rarr; PARTIAL. Gibberish now reaches step 3 of the ladder; LLM fallback offers human path; post-search suggestion chips now include "Keep exploring" and "Human". Three scenarios still unaddressed (misspelling, no Discogs match, empty results). F9 (fake-human cues) and F10 (register vs capability) remain with manual override: Closed, accepted as low-stakes design decisions. Overall design score improved from 2.7 (Grade C) to 3.0 (Grade C+). CASA scorecard improved from 3.0/5 to 3.5/5. Flow Anatomy scorecard improved from 2.0/5 to 2.5/5.
     </p>
+  </div>
+
+  <!-- Academic Framework Leverage -->
+  <div class="section">
+    <div class="section-label">Academic Best Practice</div>
+    <h2>How the team applies chatbot research</h2>
+    <p>The QA process is grounded in <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. Each specialist agent owns the dimensions relevant to their domain:</p>
+
+    <div class="card-grid" style="margin-top:20px">
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">Seven-Dimension Chatbot Taxonomy</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Adamopoulou &amp; Moussiades (2020). <strong>@Fionn</strong> owns domain closure and service scope. <strong>@Dot</strong> owns goals, response generation, and channel. <strong>@Niamh</strong> owns human-aid reachability and permissions. <strong>@Siobhan</strong> ensures the UI makes each dimension visible.</p>
+      </div>
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">CASA — Computers Are Social Actors</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Reeves &amp; Nass (1996). <strong>@Siobhan</strong> owns the disclosure-in-turn-1 bright line (badge vs spoken self-ID). <strong>@Dot</strong> owns frustration de-escalation as conversation engineering. <strong>@Niamh</strong> owns chummy-data-extraction consent (localStorage disclosure before collection). <strong>@Fionn</strong> verifies personality register matches actual capability.</p>
+      </div>
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">Conversation Flow Anatomy</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. <strong>@Dot</strong> implements the recovery ladder in code (reword &rarr; options &rarr; human). <strong>@Siobhan</strong> designs the closer UI (read-back + keep exploring + human path). <strong>@Cormac</strong> uses "design the unexpected first" as a sprint-planning rule.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:20px"><strong>@Keelin</strong> (QA) cross-references all three frameworks in every review pass, flagging findings as [DESIGN] or [CODE] so ownership is clear. <strong>@Cormac</strong> (Manager) uses framework-alignment scores as delivery quality gates.</p>
+  </div>
+
+  <!-- Scoring -->
+  <div class="section">
+    <div class="section-label">Scoring Rubric</div>
+    <h2>Quality score: 3.5 / 5.0 &mdash; Grade B-</h2>
+    <p>Weighted across 6 categories (full rubric in scoring-rubric.md). Scores are versioned and tracked per deployment.</p>
+
+    <div class="scorecard">
+      <div class="sc-item">
+        <span class="sc-value">3.8</span>
+        <span class="sc-label">Conversation Accuracy</span>
+        <span class="sc-detail">25% weight<br>Entity extraction solid; gibberish exemptions improved</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.5</span>
+        <span class="sc-label">UI/UX Quality</span>
+        <span class="sc-detail">20% weight<br>Modals close on overlay click; dead mobile code removed</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.8</span>
+        <span class="sc-label">Memory &amp; Personalisation</span>
+        <span class="sc-detail">15% weight<br>localStorage solid; cache leaks resolved; clearMemory complete</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.5</span>
+        <span class="sc-label">Voice Interaction</span>
+        <span class="sc-detail">15% weight<br>STT + TTS functional; TTS orphan timeout added; male voice pref</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">2.5</span>
+        <span class="sc-label">Mobile Experience</span>
+        <span class="sc-detail">15% weight<br>50/50 split works; nested scroll fixed; no toggle but usable</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.5</span>
+        <span class="sc-label">Robustness</span>
+        <span class="sc-detail">10% weight<br>Race condition fixed; goBack catches; LLM error msg; Discogs dedup; XSS patched</span>
+      </div>
+    </div>
+
+    <div class="overall-score">
+      <span class="big">3.5</span><span class="grade">B-</span>
+      <div class="note">Updated score · 5 bugs remaining · 0 critical, 1 high, 0 medium, 4 low · 12 of 17 original bugs resolved</div>
+    </div>
+  </div>
+
+  <!-- Testing Approach -->
+  <div class="section">
+    <div class="section-label">Testing Methodology</div>
+    <h2>How Bob is tested</h2>
+    <p>All testing follows a <strong>real-user simulation</strong> model: tests are written as if a frustrated customer at 11pm on a Saturday is trying to use the bot. No test assumes a happy path. Every test includes a verification step that <strong>can be automated</strong> using a headless browser or simulated DOM interaction.</p>
+
+    <h3>Test categories</h3>
+    <p>The <strong>61-case test plan</strong> (test-plan.md) covers 11 categories:</p>
+    <ul>
+      <li><strong>Greeting flow</strong> &mdash; first visit, return visit, name capture</li>
+      <li><strong>Artist search</strong> &mdash; single/multi artist, misspelled, gibberish</li>
+      <li><strong>Genre exploration</strong> &mdash; chips, tags, keyword search</li>
+      <li><strong>Discovery panel</strong> &mdash; hero, similar artists, albums, genres, bio expander</li>
+      <li><strong>Human handoff</strong> &mdash; contact details, address verification</li>
+      <li><strong>Memory/persistence</strong> &mdash; localStorage, clear, CLS command</li>
+      <li><strong>Voice STT</strong> &mdash; mic, transcription, auto-send</li>
+      <li><strong>Voice TTS</strong> &mdash; speaker icon, playback, cancel</li>
+      <li><strong>Mobile</strong> &mdash; breakpoints, layout, touch targets</li>
+      <li><strong>Error handling</strong> &mdash; API failure, gibberish, fallbacks</li>
+      <li><strong>UI elements</strong> &mdash; modals, buttons, badges, addresses</li>
+    </ul>
+
+    <h3>Automated verification</h3>
+    <p>Each test case specifies <strong>what DOM element to check</strong>, <strong>what text to assert</strong>, and <strong>what network call to verify</strong>. Tests are designed to be run by a headless browser script (Puppeteer/Playwright) that:</p>
+    <ul>
+      <li>Sets the viewport to the target device width</li>
+      <li>Simulates clicks, typing, and voice input</li>
+      <li>Asserts DOM state after each interaction</li>
+      <li>Captures screenshots on failure</li>
+      <li>Logs console errors as test failures</li>
+    </ul>
+  </div>
+
+  <!-- Bug Register -->
+  <div class="section">
+    <div class="section-label">Bug Register</div>
+    <h2>18 bugs tracked (13 resolved, 5 open)</h2>
+    <p>Found via static code analysis of index.html (lines 1-1235). Updated per deployment. Fresh QA pass: 2026-07-02.</p>
+
+    <div class="bug-table-wrap">
+      <table class="bug-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Severity</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>How it was fixed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="id">BUG-001</td>
+            <td><span class="sev-crit">Critical</span></td>
+            <td class="desc">XSS: user input in innerHTML. <code>&lt;img src=x onerror=alert(1)&gt;</code> executes as JS.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">HTML-escape user messages in <code>addMsg()</code> with <code>.replace(/&/g,...)</code> for <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>. Line 667.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-002</td>
+            <td><span class="sev-crit">Critical</span></td>
+            <td class="desc">ReferenceError: <code>isRealArtist</code> and <code>isGenreQuery</code> never defined. Blocks all non-LLM fallback.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Removed undefined variable check. Replaced with guardless fallback message at line 1137.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-003</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc"><code>enrichLinks</code> rewrites innerHTML of existing bot bubbles, breaking any non-inline DOM references.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Use TreeWalker to wrap text nodes instead of reassigning innerHTML.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-004</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc">Race condition: stale <code>enrichAlbumBadges</code> updates old DOM after new search renders.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Generation counter (<code>enrichGen</code>) increments on each render; stale passes abort immediately.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-005</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc">TTS <code>speaking</code> class orphaned when voices never load (background tab, slow connection).</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">4-second timeout clears <code>speaking</code> class if <code>onvoiceschanged</code> never fires.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-006</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">Mobile: nested <code>overflow-y:auto</code> on discovery + children creates scroll traps.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Set <code>overflow-y:hidden</code> on <code>.discovery</code> in mobile media query; children scroll independently.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-007</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">"What I store" modal doesn't close on overlay click. Only "Got it" button works.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Added <code>onclick="if(event.target===this)this.classList.remove('open')"</code> to modal overlay HTML.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-008</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc"><code>goBack()</code> leaves typing indicator stuck on API error in nested <code>.then()</code> chain.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Added <code>.catch(function(){hideTyping()})</code> to every level of the promise chain; shows recovery message to user.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-009</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc"><code>checkDiscogs</code>: concurrent calls for same album bypass cache, causing duplicate API hits.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Added <code>discogsPending{}</code> promise cache; concurrent callers share single in-flight request.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-010</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">Mobile: <code>clearMemory</code> references <code>mobile-open</code> class that is never set (dead code).</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Removed dead <code>mobile-open</code> class check entirely from <code>clearMemory()</code>.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-011</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>simImageCache</code> + <code>discogsCache</code> never cleared: unbounded memory growth.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Added <code>simImageCache={};discogsCache={};</code> to <code>clearMemory()</code>.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-012</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>extractArtists</code> splits "Mumford and Sons" by "and", searching for "sons" as an artist.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Try full phrase first; use LLM entity extraction before regex splitting.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-013</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc">Gibberish detection flags lowercase "u2" (but not "U2"); short alphanumeric names catchable.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Added <code>&&!/^[a-z0-9]+$/i.test(txt)</code> — short alphanumeric names like "u2" or "m83" now pass.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-014</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>addSugg</code> suggestion text not HTML-escaped (defense-in-depth gap in localStorage recall).</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">HTML-escaped suggestion text with <code>.replace(/&/g...)</code> for <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-015</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>enrichLinks</code> regex can match inside HTML attributes if LLM outputs markup.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Walk text nodes with TreeWalker; only wrap names in text, not HTML.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-016</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>speechSynthesis.cancel()</code> cancels speech in all browser tabs, not just our utterances.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Document limitation. Web Speech API shares across browsing context.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-017</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>renderDiscoveryTag</code> relies on caller for nav state; inconsistent with <code>renderDiscovery</code>.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Make both render functions self-contained regarding navigation state.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-018</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">Silent LLM failure: when LLM keys are configured but API is unreachable or returns error, <code>chatLLM()</code> returns null and no error message is displayed to the user. User sees their message sent with no reply.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Added <code>else{addMsg("Hmm, I'm having trouble connecting...")}</code> after line 1081 when LLM returns null despite keys being configured.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Navigation -->
