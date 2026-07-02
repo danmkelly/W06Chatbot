@@ -119,25 +119,41 @@ var stars=[];for(var i=0;i<150;i++)stars.push({x:Math.random(),y:Math.random(),z
 
 var GENRE_PALETTE=["#E85D3F","#C4A44A","#4A9E8E","#7B68EE","#DC143C","#FF8C00","#00CED1","#9370DB","#3CB371","#FF69B4"];
 
+// Pie sections: Albums (top-right), Artists (bottom-right), Genres (bottom-left), Chat (top-left)
+var SECTION_ALBUMS={start:0, end:Math.PI/2, label:"ALBUMS", color:"#E85D3F"};
+var SECTION_ARTISTS={start:Math.PI/2, end:Math.PI, label:"ARTISTS", color:"#4A9E8E"};
+var SECTION_GENRES={start:Math.PI, end:Math.PI*3/2, label:"GENRES", color:"#C4A44A"};
+var SECTION_CHAT={start:Math.PI*3/2, end:Math.PI*2, label:"CHAT", color:"#7B68EE"};
+
+var pieNodes=[]; // [{angle, radius, sectionIdx}]
+
+function nodeXY(n){var cx=w/2,cy=h/2;return{x:cx+Math.cos(n.angle)*n.radius,y:cy+Math.sin(n.angle)*n.radius}}
+
 function draw(){
   ctx.clearRect(0,0,w,h);
-  var cx=w/2,cy=h/2;
+  var cx=w/2,cy=h/2,maxR=Math.min(w,h)*0.42;
 
-  // Spider web
-  orbitNodes.forEach(function(n,i){
-    var nx=cx+Math.cos(n.angle)*n.radius,ny=cy+Math.sin(n.angle)*n.radius;
-    var alpha=0.15+Math.abs(Math.sin(Date.now()*0.0005+i))*0.1;
-    ctx.beginPath();ctx.moveTo(cx,cy);
-    ctx.bezierCurveTo(cx+(nx-cx)*0.3,cy-20+(ny-cy)*0.3,nx-(nx-cx)*0.3,ny+20+(ny-cy)*0.3,nx,ny);
-    ctx.strokeStyle=n.color?n.color.replace(")","").replace("rgb(","rgba(")+","+alpha+")":"rgba(255,255,255,"+alpha+")";
-    ctx.lineWidth=0.6;ctx.stroke();
+  // Dividing lines — 4 quadrants
+  [SECTION_ALBUMS,SECTION_ARTISTS,SECTION_GENRES,SECTION_CHAT].forEach(function(sec,i){
+    [sec.start,sec.end].forEach(function(a){
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(a)*maxR,cy+Math.sin(a)*maxR);
+      ctx.strokeStyle="rgba(255,255,255,0.06)";ctx.lineWidth=1;ctx.stroke();
+    });
+    var ma=sec.start+(sec.end-sec.start)/2;
+    var lx=cx+Math.cos(ma)*(maxR+28),ly=cy+Math.sin(ma)*(maxR+28);
+    ctx.fillStyle="rgba(255,255,255,0.15)";ctx.font="9px Inter,system-ui";ctx.textAlign="center";
+    ctx.fillText(sec.label,lx,ly);
+  });
+
+  // Web lines to each node
+  pieNodes.forEach(function(n){
+    var p=nodeXY(n);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle="rgba(255,255,255,0.05)";ctx.lineWidth=0.5;ctx.stroke();
     // Node dot
-    ctx.beginPath();ctx.arc(nx,ny,3,0,Math.PI*2);
-    ctx.fillStyle=n.color||"rgba(255,255,255,0.6)";ctx.fill();
-    // Glow ring
-    ctx.beginPath();ctx.arc(nx,ny,20,0,Math.PI*2);
-    ctx.strokeStyle=n.color?n.color.replace(")","").replace("rgb(","rgba(")+",0.12)":"rgba(255,255,255,0.05)";
-    ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,0.4)";ctx.fill();
   });
 
   stars.forEach(function(s){
@@ -150,42 +166,68 @@ function draw(){
 }
 draw();
 
-// Orbit engine
-function updateOrbitPositions(){
-  var cx=w/2,cy=h/2;
+function positionPieNodes(){
+  var cx=w/2,cy=h/2,maxR=Math.min(w,h)*0.40;
   orbitEls.forEach(function(el,i){
-    var n=orbitNodes[i];if(!n)return;
-    n.angle+=n.speed;
-    var nx=cx+Math.cos(n.angle)*n.radius,ny=cy+Math.sin(n.angle)*n.radius;
-    el.style.left=(nx-el.offsetWidth/2)+"px";el.style.top=(ny-el.offsetHeight/2)+"px";
+    var n=pieNodes[i];if(!n)return;
+    var p=nodeXY(n);
+    el.style.left=(p.x-el.offsetWidth/2)+"px";el.style.top=(p.y-el.offsetHeight/2)+"px";
   });
-  requestAnimationFrame(updateOrbitPositions);
+  requestAnimationFrame(positionPieNodes);
 }
-updateOrbitPositions();
+positionPieNodes();
 
-function setOrbitNodes(items){
-  // items: [{label, img, color, radius, speed}]
-  orbitContainer.innerHTML="";orbitNodes=[];orbitEls=[];
-  var paletteIdx=0;
-  items.forEach(function(item,i){
-    var angle=item.angle||(Math.PI*2/items.length)*i;
-    var radius=item.radius||(120+Math.random()*80);
-    var speed=item.speed||(0.0003+Math.random()*0.0004)*(Math.random()>0.5?1:-1);
-    var color=item.color||GENRE_PALETTE[paletteIdx++%GENRE_PALETTE.length];
-    orbitNodes.push({angle:angle,radius:radius,speed:speed,color:color});
+function spreadInArc(sec,count,index,minR,maxR){
+  if(count<=1)return sec.start+(sec.end-sec.start)/2;
+  return sec.start+(sec.end-sec.start)*(index/(count-1));
+}
 
-    var el=document.createElement("div");el.className="orbit-node";
-    if(item.img){
-      el.innerHTML='<img class="thumb" src="'+item.img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'+'<div class="thumb placeholder" style="display:none">'+item.label.charAt(0).toUpperCase()+'</div>';
-    }else{
-      el.innerHTML='<div class="thumb placeholder">'+item.label.charAt(0).toUpperCase()+'</div>';
-    }
-    el.innerHTML+='<div class="label">'+esc(item.label)+'</div>';
-    el.style.setProperty("--node-glow",color.replace(")","")+",0.3)");
-    el.onclick=function(){betaChat(item.label)};
-    orbitContainer.appendChild(el);
-    orbitEls.push(el);
-  });
+function setPieData(albums,artists,genres,chatTexts){
+  // chatTexts: array of strings to display in the chat quadrant
+  orbitContainer.innerHTML="";pieNodes=[];orbitEls=[];
+  var minR=Math.min(w,h)*0.14,maxR=Math.min(w,h)*0.39;
+
+  function addSection(items,sec){
+    items.forEach(function(item,i){
+      var fraction=items.length>1?i/(items.length-1):0.5;
+      var angle=spreadInArc(sec,items.length,i,0,0);
+      var radius=minR+fraction*(maxR-minR);
+      pieNodes.push({angle:angle,radius:radius});
+
+      var el=document.createElement("div");el.className="orbit-node";
+      var palColor=GENRE_PALETTE[i%GENRE_PALETTE.length];
+      if(item.img){
+        el.innerHTML='<img class="thumb" src="'+item.img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'+'<div class="thumb placeholder" style="display:none;background:'+palColor+'">'+item.label.charAt(0).toUpperCase()+'</div>';
+      }else{
+        el.innerHTML='<div class="thumb placeholder" style="background:'+palColor+'">'+item.label.charAt(0).toUpperCase()+'</div>';
+      }
+      el.innerHTML+='<div class="label">'+esc(item.label)+'</div>';
+      el.style.setProperty("--node-glow",palColor.replace(")","")+",0.3)");
+      el.onclick=function(){betaChat(item.label)};
+      orbitContainer.appendChild(el);
+      orbitEls.push(el);
+    });
+  }
+
+  // Chat quadrant: show text bubbles
+  if(chatTexts&&chatTexts.length){
+    chatTexts.forEach(function(txt,i){
+      var fraction=chatTexts.length>1?i/(chatTexts.length-1):0.5;
+      var angle=spreadInArc(SECTION_CHAT,chatTexts.length,i,0,0);
+      var radius=minR+fraction*(maxR-minR)*0.9;
+      pieNodes.push({angle:angle,radius:radius});
+
+      var el=document.createElement("div");el.className="orbit-node";
+      el.innerHTML='<div class="thumb placeholder" style="background:#7B68EE;width:auto;height:auto;padding:8px 10px;border-radius:10px;font-size:0.62rem;max-width:120px;text-align:left;line-height:1.35">'+esc(txt.slice(0,120))+(txt.length>120?"…":"")+'</div>';
+      el.style.cursor="default";
+      orbitContainer.appendChild(el);
+      orbitEls.push(el);
+    });
+  }
+
+  if(albums.length)addSection(albums,SECTION_ALBUMS);
+  if(artists.length)addSection(artists,SECTION_ARTISTS);
+  if(genres.length)addSection(genres,SECTION_GENRES);
 }
 
 // === Memory ===
@@ -268,6 +310,7 @@ function lfm(p){var u=API_PROXY?API_PROXY+"/api/lastfm?"+p:"https://ws.audioscro
 async function getSim(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getsimilar&artist="+encodeURIComponent(a)+"&limit=10");return(d&&d.similarartists&&d.similarartists.artist)?d.similarartists.artist.map(function(x){var m=parseFloat(x.match);return{name:x.name,match:m<=1?Math.round(m*100):Math.round(m)}}):[]}
 async function getAlb(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettopalbums&artist="+encodeURIComponent(a)+"&limit=12");if(!d||!d.topalbums||!d.topalbums.album)return[];return d.topalbums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:a,playcount:parseInt(x.playcount)||0,img:img}})}
 async function getBio(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist)return null;var bio=(d.artist.bio&&d.artist.bio.summary)?d.artist.bio.summary.replace(/<[^>]+>/g,"").replace(/<a[^>]*>.*?read more.*?<\/a>/gi,"").replace(/read more on last\.fm\.?/i,"").trim().slice(0,400):"";return{name:d.artist.name,bio:bio,listeners:d.artist.stats?d.artist.stats.listeners:"",playcount:d.artist.stats?d.artist.stats.playcount:""}}
+async function getTgs(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettoptags&artist="+encodeURIComponent(a)+"&limit=10");return(d&&d.toptags&&d.toptags.tag)?d.toptags.tag.map(function(x){return{name:x.name,count:parseInt(x.count)}}):[]}
 async function getArtistImg(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist||!d.artist.image)return null;for(var i=d.artist.image.length-1;i>=0;i--){if(d.artist.image[i]["#text"])return d.artist.image[i]["#text"]}return null}
 
 // === LLM ===
@@ -308,45 +351,39 @@ var lastSearchedArtist="";
 async function send(){
   var txt=input.value.trim();if(!txt)return;input.value="";
 
-  if(txt==="CLS"){localStorage.removeItem("bob_beta_memory");bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};expectingName=true;centerLabel.textContent="Bob";setOrbitNodes(DEFAULT_NODES);showBubble("All clear! Fresh start.");return}
+  if(txt==="CLS"){localStorage.removeItem("bob_beta_memory");bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};expectingName=true;centerLabel.textContent="Bob";setPieData(DEFAULT_ALBUMS,DEFAULT_ARTISTS,DEFAULT_GENRES,DEFAULT_CHAT);showBubble("All clear! Fresh start.");return}
 
   showBubble(esc(txt));
 
   if(expectingName&&!bobMemory.userName){
     var name=txt.replace(/^(i'm|i am|my name is|call me|it's|name's)\s+/i,"").replace(/[.!?,]$/,"").trim();
-    if(name&&name.split(/\s+/).length<=3&&name.length>=2){bobMemory.userName=name;expectingName=false;saveMemory();centerLabel.textContent=name;showBubble("Class, nice to meet you <strong>"+esc(name)+"</strong>! What are you into?");setOrbitNodes(DEFAULT_NODES);return}
+    if(name&&name.split(/\s+/).length<=3&&name.length>=2){bobMemory.userName=name;expectingName=false;saveMemory();centerLabel.textContent=name;showBubble("Class, nice to meet you <strong>"+esc(name)+"</strong>! What are you into?");setPieData(DEFAULT_ALBUMS,DEFAULT_ARTISTS,DEFAULT_GENRES,DEFAULT_CHAT);return}
   }
 
-  if(isGibberish(txt)){showBubble("Didn't quite catch that! Give me an artist or genre.");setOrbitNodes(DEFAULT_NODES);return}
+  if(isGibberish(txt)){showBubble("Didn't quite catch that! Give me an artist or genre.");setPieData(DEFAULT_ALBUMS,DEFAULT_ARTISTS,DEFAULT_GENRES,DEFAULT_CHAT);return}
   if(txt.toLowerCase()==="human"){showBubble("Round &amp; Round Records, 32 Main Street, Dublin. Phone: +353 1 671 1711. Email: hello@roundandroundrecords.ie. Mon-Sat 10-6, Sun 12-5.");showBubble("Anything else I can help with?");return}
 
   var llmReply=null;
   if(LLM_KEY&&LLM_MODEL)llmReply=await chatLLM(txt);
   if(llmReply)showBubble(llmReply);
 
-  var artists=extractArtists(txt);
+    var artists=extractArtists(txt);
   if(artists.length){
     var an=artists[0];
-    var sim=await getSim(an),albs=await getAlb(an),bio=await getBio(an),artImg=await getArtistImg(an);
+    var sim=await getSim(an),albs=await getAlb(an),tgs=await getTgs(an),bio=await getBio(an),artImg=await getArtistImg(an);
     artistName=an;lastSearch=an;lastSearchedArtist=an;rememberArtist(an);
     centerLabel.textContent=artistName.charAt(0).toUpperCase()+artistName.slice(1);
 
-    // Center art
     if(artImg)centerArt.innerHTML='<img src="'+artImg+'" alt="" onerror="this.style.display=\'none\'">';
 
-    // Build orbit from albums (with images) and similar artists
-    var orbitItems=[];
-    if(albs.length){
-      albs.slice(0,8).forEach(function(a,i){
-        orbitItems.push({label:a.name,img:a.img||null,radius:140+Math.random()*100,color:GENRE_PALETTE[i%GENRE_PALETTE.length]});
-      });
-    }
-    if(sim.length){
-      sim.slice(0,6).forEach(function(s,i){
-        orbitItems.push({label:s.name,img:null,radius:220+Math.random()*80,color:GENRE_PALETTE[(i+2)%GENRE_PALETTE.length]});
-      });
-    }
-    if(orbitItems.length)setOrbitNodes(orbitItems);
+    // Build pie data — 4 sections
+    var pieAlbums=[],pieArtists=[],pieGenres=[],pieChat=[];
+    if(albs.length)pieAlbums=albs.slice(0,8).map(function(a){return{label:a.name,img:a.img||null}});
+    if(sim.length)pieArtists=sim.slice(0,6).map(function(s){return{label:s.name}});
+    if(tgs.length)pieGenres=tgs.slice(0,6).map(function(t){return{label:t.name}});
+    if(llmReply)pieChat=[llmReply];
+    if(bio&&bio.bio)pieChat.push(bio.bio.slice(0,200));
+    setPieData(pieAlbums,pieArtists,pieGenres,pieChat);
 
     if(bio&&bio.bio)showBubble("<strong>"+esc(artistName.charAt(0).toUpperCase()+artistName.slice(1))+"</strong>: "+esc(bio.bio.slice(0,250))+(bio.bio.length>250?"…":""));
     if(albs.length)showBubble("Top albums: "+albs.slice(0,4).map(function(a){return'<a href="https://www.discogs.com/search/?q='+encodeURIComponent(a.artist+" "+a.name)+'&type=release" target="_blank" style="color:var(--accent2)">'+esc(a.name)+'</a>'}).join(", "));
@@ -367,13 +404,11 @@ function extractArtists(txt){
 }
 
 // === Init ===
-var DEFAULT_NODES=[
-  {label:"Radiohead",color:"#E85D3F"}, {label:"Pixies",color:"#C4A44A"},
-  {label:"Kendrick Lamar",color:"#4A9E8E"}, {label:"Irish artists",color:"#7B68EE"},
-  {label:"90s indie",color:"#DC143C"}, {label:"Daft Punk",color:"#FF8C00"},
-  {label:"Jazz",color:"#00CED1"}, {label:"Ska",color:"#9370DB"}
-];
-setOrbitNodes(DEFAULT_NODES);
+var DEFAULT_ALBUMS=[{label:"OK Computer"},{label:"Doolittle"},{label:"Dark Side of the Moon"},{label:"Kid A"}];
+var DEFAULT_ARTISTS=[{label:"Radiohead"},{label:"Pixies"},{label:"Kendrick Lamar"},{label:"Daft Punk"},{label:"Sonic Youth"}];
+var DEFAULT_GENRES=[{label:"Indie Rock"},{label:"Jazz"},{label:"Electronic"},{label:"Irish artists"},{label:"90s indie"},{label:"Ska"}];
+var DEFAULT_CHAT=["Hey! I'm Bob, an AI chatbot. Tell me an artist or genre you love."];
+setPieData(DEFAULT_ALBUMS,DEFAULT_ARTISTS,DEFAULT_GENRES,DEFAULT_CHAT);
 
 document.getElementById("betaSend").addEventListener("click",send);
 input.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
