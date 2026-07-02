@@ -43,13 +43,13 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 .disc-section.genres{background:var(--genres-bg)}
 .section-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px;position:sticky;top:0;z-index:1;background:inherit;padding:2px 0}
 
-/* Album tile grid — dynamically sized */
-.album-grid{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;justify-content:center}
+/* Album tile grid — CSS grid auto-fill, uniform sizing */
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px}
 .album-tile{text-align:center;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center}.album-tile:hover{transform:translateY(-2px)}
-.album-tile .at-img{border-radius:6px;object-fit:cover;display:block;border:2px solid rgba(255,255,255,0.08)}.album-tile .at-placeholder{border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
-.album-tile .at-label{font-size:0.55rem;color:var(--text);margin-top:3px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.album-tile .at-badges{display:flex;gap:3px;margin-top:3px}
-.album-tile .at-badge{padding:2px 6px;border-radius:4px;font-size:0.45rem;font-weight:700;text-transform:uppercase;letter-spacing:0.2px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.album-tile .at-img{border-radius:6px;object-fit:cover;display:block;width:100%;aspect-ratio:1;border:2px solid rgba(255,255,255,0.08)}.album-tile .at-placeholder{border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;width:100%;aspect-ratio:1}
+.album-tile .at-label{font-size:0.52rem;color:var(--text);margin-top:3px;line-height:1.2;min-height:1.25em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;width:100%}
+.album-tile .at-badges{display:flex;gap:3px;margin-top:3px;width:100%;justify-content:center}
+.at-badge{padding:2px 6px;border-radius:4px;font-size:0.45rem;font-weight:700;text-transform:uppercase;letter-spacing:0.2px;cursor:pointer;transition:all .15s;border:1px solid transparent;text-decoration:none;display:inline-block}
 .at-badge-order{background:rgba(196,164,74,0.15);color:var(--accent3);border-color:rgba(196,164,74,0.3)}.at-badge-order:hover{background:var(--accent3);color:#fff}
 .at-badge-discogs{background:rgba(255,255,255,0.05);color:var(--dim);border-color:rgba(255,255,255,0.08)}.at-badge-discogs:hover{background:rgba(255,255,255,0.12);color:#fff}
 
@@ -306,7 +306,6 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
     var badges='<div class="at-badges"><span class="at-badge at-badge-order" onclick="event.stopPropagation();betaChat(\'order '+a.name.replace(/'/g,"\\'")+' '+ (a.artist||artistName).replace(/'/g,"\\'")+'\')">Order</span><a class="at-badge at-badge-discogs" href="https://www.discogs.com/search/?q='+dq+'&type=release" target="_blank" onclick="event.stopPropagation()">Discogs</a></div>';
     return'<div class="album-tile" onclick="betaChat(\''+a.name.replace(/'/g,"\\'")+'\')">'+(img?'<img class="at-img" src="'+img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="at-placeholder" style="display:none;background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>':'<div class="at-placeholder" style="background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>')+'<div class="at-label">'+esc(a.name)+'</div>'+badges+'</div>';
   }).join("");
-  sizeAlbumTiles();
 
   // Artists card grid
   var arc=document.getElementById("artistsContent");
@@ -332,24 +331,6 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
   if(sim.length)sim.forEach(function(s){addKnown(s.name)});
   setTimeout(updateNodePositions,300);
 }
-
-// Dynamic album tile sizing
-function sizeAlbumTiles(){
-  var grid=document.getElementById("albumsContent");
-  if(!grid||!grid.children.length)return;
-  var cw=grid.clientWidth,gap=10;
-  var cols=Math.max(2,Math.floor((cw+gap)/(70+gap)));
-  var tw=Math.floor((cw-(cols-1)*gap)/cols);
-  tw=Math.min(tw,100);
-  var ih=tw-4;
-  for(var i=0;i<grid.children.length;i++){
-    var t=grid.children[i];t.style.width=tw+"px";
-    var img=t.querySelector(".at-img"),ph=t.querySelector(".at-placeholder");
-    if(img){img.style.width=ih+"px";img.style.height=ih+"px"}
-    if(ph){ph.style.width=ih+"px";ph.style.height=ih+"px";ph.style.fontSize=(ih*0.4)+"px"}
-  }
-}
-window.addEventListener("resize",sizeAlbumTiles);
 
 // Genre mind map renderer
 function drawGenreMap(tags){
