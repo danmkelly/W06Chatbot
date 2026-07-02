@@ -334,11 +334,12 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
   var arc=document.getElementById("artistsContent");
   arc.innerHTML="";
   var sorted=sim.slice(0,12).sort(function(a,b){return b.match-a.match});
-  var arcDefs=[{r:140,spread:0.7,count:3},{r:220,spread:0.8,count:4},{r:310,spread:0.9,count:5}];
+  // Artists arcs — angles 0 to 60° radiate into top-right quadrant
+  var arcDefs=[{r:140,spread:0.8,count:3},{r:240,spread:1.0,count:4},{r:350,spread:1.0,count:5}];
   var idx=0;
   arcDefs.forEach(function(def){
     var count=Math.min(def.count,sorted.length-idx);
-    var startAngle=-Math.PI/3;
+    var startAngle=0.12;
     for(var i=0;i<count;i++){
       var s=sorted[idx+i];if(!s)break;
       var angle=startAngle+(def.spread/(count-1||1))*i;
