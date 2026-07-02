@@ -276,23 +276,23 @@ function rememberArtist(a){if(!a)return;var ix=bobMemory.recentArtists.indexOf(a
 function getPreamble(){var p=[];if(bobMemory.userName)p.push("User: "+bobMemory.userName);if(bobMemory.visits>1)p.push("Visit #"+bobMemory.visits);if(bobMemory.recentArtists.length)p.push("Past: "+bobMemory.recentArtists.slice(0,5).join(", "));return p.length?"[Returning customer] "+p.join(" ")+" ":""}
 
 // API
-function lfm(p){var u=API_PROXY?API_PROXY+"/api/lastfm?"+p:"https://ws.audioscrobbler.com/2.0/?api_key="+LFM_KEY+"&format=json&"+p;return fetch(u).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}
-async function getSim(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getsimilar&artist="+encodeURIComponent(a)+"&limit=12");return(d&&d.similarartists&&d.similarartists.artist)?d.similarartists.artist.map(function(x){var m=parseFloat(x.match);return{name:x.name,match:m<=1?Math.round(m*100):Math.round(m)}}):[]}
-async function getAlb(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettopalbums&artist="+encodeURIComponent(a)+"&limit=12");if(!d||!d.topalbums||!d.topalbums.album)return[];return d.topalbums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:a,playcount:parseInt(x.playcount)||0,img:img}})}
-async function getTgs(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettoptags&artist="+encodeURIComponent(a)+"&limit=10");return(d&&d.toptags&&d.toptags.tag)?d.toptags.tag.map(function(x){return{name:x.name,count:parseInt(x.count)}}):[]}
-async function getBio(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist)return null;var bio=(d.artist.bio&&d.artist.bio.summary)?d.artist.bio.summary.replace(/<[^>]+>/g,"").replace(/<a[^>]*>.*?read more.*?<\/a>/gi,"").replace(/read more on last\.fm\.?/i,"").trim().slice(0,500):"";return{name:d.artist.name,bio:bio,listeners:d.artist.stats?d.artist.stats.listeners:"",playcount:d.artist.stats?d.artist.stats.playcount:""}}
-async function getArtistImg(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist||!d.artist.image)return null;for(var i=d.artist.image.length-1;i>=0;i--){if(d.artist.image[i]["#text"])return d.artist.image[i]["#text"]}return null}
+function lfm(p){var u=API_PROXY?API_PROXY+"/api/lastfm?"+p:"https://ws.audioscrobbler.com/2.0/?api_key="+window.LFM_KEY+"&format=json&"+p;return fetch(u).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}
+async function getSim(a){if(!window.LFM_KEY)return[];var d=await lfm("method=artist.getsimilar&artist="+encodeURIComponent(a)+"&limit=12");return(d&&d.similarartists&&d.similarartists.artist)?d.similarartists.artist.map(function(x){var m=parseFloat(x.match);return{name:x.name,match:m<=1?Math.round(m*100):Math.round(m)}}):[]}
+async function getAlb(a){if(!window.LFM_KEY)return[];var d=await lfm("method=artist.gettopalbums&artist="+encodeURIComponent(a)+"&limit=12");if(!d||!d.topalbums||!d.topalbums.album)return[];return d.topalbums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:a,playcount:parseInt(x.playcount)||0,img:img}})}
+async function getTgs(a){if(!window.LFM_KEY)return[];var d=await lfm("method=artist.gettoptags&artist="+encodeURIComponent(a)+"&limit=10");return(d&&d.toptags&&d.toptags.tag)?d.toptags.tag.map(function(x){return{name:x.name,count:parseInt(x.count)}}):[]}
+async function getBio(a){if(!window.LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist)return null;var bio=(d.artist.bio&&d.artist.bio.summary)?d.artist.bio.summary.replace(/<[^>]+>/g,"").replace(/<a[^>]*>.*?read more.*?<\/a>/gi,"").replace(/read more on last\.fm\.?/i,"").trim().slice(0,500):"";return{name:d.artist.name,bio:bio,listeners:d.artist.stats?d.artist.stats.listeners:"",playcount:d.artist.stats?d.artist.stats.playcount:""}}
+async function getArtistImg(a){if(!window.LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist||!d.artist.image)return null;for(var i=d.artist.image.length-1;i>=0;i--){if(d.artist.image[i]["#text"])return d.artist.image[i]["#text"]}return null}
 
 // LLM
 var BOB_VOICE_BASE="You are Bob, an AI chatbot music guide at Round & Round Records, Dublin (est. 2005). Dublin flavour: 'grand','deadly','class','sound','craic'. 1-3 sentences. Never list data. No em dashes, no markdown. You ARE a bot — never pretend to be human.";
 async function chatLLM(msg){
-  if(!LLM_KEY)return null;
+  if(!window.LLM_KEY)return null;
   var msgs=[{role:"system",content:getPreamble()+BOB_VOICE_BASE}];
   for(var i=0;i<conv.length;i++)msgs.push(conv[i]);msgs.push({role:"user",content:msg});
   try{
-    var u=API_PROXY?API_PROXY+"/api/llm":(LLM_URL||"https://api.deepseek.com/v1/chat/completions");
-    var o={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:LLM_MODEL||"deepseek-chat",messages:msgs,temperature:0.9,max_tokens:300})};
-    if(!API_PROXY)o.headers.Authorization="Bearer "+LLM_KEY;
+    var u=API_PROXY?API_PROXY+"/api/llm":(window.LLM_URL||"https://api.deepseek.com/v1/chat/completions");
+    var o={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:window.LLM_MODEL||"deepseek-chat",messages:msgs,temperature:0.9,max_tokens:300})};
+    if(!API_PROXY)o.headers.Authorization="Bearer "+window.LLM_KEY;
     var r=await fetch(u,o);if(!r.ok)return null;
     var d=await r.json();var reply=d.choices[0].message.content.trim();
     conv.push({role:"user",content:msg});conv.push({role:"assistant",content:reply});if(conv.length>16)conv=conv.slice(-16);
@@ -412,7 +412,7 @@ async function send(){
   if(txt.toLowerCase()==="human"){addMsg("Round &amp; Round Records, 32 Main Street, Dublin. Phone: +353 1 671 1711. Email: hello@roundandroundrecords.ie. Mon-Sat 10-6, Sun 12-5.","bot");addMsg("Anything else I can help with?","bot");return}
 
   var llmReply=null;
-  if(LLM_KEY&&LLM_MODEL)llmReply=await chatLLM(txt);
+  if(window.LLM_KEY&&window.LLM_MODEL)llmReply=await chatLLM(txt);
   if(llmReply)addMsg(llmReply,"bot");
 
   var artists=extractArtists(txt);
