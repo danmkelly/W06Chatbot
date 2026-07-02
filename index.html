@@ -140,9 +140,9 @@ body{
   display:inline-flex;width:22px;height:22px;border-radius:50%;
   background:transparent;color:var(--text-dim);border:none;cursor:pointer;
   font-size:0.7rem;align-items:center;justify-content:center;
-  vertical-align:middle;margin-left:2px;transition:all .15s;opacity:0;
+  vertical-align:middle;margin-left:2px;transition:all .15s;opacity:0.45;
 }
-.msg.bot:hover .msg-speak,.msg-speak.speaking{opacity:1}
+.msg-speak:hover,.msg-speak.speaking{opacity:1}
 .msg-speak:hover{color:var(--accent2)}
 .msg-speak.speaking{color:var(--accent2);animation:pulse-ring 0.8s ease-in-out infinite}
 
@@ -547,6 +547,7 @@ var API_PROXY="https://rr-records-proxy.dan-m-kelly.workers.dev";
 var conv=[],artistName="",discogsCache={};
 var lastBobAsked=false;
 var navHistory=[];
+var spokeLast=false;
 
 // === DOM ===
 var chatMsgs=document.getElementById("chatMessages");
@@ -587,6 +588,10 @@ function addMsg(t,s){
   if(s==="bot")t=enrichLinks(t);
   d.innerHTML='<div class="msg-bubble">'+t+'</div><div class="msg-meta">'+(s==="bot"?"Bob":"You")+' &middot; '+time+(s==="bot"?' <button class="msg-speak" onclick="speakMsg(this)" title="Listen">&#128266;</button>':'')+'</div>';
   chatMsgs.appendChild(d);sc();
+  if(spokeLast&&s==="bot"){
+    spokeLast=false;
+    setTimeout(function(){var btn=d.querySelector(".msg-speak");if(btn)speakMsg(btn)},150);
+  }
 }
 function addSugg(arr){
   var d=document.createElement("div");d.className="msg bot";
@@ -608,7 +613,7 @@ if("webkitSpeechRecognition" in window || "SpeechRecognition" in window){
     var transcript="";
     for(var i=e.resultIndex;i<e.results.length;i++)transcript+=e.results[i][0].transcript;
     chatInput.value=transcript;
-    if(e.results[0].isFinal){micBtn.classList.remove("listening");send()}
+    if(e.results[0].isFinal){micBtn.classList.remove("listening");spokeLast=true;send()}
   };
   recognition.onerror=function(e){micBtn.classList.remove("listening");if(e.error==="not-allowed")addMsg("Microphone access was denied. Check your browser permissions.",'bot')};
   recognition.onend=function(){micBtn.classList.remove("listening")};
