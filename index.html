@@ -570,6 +570,7 @@ var navHistory=[];
 var spokeLast=false;
 var expectingName=false;
 var expectingConsent=false;
+var gibberishCount=0;
 
 // === Memory (localStorage) ===
 var bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:"",consent:""};
@@ -1107,11 +1108,17 @@ async function send(){
     if(vCount===0||cCount/vCount>3)isGibberish=true;
   }
   if(isGibberish){
-    hideTyping();
-    addMsg("I didn't quite catch that! Give me an artist name to explore, a genre you're curious about, or just tell me what kind of music you're into. I'm all ears!",'bot');
-    addSugg(["Radiohead","Pixies","Jazz","Irish artists","90s indie"]);
+    hideTyping();gibberishCount++;
+    if(gibberishCount>=2){
+      addMsg("I'm having trouble understanding. Let me hand you over — type <strong>human</strong> and I'll share our contact details straight away. Or try an artist name like Radiohead if you'd rather keep exploring.",'bot');
+      addSugg(["Human","Radiohead","Pixies","Irish artists"]);
+    }else{
+      addMsg("I didn't quite catch that! Give me an artist name to explore, a genre you're curious about, or just tell me what kind of music you're into. I'm all ears!",'bot');
+      addSugg(["Radiohead","Pixies","Jazz","Irish artists","90s indie"]);
+    }
     return;
   }
+  gibberishCount=0;
 
   // "human" command: show contact details
   if(txt.toLowerCase()==="human"){
@@ -1133,7 +1140,7 @@ async function send(){
         var lb=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
         if(lb)lb.innerHTML=enrichLinks(lb.innerHTML);
       });
-    }else{addMsg("Hmm, I'm having trouble connecting right now. The discovery panel may still work — give me an artist name to search!",'bot')}
+    }else{addMsg("Hmm, I'm having trouble connecting right now. The discovery panel may still work — try an artist name, or type <strong>human</strong> to reach our team directly.",'bot')}
     // If LLM failed, fall through to rule-based below
   }
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL)hideTyping();
@@ -1176,6 +1183,8 @@ async function send(){
     renderDiscovery(primarySim.slice(0,12),finalTags,mergedAlb.slice(0,16),primaryBio||mergedBio);
     rememberArtist(firstArtist);
     if(LLM_KEY){var dM=buildDataMsg(primarySim.slice(0,6),finalTags,mergedAlb.slice(0,8),primaryBio||mergedBio,null);if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}}
+    // Offer human handoff after any search
+    setTimeout(function(){if(!document.querySelector(".msg.bot:last-child .msg-bubble")||!document.querySelector(".msg.bot:last-child .msg-bubble").textContent.match(/human/i))addSugg(["Keep exploring","Human"])},3000);
   }
 
   // Fallback to tag search if no artist found
@@ -1190,7 +1199,7 @@ async function send(){
   }
 
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
-    addMsg("I'm listening! Tell me about an artist or genre you love and I'll dig in.",'bot');addSugg(["Radiohead","Irish rock","90s indie","Jazz","Ska","Electronic"])
+    addMsg("I'm listening! Tell me about an artist or genre you love and I'll dig in. Type <strong>human</strong> if you'd rather speak to our team.",'bot');addSugg(["Radiohead","Irish rock","90s indie","Jazz","Ska","Electronic","Human"])
   }
 }
 
@@ -1266,7 +1275,7 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
     setTimeout(function(){addMsg("What are you into right now?",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},1000);
   }else{
     // First visit — consent not yet given
-    addMsg("Hey! I'm <strong>Bob</strong>, an AI chatbot powered by DeepSeek. I'm your music guide here at Round &amp; Round Records. Type <strong>human</strong> any time to reach our team directly.",'bot');
+    addMsg("Hey! I'm <strong>Bob</strong>, an AI chatbot powered by DeepSeek. I'm your music guide here at Round &amp; Round Records. I can find similar artists, dig up albums, explore genres, and help you discover new music. Type <strong>human</strong> any time to reach our team directly.",'bot');
     setTimeout(function(){
       expectingConsent=true;
       addMsg("Before we start — would you like me to remember your name and what we chat about for next time? It all stays on your device, never sent anywhere. Just say <strong>yes</strong> or <strong>no</strong>.",'bot');
