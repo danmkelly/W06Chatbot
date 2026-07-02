@@ -10,24 +10,32 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v4
+      - run: |
+          mkdir -p _site
+          cp *.html *.js *.css *.md *.txt *.toml *.yml _headers _config.yml .nojekyll robots.txt _site/ 2>/dev/null || true
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./_site
 
-      - name: Deploy to gh-pages
-        run: |
-          mkdir -p out
-          cp *.html *.js *.css *.md *.txt *.toml *.yml _headers _config.yml .nojekyll robots.txt out/ 2>/dev/null || true
-          touch out/.nojekyll
-          cd out
-          git init
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add -A
-          git commit -m "deploy" --allow-empty
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:gh-pages
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
