@@ -63,13 +63,17 @@ body{
 
 /* CTA */
 .cta{
-  display:block;text-align:center;background:linear-gradient(135deg,var(--accent),#C0392B);
+  display:block;text-align:center;background:linear-gradient(-45deg,var(--accent),#C0392B,var(--accent),#C0392B);
+  background-size:300% 300%;
   color:#fff;padding:20px 40px;border-radius:12px;text-decoration:none;
   font-size:1.1rem;font-weight:800;letter-spacing:0.5px;margin-top:30px;transition:all .2s;
   box-shadow:0 8px 30px rgba(232,93,63,0.3);
+  animation:wave-cta 3s ease infinite;
 }
 .cta:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.4)}
 .cta-sub{text-align:center;font-size:0.72rem;color:var(--text-dim);margin-top:8px}
+.cta-fun{text-align:center;font-size:0.65rem;color:var(--text-dim);margin-top:4px;font-style:italic}
+@keyframes wave-cta{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
 /* Footer */
 .foot{text-align:center;padding:40px 0 0;border-top:1px solid var(--border);margin-top:50px}
@@ -257,6 +261,7 @@ body{
 
     <a class="cta" href="index.html">&#127925; Chat with Bob at Round &amp; Round Records</a>
     <p class="cta-sub">No login required. Fully functional with LLM, catalogue search, and marketplace integration.</p>
+    <p class="cta-fun">And don't be afraid to ask Bob for a pint of Guinness, or who he thinks will win the World Cup!</p>
   </div>
 
   <!-- Footer -->

@@ -351,10 +351,10 @@ body{
 
 /* Mobile — tablet portrait and below */
 @media(max-width:768px){
-  body{overflow:auto}
+  body{overflow:hidden;display:flex;flex-direction:column;height:100vh}
 
   /* Compact brand bar */
-  .app-brand{height:56px;padding:0 12px;gap:10px}
+  .app-brand{height:56px;padding:0 12px;gap:10px;flex-shrink:0}
   .app-brand::before{background:radial-gradient(ellipse at 20% 50%,rgba(232,93,63,0.18) 0%,transparent 60%)}
   .brand-record{width:36px;height:36px}
   .brand-record::before{top:3px;left:3px;right:3px;bottom:3px;box-shadow:inset 0 0 0 2px rgba(255,255,255,0.04),inset 0 0 0 4px rgba(255,255,255,0.02)}
@@ -364,48 +364,20 @@ body{
   .app-brand-tagline{display:none}
   .app-brand-sub{display:none}
 
-  /* Stack app */
-  .app{display:flex;flex-direction:column;height:calc(100vh - 56px)}
+  /* App fills remaining space, 50/50 split */
+  .app{display:flex;flex-direction:column;flex:1 1 0;min-height:0;height:auto}
 
-  /* Chat fills viewport */
+  /* Chat — bottom 50% */
   .chat{flex:1 1 0;min-height:0;border-right:none}
   .chat-msgs{min-height:0}
 
-  /* Discovery — slide-up overlay drawer */
+  /* Discovery — top 50%, back in document flow */
   .discovery{
-    position:fixed;top:56px;left:0;right:0;bottom:0;z-index:20;
-    max-height:none;border-radius:16px 16px 0 0;
-    transform:translateY(100%);transition:transform .3s ease;
-    box-shadow:0 -8px 40px rgba(0,0,0,0.6);
-    display:flex;flex-direction:column;
+    flex:1 1 0;min-height:0;position:relative;z-index:1;
+    border-top:1px solid var(--border);max-height:none;border-radius:0;
+    transform:none;transition:none;box-shadow:none;
   }
-  .discovery.mobile-open{transform:translateY(0)}
-  .discovery::before{
-    content:'';display:block;width:36px;height:4px;
-    background:var(--border);border-radius:2px;
-    margin:8px auto 0;flex-shrink:0;
-  }
-  .discovery-close{
-    display:flex;position:absolute;top:6px;right:12px;z-index:25;
-    background:var(--surface2);border:1px solid var(--border);
-    color:var(--text-dim);width:30px;height:30px;border-radius:50%;
-    align-items:center;justify-content:center;font-size:1.1rem;
-    cursor:pointer;font-family:inherit;line-height:1;
-  }
-
-  /* FAB — reopen discovery */
-  .discovery-fab{
-    display:none;position:fixed;bottom:84px;right:16px;z-index:15;
-    width:48px;height:48px;border-radius:50%;background:var(--accent);
-    color:#fff;border:none;align-items:center;justify-content:center;
-    font-size:1.2rem;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.4);
-    transition:transform .2s;
-    user-select:none;-webkit-tap-highlight-color:transparent;
-  }
-  .discovery-fab.visible{display:flex}
-  .discovery-fab:active{transform:scale(0.9)}
-
-  /* Make discovery content scrollable */
+  .discovery::before{display:none}
   .discovery .d-empty,.discovery #dContent{overflow-y:auto;flex:1;min-height:0}
   .discovery #dContent{display:flex;flex-direction:column}
 
@@ -414,7 +386,7 @@ body{
   .back-btn{font-size:0.7rem;padding:4px 12px}
 
   /* Footer */
-  .foot{padding:10px 14px;font-size:0.58rem;gap:8px}
+  .foot{padding:10px 14px;font-size:0.58rem;gap:8px;flex-shrink:0}
 
   /* Albums — 3 columns */
   .album-grid{grid-template-columns:repeat(3,1fr)}
@@ -440,8 +412,7 @@ body{
   .brand-label{width:10px;height:10px}
   .brand-label::after{width:2px;height:2px}
   .app-brand-name{font-size:0.85rem}
-  .app{height:calc(100vh - 52px)}
-  .discovery{top:52px;border-radius:12px 12px 0 0}
+  .app{height:auto}
   .album-grid{grid-template-columns:1fr 1fr}
   .chat-top{padding:10px 14px}
   .chat-msgs{padding:14px}
@@ -455,7 +426,6 @@ body{
   .album-section{padding:0 14px 10px}
   .genre-section{padding:0 10px 6px}
   .d-empty{padding:24px 16px}
-  .discovery-fab{bottom:76px;right:12px;width:44px;height:44px;font-size:1.1rem}
   .foot{padding:8px 12px;font-size:0.55rem}
 }
 </style>
@@ -493,7 +463,6 @@ body{
 
   <!-- DISCOVERY PANEL -->
   <div class="discovery" id="discovery">
-    <button class="discovery-close" id="discoveryClose" onclick="toggleDiscovery()" title="Back to chat">&times;</button>
     <div class="disc-loading" id="discLoading">
       <div class="disc-turntable">
         <div class="disc-record">
@@ -536,8 +505,6 @@ body{
 
 </div>
 
-<button class="discovery-fab" id="discoveryFab" onclick="toggleDiscovery()" title="View discovery">&#127925;</button>
-
 <div class="foot">
   Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a>
 </div>
@@ -571,22 +538,6 @@ var artistHero=document.getElementById("artistHero");
 var similarScroll=document.getElementById("similarScroll");
 var albumGrid=document.getElementById("albumGrid");
 var genreChips=document.getElementById("genreChips");
-
-// === Discovery toggle (mobile) ===
-var discoveryOpen=false;
-function toggleDiscovery(){
-  discoveryOpen=!discoveryOpen;
-  var disc=document.getElementById("discovery");
-  var fab=document.getElementById("discoveryFab");
-  if(discoveryOpen){disc.classList.add("mobile-open");fab.classList.remove("visible")}
-  else{disc.classList.remove("mobile-open");if(dContent.style.display==="block")fab.classList.add("visible")}
-}
-function onDiscoveryRendered(){
-  if(window.innerWidth<=768&&!discoveryOpen){
-    discoveryOpen=true;
-    document.getElementById("discovery").classList.add("mobile-open");
-  }
-}
 
 // === Helpers ===
 var knownNames=[]; // Artists/albums to make clickable in chat
@@ -663,7 +614,6 @@ function renderDiscoveryTag(tag,albs,sim){
   genreChips.innerHTML='';
   enrichAlbumBadges();
   updateKnownNames(sim,albs,label);
-  onDiscoveryRendered();
 }
 
 // === Discogs marketplace check ===
@@ -739,7 +689,6 @@ function renderDiscovery(sim,tgs,albs,info){
   genreChips.innerHTML=tgs.map(function(t){return'<span class="genre-chip" onclick="exploreGenre(\''+t.name.replace(/'/g,"\\'")+'\')">'+t.name+'</span>'}).join("");
   enrichAlbumBadges();
   updateKnownNames(sim,albs,artistName);
-  onDiscoveryRendered();
 }
 
 async function exploreGenre(tag){
