@@ -407,7 +407,7 @@ body{
 
   /* Discovery — top 50%, back in document flow */
   .discovery{
-    flex:1 1 0;min-height:0;position:relative;z-index:1;
+    flex:1 1 0;min-height:0;position:relative;z-index:1;overflow-y:hidden;
     border-top:1px solid var(--border);max-height:none;border-radius:0;
     transform:none;transition:none;box-shadow:none;
   }
@@ -584,10 +584,10 @@ function loadMemory(){
 }
 function saveMemory(){try{localStorage.setItem("bob_memory",JSON.stringify(bobMemory))}catch(e){}}
 function clearMemory(){
-  var disc=document.getElementById("discovery");if(disc.classList.contains("mobile-open"))disc.classList.remove("mobile-open");
   localStorage.removeItem("bob_memory");
   bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};
   expectingName=true;
+  simImageCache={};discogsCache={};
   addMsg("All clear! I've forgotten everything about you. Fresh start.",'bot');
   document.getElementById("bobLabel").textContent="Music guru · AI-powered";
 }
@@ -672,7 +672,7 @@ function addMsg(t,s){
 }
 function addSugg(arr){
   var d=document.createElement("div");d.className="msg bot";
-  d.innerHTML='<div class="chat-sugg">'+arr.map(function(x){return'<span class="chat-sugg-btn" onclick="qa(\''+x.replace(/'/g,"\\'")+'\')">'+x+'</span>'}).join("")+'</div>';
+  d.innerHTML='<div class="chat-sugg">'+arr.map(function(x){return'<span class="chat-sugg-btn" onclick="qa(\''+x.replace(/'/g,"\\'")+'\')">'+x.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</span>'}).join("")+'</div>';
   chatMsgs.appendChild(d);sc();
 }
 function showTyping(){var d=document.createElement("div");d.className="msg bot";d.innerHTML='<div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';d.id="t";chatMsgs.appendChild(d);sc()}
@@ -740,7 +740,8 @@ function speakMsg(btn){
     window.speechSynthesis.speak(u);
   }
   if(window.speechSynthesis.getVoices().length===0){
-    window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.onvoiceschanged=null;doSpeak(text)};
+    var voiceTimeout=setTimeout(function(){btn.classList.remove("speaking")},4000);
+    window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.onvoiceschanged=null;clearTimeout(voiceTimeout);doSpeak(text)};
   }else{doSpeak(text)}
 }
 
@@ -982,9 +983,10 @@ function goBack(){
     getTgs(prev.artist).then(function(tg){
       getAlb(prev.artist).then(function(al){
         getBio(prev.artist).then(function(inf){renderDiscovery(s,tg,al,inf);hideTyping()})
-      })
-    })
-  })
+        .catch(function(){hideTyping()})
+      }).catch(function(){hideTyping()})
+    }).catch(function(){hideTyping()})
+  }).catch(function(){hideTyping();addMsg("Hmm, couldn't reload that. Try searching again?",'bot')});
 }
 
 async function extractEntities(text){
@@ -1076,7 +1078,7 @@ async function send(){
         var lb=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
         if(lb)lb.innerHTML=enrichLinks(lb.innerHTML);
       });
-    }
+    }else{addMsg("Hmm, I'm having trouble connecting right now. The discovery panel may still work — give me an artist name to search!",'bot')}
     // If LLM failed, fall through to rule-based below
   }
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL)hideTyping();
@@ -1187,6 +1189,7 @@ function submitReq(artist,title){
     '<div class="modal-done"><div class="modal-done-icon">&#9989;</div><p>Thanks, '+name+'! We\'ll hunt down <strong>'+artist+' &mdash; '+title+'</strong> for you.<br><br>We\'ll email '+email+' within 48 hours. No payment needed until we confirm stock.</p><button class="modal-btn modal-btn-submit" style="width:100%" onclick="closeReq()">Got it</button></div>';
 }
 document.getElementById("reqModal").addEventListener("click",function(e){if(e.target===this)closeReq()});
+document.getElementById("memInfoModal").addEventListener("click",function(e){if(e.target===this)this.classList.remove("open")});
 
 // === Init ===
 document.getElementById("chatSend").addEventListener("click",send);
