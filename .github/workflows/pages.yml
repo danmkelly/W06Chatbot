@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Pages
+name: Deploy GitHub Pages
 
 on:
   push:
@@ -9,16 +9,26 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
 
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+      - name: Build
+        run: |
+          mkdir -p out
+          cp *.html *.js *.css *.md *.txt *.toml *.yml _headers _config.yml .nojekyll robots.txt out/ 2>/dev/null || true
+          touch out/.nojekyll
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=rr-records --branch=main
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          publish_branch: gh-pages
+          force_orphan: true
+          enable_jekyll: false
