@@ -63,16 +63,18 @@ body{
 
 /* CTA */
 .cta{
-  display:block;text-align:center;background:linear-gradient(-45deg,var(--accent),#C0392B,var(--accent),#C0392B);
-  background-size:300% 300%;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:linear-gradient(-45deg,var(--accent),#C0392B,#E85D3F,#D14A30,#E85D3F);
+  background-size:400% 400%;
   color:#fff;padding:20px 40px;border-radius:12px;text-decoration:none;
-  font-size:1.1rem;font-weight:800;letter-spacing:0.5px;margin-top:30px;transition:all .2s;
+  font-weight:800;letter-spacing:0.5px;margin-top:30px;transition:all .2s;
   box-shadow:0 8px 30px rgba(232,93,63,0.3);
-  animation:wave-cta 3s ease infinite;
+  animation:wave-cta 2.5s ease infinite;
 }
-.cta:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.4)}
+.cta-main{font-size:1.1rem}
+.cta-tagline{font-size:0.7rem;font-weight:500;opacity:0.85;font-style:italic;letter-spacing:0.2px}
+.cta:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.5)}
 .cta-sub{text-align:center;font-size:0.72rem;color:var(--text-dim);margin-top:8px}
-.cta-fun{text-align:center;font-size:0.65rem;color:var(--text-dim);margin-top:4px;font-style:italic}
 @keyframes wave-cta{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
 /* Footer */
@@ -167,11 +169,6 @@ body{
         <h4>Genre &amp; Discovery Accuracy</h4>
         <p>Genre-based searches ("best Irish albums of the 80s") use Last.fm's <strong>community-applied tags</strong>, which are crowd-sourced and can be inconsistent. An album tagged "irish" might be Irish folk, Irish rock, or just by an artist who once played in Dublin. There's no era filtering at the API level, so "80s Irish albums" returns all Irish-tagged albums regardless of decade. Bob's LLM compensates with its own knowledge, but the panel data is unfiltered.</p>
       </div>
-      <div class="card">
-        <div class="card-icon">&#128241;</div>
-        <h4>Mobile Responsiveness</h4>
-        <p>The site uses basic CSS media queries but <strong>does not scale down well to smaller screens</strong>. The two-panel layout collapses to a stacked view at narrow widths, but the discovery panel becomes cramped, album cards overflow, and the chat input can be obscured on very small viewports. The experience is designed for desktop and tablet; proper mobile adaptation would require a redesigned single-column flow with a slide-out discovery drawer.</p>
-      </div>
     </div>
   </div>
 
@@ -259,9 +256,11 @@ body{
     <h2>The working chatbot is live</h2>
     <p style="margin-bottom:24px">Click below to open Bob &mdash; R&amp;R Records' AI-powered music guide. Tell him an artist you love, ask about a genre, or just have a chat about music. The discovery panel fills with real data from Last.fm and Discogs.</p>
 
-    <a class="cta" href="index.html">&#127925; Chat with Bob at Round &amp; Round Records</a>
+    <a class="cta" href="index.html">
+      <span class="cta-main">&#127925; Chat with Bob at Round &amp; Round Records</span>
+      <span class="cta-tagline">And don't be afraid to ask Bob for a pint of Guinness, or who he thinks will win the World Cup!</span>
+    </a>
     <p class="cta-sub">No login required. Fully functional with LLM, catalogue search, and marketplace integration.</p>
-    <p class="cta-fun">And don't be afraid to ask Bob for a pint of Guinness, or who he thinks will win the World Cup!</p>
   </div>
 
   <!-- Footer -->
