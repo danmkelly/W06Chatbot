@@ -1,5 +1,5 @@
 # R&R Records Chatbot - Cloudflare Worker config
-name = "rr-records-proxy"
+name = "w06chatbot"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
