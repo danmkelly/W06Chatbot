@@ -1189,7 +1189,6 @@ function submitReq(artist,title){
     '<div class="modal-done"><div class="modal-done-icon">&#9989;</div><p>Thanks, '+name+'! We\'ll hunt down <strong>'+artist+' &mdash; '+title+'</strong> for you.<br><br>We\'ll email '+email+' within 48 hours. No payment needed until we confirm stock.</p><button class="modal-btn modal-btn-submit" style="width:100%" onclick="closeReq()">Got it</button></div>';
 }
 document.getElementById("reqModal").addEventListener("click",function(e){if(e.target===this)closeReq()});
-document.getElementById("memInfoModal").addEventListener("click",function(e){if(e.target===this)this.classList.remove("open")});
 
 // === Init ===
 document.getElementById("chatSend").addEventListener("click",send);
@@ -1219,7 +1218,7 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
 })();
 </script>
 <!-- Memory info modal -->
-<div class="modal-overlay" id="memInfoModal">
+<div class="modal-overlay" id="memInfoModal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" style="max-width:460px">
     <h3>&#128190; What Bob stores</h3>
     <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.6;margin:12px 0">Bob remembers a few things to make your visits better — <strong>all stored on your device</strong>, never sent to a server:</p>
