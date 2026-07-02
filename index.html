@@ -638,7 +638,20 @@ function speakMsg(btn){
   function doSpeak(t){
     var u=new SpeechSynthesisUtterance(t);u.lang="en-IE";u.rate=1.0;u.pitch=1.0;
     var voices=window.speechSynthesis.getVoices();
-    if(voices.length>0){var v=voices.find(function(x){return x.name.indexOf("Daniel")>-1||x.lang==="en-IE"||x.lang==="en-GB"})||voices[0];u.voice=v}
+    if(voices.length>0){
+      var ranked=voices.filter(function(v){return v.lang.indexOf("en")===0});
+      var best=null;
+      // Score: Irish male (10), UK male (7), Irish any (6), UK any (4), any EN male (2), any EN (1)
+      ranked.forEach(function(v){
+        var n=v.name.toLowerCase(),s=0;
+        if(v.lang==="en-IE")s=n.indexOf("female")>-1||n.indexOf("moira")>-1||n.indexOf("fiona")>-1?6:10;
+        else if(v.lang==="en-GB")s=n.indexOf("female")>-1?4:7;
+        else s=n.indexOf("female")>-1?1:2;
+        if(!best||s>best._score){v._score=s;best=v}
+      });
+      if(!best)best=voices[0];
+      u.voice=best;
+    }
     u.onend=function(){btn.classList.remove("speaking")};
     u.onerror=function(){btn.classList.remove("speaking")};
     window.speechSynthesis.speak(u);
