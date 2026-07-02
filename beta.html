@@ -334,20 +334,24 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
   var arc=document.getElementById("artistsContent");
   arc.innerHTML="";
   var sorted=sim.slice(0,12).sort(function(a,b){return b.match-a.match});
-  // Artists arcs — angles 0 to 60° radiate into top-right quadrant
-  var arcDefs=[{r:140,spread:0.8,count:3},{r:240,spread:1.0,count:4},{r:350,spread:1.0,count:5}];
+  // Artists arcs — better spacing, use album art as proxy
+  var arcDefs=[{r:160,spread:1.1,count:3},{r:275,spread:1.1,count:4},{r:410,spread:1.0,count:5}];
   var idx=0;
   arcDefs.forEach(function(def){
     var count=Math.min(def.count,sorted.length-idx);
-    var startAngle=0.12;
+    var startAngle=0.1;
     for(var i=0;i<count;i++){
       var s=sorted[idx+i];if(!s)break;
       var angle=startAngle+(def.spread/(count-1||1))*i;
+      var img=null;
+      // Try album image as proxy for artist
+      var matchAlbum=albs.find(function(a){return a.artist&&a.artist.toLowerCase()===s.name.toLowerCase()});
+      if(matchAlbum&&matchAlbum.img)img=matchAlbum.img;
       var init=(s.name.charAt(0)+(s.name.indexOf(" ")>-1?s.name.charAt(s.name.indexOf(" ")+1):"")).toUpperCase();
       var el=document.createElement("div");el.className="artist-tile";
       el.style.left=Math.round(Math.cos(angle)*def.r)+"px";
       el.style.bottom=Math.round(Math.sin(angle)*def.r)+"px";
-      el.innerHTML='<div class="ar-placeholder" style="background:'+GENRE_PALETTE[(idx+i)%7]+'">'+init+'</div><div class="ar-label">'+esc(s.name)+'</div><div class="ar-match">'+Math.round(s.match)+'% match</div>';
+      el.innerHTML=(img?'<img class="ar-img" src="'+img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="ar-placeholder" style="display:none;background:'+GENRE_PALETTE[(idx+i)%7]+'">'+init+'</div>':'<div class="ar-placeholder" style="background:'+GENRE_PALETTE[(idx+i)%7]+'">'+init+'</div>')+'<div class="ar-label">'+esc(s.name)+'</div><div class="ar-match">'+Math.round(s.match)+'% match</div>';
       el.onclick=function(name){return function(){betaChat(name)}}(s.name);
       arc.appendChild(el);
     }
