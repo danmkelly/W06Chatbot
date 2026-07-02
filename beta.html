@@ -40,7 +40,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 .disc-section{padding:16px;overflow:hidden;position:relative}
 /* Circular protection around hero — less padding, canvas shows the zone */
 .disc-section.albums{background:var(--albums-bg);padding:16px 80px 80px 16px}
-.disc-section.artists{background:var(--artists-bg);padding:0;overflow:visible}
+.disc-section.artists{background:var(--artists-bg);padding:0;overflow:hidden}
 .disc-section.genres{background:var(--genres-bg);padding:80px 80px 16px 16px}
 .disc-section:nth-child(4){padding:80px 16px 16px 80px}
 .section-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px;position:sticky;top:0;z-index:1;background:inherit;padding:2px 0}
@@ -57,10 +57,10 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 
 /* Artist tile — absolute positioned in arcs */
 .artist-grid{position:absolute;inset:0;pointer-events:none}
-.artist-tile{position:absolute;text-align:center;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center;pointer-events:auto;width:72px;bottom:0;left:0;transform:translate(-50%,50%)}.artist-tile:hover{transform:translate(-50%,50%) scale(1.1);z-index:2}
-.artist-tile .ar-img{border-radius:50%;object-fit:cover;display:block;width:100%;aspect-ratio:1;border:2px solid rgba(255,255,255,0.08)}.artist-tile .ar-placeholder{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;width:100%;aspect-ratio:1}
-.artist-tile .ar-label{font-size:0.5rem;color:var(--text);margin-top:3px;line-height:1.25;height:1.25em;overflow:hidden;width:100%;white-space:nowrap;text-overflow:ellipsis}
-.artist-tile .ar-match{font-size:0.55rem;color:var(--accent3);margin-top:1px;height:1.25em}
+.artist-tile{position:absolute;text-align:center;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center;pointer-events:auto;width:60px;bottom:0;left:0;transform:translate(-50%,50%)}.artist-tile:hover{transform:translate(-50%,50%) scale(1.1);z-index:2}
+.artist-tile .ar-img{border-radius:50%;object-fit:cover;display:block;width:100%;aspect-ratio:1;border:2px solid rgba(255,255,255,0.08)}.artist-tile .ar-placeholder{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;width:100%;aspect-ratio:1;font-size:1rem}
+.artist-tile .ar-label{font-size:0.45rem;color:var(--text);margin-top:2px;line-height:1.2;height:1.2em;overflow:hidden;width:100%;white-space:nowrap;text-overflow:ellipsis}
+.artist-tile .ar-match{font-size:0.48rem;color:var(--accent3);margin-top:1px;height:1.2em}
 
 /* Genre chips */
 .genre-cloud{display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
@@ -80,7 +80,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
   .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
   .hero-img{width:120px;height:120px}
   .disc-section.albums{padding:12px 60px 60px 12px}
-  .disc-section.artists{padding:0;overflow:visible}
+  .disc-section.artists{padding:0;overflow:hidden}
   .disc-section.genres{padding:60px 60px 12px 12px}
   .disc-section:nth-child(4){padding:60px 12px 12px 60px}
 }
@@ -334,7 +334,7 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
   var arc=document.getElementById("artistsContent");
   arc.innerHTML="";
   var sorted=sim.slice(0,12).sort(function(a,b){return b.match-a.match});
-  var arcDefs=[{r:150,spread:0.55,count:3},{r:225,spread:0.6,count:4},{r:300,spread:0.65,count:5}];
+  var arcDefs=[{r:140,spread:0.7,count:3},{r:220,spread:0.8,count:4},{r:310,spread:0.9,count:5}];
   var idx=0;
   arcDefs.forEach(function(def){
     var count=Math.min(def.count,sorted.length-idx);
