@@ -784,31 +784,40 @@ function renderDiscoveryTag(tag,albs,sim){
 }
 
 // === Discogs marketplace check ===
+var discogsPending={};
 async function checkDiscogs(artist,title){
   var key=artist+"|"+title;
   if(discogsCache[key]!==undefined)return discogsCache[key];
+  if(discogsPending[key])return discogsPending[key];
   if(typeof DGS_KEY==="undefined"||!DGS_KEY)return null;
-  try{
-    var q=encodeURIComponent((artist+" "+title).replace(/\([^)]*\)/g,"").trim());
-    console.log("[Discogs] Checking:",artist,"-",title);
-    var dgsUrl=API_PROXY?API_PROXY+"/api/discogs?q="+q+"&type=release&per_page=1":"https://api.discogs.com/database/search?q="+q+"&type=release&per_page=1&token="+DGS_KEY;
-    var r=await fetch(dgsUrl);
-    if(!r.ok){console.warn("[Discogs] HTTP",r.status);discogsCache[key]=null;return null}
-    var d=await r.json();
-    if(d&&d.results&&d.results.length>0&&d.results[0].id){
-      var sellUrl="https://www.discogs.com/sell/release/"+d.results[0].id;
-      var infoUrl="https://www.discogs.com"+d.results[0].uri;
-      discogsCache[key]={sell:sellUrl,info:infoUrl};
-      console.log("[Discogs] Found:",artist,"-",title,"=>",sellUrl);return discogsCache[key];
-    }
-    console.log("[Discogs] No match:",artist,"-",title);discogsCache[key]=null;return null;
-  }catch(e){discogsCache[key]=null;return null}
+  var promise=(async function(){
+    try{
+      var q=encodeURIComponent((artist+" "+title).replace(/\([^)]*\)/g,"").trim());
+      var dgsUrl=API_PROXY?API_PROXY+"/api/discogs?q="+q+"&type=release&per_page=1":"https://api.discogs.com/database/search?q="+q+"&type=release&per_page=1&token="+DGS_KEY;
+      var r=await fetch(dgsUrl);
+      if(!r.ok){discogsCache[key]=null;return null}
+      var d=await r.json();
+      if(d&&d.results&&d.results.length>0&&d.results[0].id){
+        var sellUrl="https://www.discogs.com/sell/release/"+d.results[0].id;
+        var infoUrl="https://www.discogs.com"+d.results[0].uri;
+        discogsCache[key]={sell:sellUrl,info:infoUrl};
+        return discogsCache[key];
+      }
+      discogsCache[key]=null;return null;
+    }catch(e){discogsCache[key]=null;return null}
+  })();
+  discogsPending[key]=promise;
+  var result=await promise;
+  delete discogsPending[key];
+  return result;
 }
 
+var enrichGen=0;
 async function enrichAlbumBadges(){
-  console.log("[Discogs] Enriching badges, key present:",!!DGS_KEY);
-  var cards=document.querySelectorAll(".album-card");console.log("[Discogs] Cards found:",cards.length);
+  var gen=++enrichGen;
+  var cards=document.querySelectorAll(".album-card");
   for(var i=0;i<cards.length;i++){
+    if(gen!==enrichGen)return;
     var c=cards[i];
     var a=c.querySelector(".album-card-artist"),t=c.querySelector(".album-card-name"),b=c.querySelector(".album-badges");
     if(!a||!t||!b)continue;
@@ -1044,7 +1053,7 @@ async function send(){
   // Bare conversational words with no artist intent
   else if(/^(yes|no|ok|okay|yeah|yep|nope|maybe|sure|idk|dunno|hello|hi|hey|thanks|thx|ty|bye|cya|lol|haha|hehe|what|why|when|who|how|help|test|testing|asdf|fdsa)$/i.test(txt))isGibberish=true;
   // Very short and doesn't look like an artist name
-  else if(txt.split(/\s+/).length===1&&txt.length<5&&!/^[A-Z]/.test(txt))isGibberish=true;
+  else if(txt.split(/\s+/).length===1&&txt.length<5&&!/^[A-Z]/.test(txt)&&!/^[a-z0-9]+$/i.test(txt))isGibberish=true;
   // Consonant-heavy gibberish: ratio > 3:1 or no vowels (skip all-caps acronyms)
   else if(clean.length>=4&&!/^[A-Z]{2,6}$/.test(txt.trim())){
     var vowels=clean.match(/[aeiou]/g);var vCount=vowels?vowels.length:0;
