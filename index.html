@@ -641,12 +641,18 @@ function speakMsg(btn){
     if(voices.length>0){
       var ranked=voices.filter(function(v){return v.lang.indexOf("en")===0});
       var best=null;
-      // Score: Irish male (10), UK male (7), Irish any (6), UK any (4), any EN male (2), any EN (1)
+      // Male voices only — Bob is a bloke
+      var femaleNames=["female","moira","fiona","zira","samantha","karen","susan","linda","catherine","mary","hazel","veena"];
+      ranked=ranked.filter(function(v){
+        var n=v.name.toLowerCase();
+        return !femaleNames.some(function(f){return n.indexOf(f)>-1});
+      });
+      if(ranked.length===0)ranked=voices.filter(function(v){return v.lang.indexOf("en")===0});
+      // Score: Irish (10) > UK (7) > any EN (3)
       ranked.forEach(function(v){
-        var n=v.name.toLowerCase(),s=0;
-        if(v.lang==="en-IE")s=n.indexOf("female")>-1||n.indexOf("moira")>-1||n.indexOf("fiona")>-1?6:10;
-        else if(v.lang==="en-GB")s=n.indexOf("female")>-1?4:7;
-        else s=n.indexOf("female")>-1?1:2;
+        var s=3;
+        if(v.lang==="en-IE")s=10;
+        else if(v.lang==="en-GB")s=7;
         if(!best||s>best._score){v._score=s;best=v}
       });
       if(!best)best=voices[0];
