@@ -43,11 +43,15 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 .disc-section.genres{background:var(--genres-bg)}
 .section-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px;position:sticky;top:0;z-index:1;background:inherit;padding:2px 0}
 
-/* Album tile grid */
-.album-grid{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start}
-.album-tile{width:80px;text-align:center;cursor:pointer;transition:transform .15s}.album-tile:hover{transform:translateY(-2px)}
-.album-tile .at-img{width:68px;height:68px;border-radius:6px;object-fit:cover;display:block;margin:0 auto;border:2px solid rgba(255,255,255,0.08)}.album-tile .at-placeholder{width:68px;height:68px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;font-weight:800;margin:0 auto}
-.album-tile .at-label{font-size:0.55rem;color:var(--text);margin-top:3px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:80px}
+/* Album tile grid — dynamically sized */
+.album-grid{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;justify-content:center}
+.album-tile{text-align:center;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center}.album-tile:hover{transform:translateY(-2px)}
+.album-tile .at-img{border-radius:6px;object-fit:cover;display:block;border:2px solid rgba(255,255,255,0.08)}.album-tile .at-placeholder{border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+.album-tile .at-label{font-size:0.55rem;color:var(--text);margin-top:3px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.album-tile .at-badges{display:flex;gap:3px;margin-top:3px}
+.album-tile .at-badge{padding:2px 6px;border-radius:4px;font-size:0.45rem;font-weight:700;text-transform:uppercase;letter-spacing:0.2px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.at-badge-order{background:rgba(196,164,74,0.15);color:var(--accent3);border-color:rgba(196,164,74,0.3)}.at-badge-order:hover{background:var(--accent3);color:#fff}
+.at-badge-discogs{background:rgba(255,255,255,0.05);color:var(--dim);border-color:rgba(255,255,255,0.08)}.at-badge-discogs:hover{background:rgba(255,255,255,0.12);color:#fff}
 
 /* Artist card grid */
 .artist-grid{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
@@ -72,7 +76,6 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
   .disc-area{height:50%}
   .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
   .hero-overlay{width:auto}.hero-img{width:48px;height:48px}.hero-name{font-size:0.8rem}
-  .album-tile{width:64px}.album-tile .at-img,.album-tile .at-placeholder{width:52px;height:52px}
   .artist-card .ac-av{width:28px;height:28px}.artist-card .ac-name{font-size:0.62rem}
 }
 </style>
@@ -296,12 +299,14 @@ function extractArtists(txt){
 
 // Render discovery
 function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
-  // Albums tile grid
+  // Albums tile grid with dynamic sizing
   var ac=document.getElementById("albumsContent");
   ac.innerHTML=albs.slice(0,16).map(function(a,i){
-    var img=a.img||"";
-    return'<div class="album-tile" onclick="betaChat(\''+a.name.replace(/'/g,"\\'")+'\')">'+(img?'<img class="at-img" src="'+img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="at-placeholder" style="display:none;background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>':'<div class="at-placeholder" style="background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>')+'<div class="at-label">'+esc(a.name)+'</div></div>';
+    var img=a.img||"",dq=encodeURIComponent((a.artist||artistName)+" "+a.name);
+    var badges='<div class="at-badges"><span class="at-badge at-badge-order" onclick="event.stopPropagation();betaChat(\'order '+a.name.replace(/'/g,"\\'")+' '+ (a.artist||artistName).replace(/'/g,"\\'")+'\')">Order</span><a class="at-badge at-badge-discogs" href="https://www.discogs.com/search/?q='+dq+'&type=release" target="_blank" onclick="event.stopPropagation()">Discogs</a></div>';
+    return'<div class="album-tile" onclick="betaChat(\''+a.name.replace(/'/g,"\\'")+'\')">'+(img?'<img class="at-img" src="'+img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="at-placeholder" style="display:none;background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>':'<div class="at-placeholder" style="background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>')+'<div class="at-label">'+esc(a.name)+'</div>'+badges+'</div>';
   }).join("");
+  sizeAlbumTiles();
 
   // Artists card grid
   var arc=document.getElementById("artistsContent");
@@ -327,6 +332,24 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
   if(sim.length)sim.forEach(function(s){addKnown(s.name)});
   setTimeout(updateNodePositions,300);
 }
+
+// Dynamic album tile sizing
+function sizeAlbumTiles(){
+  var grid=document.getElementById("albumsContent");
+  if(!grid||!grid.children.length)return;
+  var cw=grid.clientWidth,gap=10;
+  var cols=Math.max(2,Math.floor((cw+gap)/(70+gap)));
+  var tw=Math.floor((cw-(cols-1)*gap)/cols);
+  tw=Math.min(tw,100);
+  var ih=tw-4;
+  for(var i=0;i<grid.children.length;i++){
+    var t=grid.children[i];t.style.width=tw+"px";
+    var img=t.querySelector(".at-img"),ph=t.querySelector(".at-placeholder");
+    if(img){img.style.width=ih+"px";img.style.height=ih+"px"}
+    if(ph){ph.style.width=ih+"px";ph.style.height=ih+"px";ph.style.fontSize=(ih*0.4)+"px"}
+  }
+}
+window.addEventListener("resize",sizeAlbumTiles);
 
 // Genre mind map renderer
 function drawGenreMap(tags){
