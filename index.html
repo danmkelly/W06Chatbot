@@ -831,18 +831,30 @@ function renderDiscovery(sim,tgs,albs,info){
 
   // Hero
   var heroHtml='<div class="artist-hero-name">'+artistName+'</div>';
+  var bioId=null;
   if(tgs&&tgs.length>0){
     heroHtml+='<div class="artist-hero-tags">'+tgs.slice(0,6).map(function(t){return'<span class="artist-hero-tag" onclick="exploreGenre(\''+t.name.replace(/'/g,"\\'")+'\')">'+t.name+'</span>'}).join("")+'</div>';
   }
   if(info&&info.bio){
-    var bioId='bio'+Math.random().toString(36).slice(2,8);
+    bioId='bio'+Math.random().toString(36).slice(2,8);
     heroHtml+='<div class="artist-hero-bio" id="'+bioId+'" onclick="toggleBio(\''+bioId+'\')">'+info.bio+'</div>';
-    if(info.bio.length>300)heroHtml+='<span class="artist-hero-more" onclick="toggleBio(\''+bioId+'\');event.stopPropagation()">… more</span>';
   }
   if(info&&info.listeners){
     heroHtml+='<div class="artist-hero-stats"><span class="artist-hero-stat"><strong>'+parseInt(info.listeners).toLocaleString()+'</strong> listeners</span><span class="artist-hero-stat"><strong>'+parseInt(info.playcount).toLocaleString()+'</strong> plays</span></div>';
   }
   artistHero.innerHTML=heroHtml;
+
+  // Add … more link only if bio actually overflows the 3-line clamp
+  if(bioId){
+    var bioEl=document.getElementById(bioId);
+    if(bioEl&&bioEl.scrollHeight>bioEl.clientHeight){
+      var more=document.createElement("span");
+      more.className="artist-hero-more";
+      more.textContent="… more";
+      more.onclick=function(e){toggleBio(bioId);e.stopPropagation()};
+      bioEl.parentNode.insertBefore(more,bioEl.nextSibling);
+    }
+  }
 
   // Similar artists horizontal scroll
   document.getElementById("simCount").textContent=sim.length;
