@@ -337,17 +337,17 @@ body{
   <!-- Design & Pedagogical Review -->
   <div class="section">
     <div class="section-label">Design &amp; Pedagogical Review</div>
-    <h2>Academic framework assessment &mdash; Design Score: 2.7 / 5.0 &mdash; Grade C</h2>
-    <p>Beyond the code-level bug register above, this separate pass assesses Bob against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Most recent change:</strong> explicit consent flow &mdash; Bob now asks permission ("yes or no?") before storing data, and `saveMemory()` guards all writes behind `consent === "yes"`.</p>
+    <h2>Academic framework assessment &mdash; Design Score: 3.0 / 5.0 &mdash; Grade C+</h2>
+    <p>Beyond the code-level bug register above, this separate pass assesses Bob against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> opener now includes brief capabilities in turn 1 ("I can find similar artists, dig up albums, explore genres..."); `gibberishCount` counter with de-escalation after 2+ strikes + human handoff; LLM error message now offers human path; post-search suggestion chips include "Keep exploring" and "Human". Three findings improved this pass (F11: FAIL &rarr; PARTIAL, F13: PARTIAL &rarr; PASS, F16: FAIL &rarr; PARTIAL).</p>
 
     <h3>Framework 1: Seven-Dimension Chatbot Taxonomy (Adamopoulou &amp; Moussiades 2020)</h3>
     <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. Bob is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
 
     <h3>Framework 2: CASA &mdash; Computers Are Social Actors (Reeves &amp; Nass 1996)</h3>
-    <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob has made two significant CASA improvements since the initial QA pass: (1) disclosure in turn 1 is now explicit ("I'm Bob, an AI chatbot powered by DeepSeek") -- upgraded to PASS; (2) explicit consent flow now asks "Would you like me to remember your name... Yes or no?" BEFORE any localStorage write, and `saveMemory()` is guarded by `consent==="yes"` -- upgraded from FAIL to PASS. Human name "Bob" and Dublin dialect remain as fake-human cues (FAIL). Frustration handling still repeats cheerful templates with no de-escalation register shift (FAIL).</p>
+    <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob has made significant CASA improvements: (1) disclosure in turn 1 is explicit ("I'm Bob, an AI chatbot powered by DeepSeek") -- PASS; (2) explicit consent flow asks "Would you like me to remember your name... Yes or no?" BEFORE any localStorage write, and `saveMemory()` is guarded by `consent==="yes"` -- PASS; (3) frustration handling now has `gibberishCount` de-escalation: after 2+ consecutive gibberish inputs, Bob shifts to serious tone ("I'm having trouble understanding...") and actively offers human handoff with "Human" suggestion chip -- upgraded from FAIL to PARTIAL. Human name "Bob" and Dublin dialect remain as fake-human cues (FAIL, Closed -- design intent). Register-vs-capability is PARTIAL (Closed -- same rationale; low-stakes interactions).</p>
 
     <h3>Framework 3: Conversation Flow Anatomy</h3>
-    <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on Intent (clear purpose per flow) but fails critically on <strong>Slots</strong> (no input validation before API dispatch) and <strong>Recovery Ladder</strong> (of 5 failure scenarios -- gibberish, misspelling, API timeout, no Discogs match, empty Last.fm -- only gibberish reaches step 2 of the 3-step ladder; none reach the human-handoff step 3). The Opener has improved (no more humanising filler message between identity disclosure and capability demonstration). The Closer remains partial: no read-back/confirm follows recommendations, and the human path is never proactively offered as a next step.</p>
+    <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on <strong>Opener</strong> (identity + capabilities both in turn 1: "I can find similar artists, dig up albums, explore genres...") and <strong>Intent</strong> (clear purpose per flow). <strong>Recovery Ladder</strong> has improved: of 5 failure scenarios, gibberish now reaches step 3 (de-escalation + human handoff after 2+ strikes), LLM error offers human path, and post-search chips include "Keep exploring" + "Human". Three scenarios remain unaddressed (misspelling, no Discogs match, empty results) -- upgraded from FAIL to PARTIAL. <strong>Slots</strong> still fail critically (no input validation before API dispatch). The <strong>Closer</strong> remains partial: no read-back/confirm follows recommendations, though "Keep exploring" and "Human" suggestion chips now appear proactively.</p>
 
     <div class="bug-table-wrap" style="margin-top:20px">
       <table class="bug-table">
@@ -461,8 +461,8 @@ body{
             <td>Human name "Bob"; Dublin slang; brief endorses mimicry</td>
             <td>[DESIGN]</td>
             <td>None</td>
-            <td></td>
-            <td></td>
+            <td>Accepted — fun interactions part of design intent; low-stakes</td>
+            <td>Closed</td>
           </tr>
           <tr>
             <td class="id">F10</td>
@@ -472,15 +472,15 @@ body{
             <td>System prompt claims "know band histories, album lore" unverifiable</td>
             <td>[DESIGN]</td>
             <td>None</td>
-            <td></td>
-            <td></td>
+            <td>Accepted — same rationale as F9; low-stakes, not overclaiming</td>
+            <td>Closed</td>
           </tr>
           <tr>
             <td class="id">F11</td>
             <td style="color:var(--accent);font-weight:600">CASA</td>
             <td class="desc">Frustration handling (de-escalation)</td>
-            <td><span class="sev-crit">FAIL</span></td>
-            <td>Repeats cheerful template on every error; no register shift</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>gibberishCount: after 2+ strikes, shifts register + offers human handoff; LLM error offers human path</td>
             <td>[DESIGN/CODE]</td>
             <td>BUG-008 (typing stuck on goBack) -- adds conversation-design dimension</td>
             <td></td>
@@ -501,8 +501,8 @@ body{
             <td class="id">F13</td>
             <td style="color:var(--accent3);font-weight:600">Flow</td>
             <td class="desc">OPENER (identity + capability in turn 1)</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-            <td>Identity in turn 1; capability specifics deferred until consent resolved</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>"I can find similar artists, dig up albums, explore genres..." — identity + capabilities both in turn 1. Human handoff also disclosed.</td>
             <td>[DESIGN]</td>
             <td>None</td>
             <td></td>
@@ -534,8 +534,8 @@ body{
             <td class="id">F16</td>
             <td style="color:var(--accent3);font-weight:600">Flow</td>
             <td class="desc">RECOVERY LADDER (5 failure scenarios)</td>
-            <td><span class="sev-crit">FAIL</span></td>
-            <td>4/5 scenarios dead-end silently; none reach step 3 (human handoff)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>Gibberish reaches step 3 (2+ strikes → de-escalation + human chip); LLM fallback offers human path; post-search "Keep exploring" + "Human" chips. Misspelling, no Discogs, empty results still silent.</td>
             <td>[DESIGN/CODE]</td>
             <td>BUG-002 (fallback), BUG-008 (typing on error), BUG-018 (silent LLM); structural analysis</td>
             <td></td>
@@ -568,13 +568,13 @@ body{
     </div>
 
     <div class="overall-score" style="margin-top:20px">
-      <span class="big">2.7</span><span class="grade">C</span>
-      <div class="note">Design quality score &middot; 6 PASS &middot; 7 PARTIAL &middot; 4 FAIL &middot; 1 N/A &middot; <strong style="color:var(--accent2)">CASA: disclosure explicit (PASS); consent flow guard in saveMemory() (PASS); 2 major gaps closed since prior review. Score up from 2.0 (D).</strong></div>
+      <span class="big">3.0</span><span class="grade">C+</span>
+      <div class="note">Design quality score &middot; 7 PASS &middot; 8 PARTIAL &middot; 2 FAIL &middot; 1 N/A &middot; <strong style="color:var(--accent2)">Latest pass: F11, F13, F16 improved. Gibberish de-escalation + human handoff added. Opener now includes capabilities in turn 1. Post-search chips offer "Keep exploring" + "Human". Score up from 2.7 (C).</strong></div>
     </div>
 
     <h3 style="margin-top:20px">Change log</h3>
     <p style="font-size:0.78rem;color:var(--text-dim);line-height:1.7">
-      <strong style="color:var(--accent)">2026-07-02 (re-review after consent flow):</strong> F12 (chummy data extraction) upgraded FAIL &rarr; PASS. Bob now asks "Would you like me to remember your name... Yes or no?" before any localStorage write. `saveMemory()` is guarded by `consent === "yes"` (line 594). If user says no, nothing is stored and return visits reset all counters. F8 (disclosure in turn 1) confirmed PASS: first message is unambiguous "AI chatbot powered by DeepSeek" with no humanising filler. Overall design score improved from 2.0 (Grade D) to 2.7 (Grade C). CASA scorecard improved from 1.5/5 to 3.0/5.
+      <strong style="color:var(--accent)">2026-07-02 (final review after recovery ladder + opener deployment):</strong> F11 (frustration handling) upgraded FAIL &rarr; PARTIAL. `gibberishCount` counter now tracks consecutive failures; after 2+ strikes, Bob shifts from cheerful to serious register ("I'm having trouble understanding...") and offers "Human" suggestion chip. LLM error fallback updated to include human path. F13 (opener) upgraded PARTIAL &rarr; PASS. Turn 1 now includes brief capabilities: "I can find similar artists, dig up albums, explore genres, and help you discover new music." Human handoff also disclosed in turn 1. F16 (recovery ladder) upgraded FAIL &rarr; PARTIAL. Gibberish now reaches step 3 of the ladder; LLM fallback offers human path; post-search suggestion chips now include "Keep exploring" and "Human". Three scenarios still unaddressed (misspelling, no Discogs match, empty results). F9 (fake-human cues) and F10 (register vs capability) remain with manual override: Closed, accepted as low-stakes design decisions. Overall design score improved from 2.7 (Grade C) to 3.0 (Grade C+). CASA scorecard improved from 3.0/5 to 3.5/5. Flow Anatomy scorecard improved from 2.0/5 to 2.5/5.
     </p>
   </div>
 
