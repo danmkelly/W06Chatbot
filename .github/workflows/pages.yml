@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: Deploy to Cloudflare Pages
 
 on:
   push:
@@ -9,33 +9,16 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v4
-      - run: |
-          mkdir -p _site
-          cp *.html *.js *.css *.md *.txt *.toml *.yml _headers _config.yml .nojekyll robots.txt _site/ 2>/dev/null || true
-          touch _site/.nojekyll
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: ./_site
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy . --project-name=rr-records --branch=main
