@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Dashboard — Round &amp; Round Records Chatbot</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;--surface:#1A1A1A;--surface2:#242424;--border:#2E2E2E;
+  --text:#E8E4DD;--text-dim:#8A857C;--accent:#E85D3F;--accent-glow:rgba(232,93,63,0.3);
+  --accent2:#4A9E8E;--accent3:#C4A44A;--font:'Inter',system-ui,-apple-system,sans-serif;
+}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;
+}
+.page{max-width:960px;margin:0 auto;padding:60px 24px 80px}
+
+.hero{text-align:center;padding:60px 0 50px;border-bottom:1px solid var(--border);margin-bottom:50px}
+.hero-icon{font-size:3.5rem;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(232,93,63,0.4))}
+.hero h1{font-size:2.2rem;font-weight:900;color:#F5E6D3;letter-spacing:-0.5px;margin-bottom:10px}
+.hero-sub{font-size:0.95rem;color:var(--text-dim);max-width:640px;margin:0 auto;line-height:1.6}
+
+.section{margin-bottom:48px}
+.section-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px}
+.section h2{font-size:1.5rem;font-weight:800;margin-bottom:16px;color:#F5E6D3}
+.section h3{font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--text)}
+.section p{font-size:0.92rem;color:var(--text-dim);margin-bottom:14px;line-height:1.75}
+.section ul{font-size:0.85rem;color:var(--text-dim);line-height:1.8;padding-left:20px;margin-bottom:14px}
+.section ul li{margin-bottom:4px}
+
+/* Scorecard */
+.scorecard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.sc-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;text-align:center}
+.sc-item .sc-value{font-size:2.4rem;font-weight:900;color:var(--accent);display:block}
+.sc-item .sc-label{font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;margin-top:4px}
+.sc-item .sc-detail{font-size:0.65rem;color:var(--text-dim);margin-top:6px;line-height:1.4}
+
+.overall-score{text-align:center;padding:20px;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-top:12px}
+.overall-score .big{font-size:3.5rem;font-weight:900;color:var(--accent3)}
+.overall-score .grade{font-size:1.4rem;font-weight:800;color:var(--text);margin-left:10px}
+.overall-score .note{font-size:0.72rem;color:var(--text-dim);margin-top:4px}
+
+/* Bug table */
+.bug-table-wrap{overflow-x:auto;margin-top:20px}
+.bug-table{width:100%;border-collapse:collapse;font-size:0.72rem}
+.bug-table th{background:var(--surface2);color:var(--text-dim);text-align:left;padding:10px 12px;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border);white-space:nowrap}
+.bug-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:top;line-height:1.5}
+.bug-table tr:hover td{background:rgba(255,255,255,0.02)}
+.bug-table .id{color:var(--accent);font-weight:700;white-space:nowrap}
+.bug-table .desc{color:var(--text)}
+.bug-table .fix{font-size:0.65rem}
+.sev-crit{color:#fff;background:#C0392B;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.sev-high{color:#fff;background:#E67E22;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.sev-med{color:#000;background:#F1C40F;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.sev-low{color:#fff;background:#7F8C8D;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.status-open{color:var(--accent);font-weight:600}
+.status-fixed{color:var(--accent2);font-weight:600}
+
+/* Back link */
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent2);text-decoration:none;font-size:0.82rem;font-weight:600;margin-top:30px;transition:color .15s}
+.back-link:hover{color:#5FBFAF}
+
+@media(max-width:700px){
+  .scorecard{grid-template-columns:1fr 1fr}
+  .hero h1{font-size:1.5rem}
+  .bug-table{font-size:0.65rem}
+  .bug-table th,.bug-table td{padding:6px 8px}
+}
+@media(max-width:500px){
+  .scorecard{grid-template-columns:1fr}
+  .page{padding:40px 16px 60px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-icon">&#128269;</div>
+    <h1>QA Dashboard</h1>
+    <p class="hero-sub">Maintained by <strong style="color:var(--accent3)">@Keelin</strong> &mdash; QA specialist for the Round &amp; Round Records chatbot. Testing approach, scoring rubric, and bug register.</p>
+  </div>
+
+  <!-- Testing Approach -->
+  <div class="section">
+    <div class="section-label">Testing Methodology</div>
+    <h2>How Bob is tested</h2>
+    <p>All testing follows a <strong>real-user simulation</strong> model: tests are written as if a frustrated customer at 11pm on a Saturday is trying to use the bot. No test assumes a happy path. Every test includes a verification step that <strong>can be automated</strong> using a headless browser or simulated DOM interaction.</p>
+
+    <h3>Test categories</h3>
+    <p>The <strong>61-case test plan</strong> (test-plan.md) covers 11 categories:</p>
+    <ul>
+      <li><strong>Greeting flow</strong> &mdash; first visit, return visit, name capture</li>
+      <li><strong>Artist search</strong> &mdash; single/multi artist, misspelled, gibberish</li>
+      <li><strong>Genre exploration</strong> &mdash; chips, tags, keyword search</li>
+      <li><strong>Discovery panel</strong> &mdash; hero, similar artists, albums, genres, bio expander</li>
+      <li><strong>Human handoff</strong> &mdash; contact details, address verification</li>
+      <li><strong>Memory/persistence</strong> &mdash; localStorage, clear, CLS command</li>
+      <li><strong>Voice STT</strong> &mdash; mic, transcription, auto-send</li>
+      <li><strong>Voice TTS</strong> &mdash; speaker icon, playback, cancel</li>
+      <li><strong>Mobile</strong> &mdash; breakpoints, layout, touch targets</li>
+      <li><strong>Error handling</strong> &mdash; API failure, gibberish, fallbacks</li>
+      <li><strong>UI elements</strong> &mdash; modals, buttons, badges, addresses</li>
+    </ul>
+
+    <h3>Automated verification</h3>
+    <p>Each test case specifies <strong>what DOM element to check</strong>, <strong>what text to assert</strong>, and <strong>what network call to verify</strong>. Tests are designed to be run by a headless browser script (Puppeteer/Playwright) that:</p>
+    <ul>
+      <li>Sets the viewport to the target device width</li>
+      <li>Simulates clicks, typing, and voice input</li>
+      <li>Asserts DOM state after each interaction</li>
+      <li>Captures screenshots on failure</li>
+      <li>Logs console errors as test failures</li>
+    </ul>
+  </div>
+
+  <!-- Scoring -->
+  <div class="section">
+    <div class="section-label">Scoring Rubric</div>
+    <h2>Quality score: 2.9 / 5.0 &mdash; Grade C+</h2>
+    <p>Weighted across 6 categories (full rubric in scoring-rubric.md). Scores are versioned and tracked per deployment.</p>
+
+    <div class="scorecard">
+      <div class="sc-item">
+        <span class="sc-value">3.5</span>
+        <span class="sc-label">Conversation Accuracy</span>
+        <span class="sc-detail">25% weight<br>Artist/entity extraction solid; follow-up confusion is weakness</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.0</span>
+        <span class="sc-label">UI/UX Quality</span>
+        <span class="sc-detail">20% weight<br>Dark theme cohesive; modal overlay click missing</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.5</span>
+        <span class="sc-label">Memory &amp; Personalisation</span>
+        <span class="sc-detail">15% weight<br>localStorage solid; cache leak in simImageCache</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.0</span>
+        <span class="sc-label">Voice Interaction</span>
+        <span class="sc-detail">15% weight<br>STT + TTS functional; TTS orphan on slow voice load</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">2.0</span>
+        <span class="sc-label">Mobile Experience</span>
+        <span class="sc-detail">15% weight<br>50/50 split works but cramped; no toggle; nested scroll</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">2.0</span>
+        <span class="sc-label">Robustness</span>
+        <span class="sc-detail">10% weight<br>Race conditions, XSS vulnerability, undefined refs</span>
+      </div>
+    </div>
+
+    <div class="overall-score">
+      <span class="big">2.9</span><span class="grade">C+</span>
+      <div class="note">Baseline score · 17 bugs tracked · 2 critical, 3 high, 5 medium, 7 low</div>
+    </div>
+  </div>
+
+  <!-- Bug Register -->
+  <div class="section">
+    <div class="section-label">Bug Register</div>
+    <h2>17 bugs tracked</h2>
+    <p>Found via static code analysis of index.html (lines 1-1234). Updated per deployment.</p>
+
+    <div class="bug-table-wrap">
+      <table class="bug-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Severity</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>How it was fixed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="id">BUG-001</td>
+            <td><span class="sev-crit">Critical</span></td>
+            <td class="desc">XSS: user input in innerHTML. <code>&lt;img src=x onerror=alert(1)&gt;</code> executes as JS.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">HTML-escape user messages in <code>addMsg()</code> with <code>.replace(/&/g,...)</code> for <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>. Line 667.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-002</td>
+            <td><span class="sev-crit">Critical</span></td>
+            <td class="desc">ReferenceError: <code>isRealArtist</code> and <code>isGenreQuery</code> never defined. Blocks all non-LLM fallback.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Removed undefined variable check. Replaced with guardless fallback message at line 1137.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-003</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc"><code>enrichLinks</code> rewrites innerHTML of existing bot bubbles, breaking any non-inline DOM references.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Use TreeWalker to wrap text nodes instead of reassigning innerHTML.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-004</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc">Race condition: stale <code>enrichAlbumBadges</code> updates old DOM after new search renders.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add generation counter; abort stale enrichment passes.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-005</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc">TTS <code>speaking</code> class orphaned when voices never load (background tab, slow connection).</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add 3-second timeout fallback; cancel pending <code>onvoiceschanged</code> on new click.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-006</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">Mobile: nested <code>overflow-y:auto</code> on discovery + children creates scroll traps.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Set <code>overflow-y:hidden</code> on <code>.discovery</code> in mobile media query.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-007</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">"What I store" modal doesn't close on overlay click. Only "Got it" button works.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add click listener on <code>#memInfoModal</code> overlay.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-008</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc"><code>goBack()</code> leaves typing indicator stuck on API error in nested <code>.then()</code> chain.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add <code>.catch()</code> to promise chain; use <code>Promise.all</code>.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-009</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc"><code>checkDiscogs</code>: concurrent calls for same album bypass cache, causing duplicate API hits.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Use pending-promise cache: store fetch promise before await, dedupe concurrent callers.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-010</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">Mobile: <code>clearMemory</code> references <code>mobile-open</code> class that is never set (dead code from planned toggle).</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Remove dead code or implement mobile discovery toggle.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-011</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>simImageCache</code> + <code>discogsCache</code> never cleared: unbounded memory growth.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add cache clearing to <code>clearMemory()</code>; optionally add LRU eviction.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-012</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>extractArtists</code> splits "Mumford and Sons" by "and", searching for "sons" as an artist.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Try full phrase first; use LLM entity extraction before regex splitting.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-013</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc">Gibberish detection flags lowercase "u2" (but not "U2"); short alphanumeric names catchable.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Exclude all-alphanumeric strings from short-name gibberish check.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-014</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>addSugg</code> suggestion text not HTML-escaped (defense-in-depth gap in localStorage recall).</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Escape artist names before inserting into suggestion chip template.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-015</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>enrichLinks</code> regex can match inside HTML attributes if LLM outputs markup.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Walk text nodes with TreeWalker; only wrap names in text, not HTML.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-016</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>speechSynthesis.cancel()</code> cancels speech in all browser tabs, not just our utterances.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Document limitation. Web Speech API shares across browsing context.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-017</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>renderDiscoveryTag</code> relies on caller for nav state; inconsistent with <code>renderDiscovery</code>.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Make both render functions self-contained regarding navigation state.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <a class="back-link" href="victor.html">&larr; Back to project brief</a>
+
+</div>
+</body>
+</html>
