@@ -55,11 +55,11 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 .at-badge-order{background:rgba(196,164,74,0.15);color:var(--accent3);border-color:rgba(196,164,74,0.3)}.at-badge-order:hover{background:var(--accent3);color:#fff}
 .at-badge-discogs{background:rgba(255,255,255,0.05);color:var(--dim);border-color:rgba(255,255,255,0.08)}.at-badge-discogs:hover{background:rgba(255,255,255,0.12);color:#fff}
 
-/* Artist card grid */
+/* Artist card grid — flexbox fills rows, uniform sizing */
 .artist-grid{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
-.artist-card{width:calc(50% - 4px);display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .15s;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}.artist-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
-.artist-card .ac-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#fff;font-weight:700;flex-shrink:0}
-.artist-card .ac-info{min-width:0}.artist-card .ac-name{font-size:0.72rem;font-weight:600;color:var(--text);line-height:1.2}.artist-card .ac-match{font-size:0.58rem;color:var(--accent3)}
+.artist-card{flex:1 1 160px;min-width:150px;max-width:220px;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .15s;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}.artist-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
+.artist-card .ac-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;font-weight:700;flex-shrink:0}
+.artist-card .ac-info{flex:1;min-width:0}.artist-card .ac-name{font-size:0.7rem;font-weight:600;color:var(--text);line-height:1.2}.artist-card .ac-match{font-size:0.56rem;color:var(--accent3)}
 
 /* Genre chips */
 .genre-cloud{display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
