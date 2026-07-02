@@ -618,7 +618,6 @@ function getMemoryPreamble(){
 }
 function ordinalSuffix(n){var s=["th","st","nd","rd"];var v=n%100;return s[(v-20)%10]||s[v]||s[0]}
 function showMemInfo(){document.getElementById("memInfoModal").classList.add("open")}
-loadMemory();
 
 // === DOM ===
 var chatMsgs=document.getElementById("chatMessages");
@@ -1197,6 +1196,8 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
   if(API_PROXY){b.textContent="LLM Enabled";b.classList.add("live");l.textContent="Music guru · AI-powered"}
   else if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM Enabled";b.classList.add("live");l.textContent="Music guru · AI-powered"}
   else{b.textContent="LLM Not Live";l.textContent="Music guru & vinyl hunter"}
+
+  loadMemory();
   if(bobMemory.userName)l.textContent="Music guru · knows "+bobMemory.userName;
 
   if(bobMemory.visits>1&&bobMemory.userName){
@@ -1204,11 +1205,11 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
     setTimeout(function(){addMsg("I'm <strong>Bob</strong>, your AI music guide at Round &amp; Round Records. What are you in the mood for today?",'bot')},800);
     setTimeout(function(){addSugg(bobMemory.recentArtists.length?bobMemory.recentArtists.slice(0,4).concat(["Human"]):["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},1600);
   }else{
-    addMsg("Hey! I'm <strong>Bob</strong>, your AI powered music guide at Round &amp; Round Records.",'bot');
-    setTimeout(function(){addMsg("Just like my friendly colleagues in our physical store, I love music and helping people explore.",'bot')},800);
-    setTimeout(function(){addMsg("Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot')},1600);
+    addMsg("Hey! I'm <strong>Bob</strong>, an AI chatbot powered by DeepSeek. I'm your music guide here at Round &amp; Round Records.",'bot');
+    setTimeout(function(){addMsg("I remember a few things between visits to make your experience better &mdash; your name, what you've searched for, that kind of thing. It all stays on your device, never sent anywhere. You can clear it any time.",'bot')},800);
+    setTimeout(function(){addMsg("So! Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot')},1600);
     setTimeout(function(){
-      if(!bobMemory.userName){addMsg("Oh, and I didn't catch your name! What should I call you?",'bot');expectingName=true}
+      if(!bobMemory.userName){addMsg("I'd love to remember your name for next time (just on your device, nowhere else). What should I call you?",'bot');expectingName=true}
       else{addMsg("What are you into right now? Type anything, or if you want to chat to a human just write <strong>human</strong> and I'll share our contact details.",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true}
     },2400);
   }

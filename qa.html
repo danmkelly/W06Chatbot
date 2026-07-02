@@ -303,6 +303,171 @@ body{
     </div>
   </div>
 
+  <!-- Design & Pedagogical Review -->
+  <div class="section">
+    <div class="section-label">Design &amp; Pedagogical Review</div>
+    <h2>Academic framework assessment &mdash; Design Score: 2.0 / 5.0 &mdash; Grade D</h2>
+    <p>Beyond the code-level bug register above, this separate pass assesses Bob against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>.</p>
+
+    <h3>Framework 1: Seven-Dimension Chatbot Taxonomy (Adamopoulou &amp; Moussiades 2020)</h3>
+    <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. Bob is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
+
+    <h3>Framework 2: CASA &mdash; Computers Are Social Actors (Reeves &amp; Nass 1996)</h3>
+    <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob is rated <strong>CASA-BLIND</strong> on three critical checks: (1) localStorage is written on page load before any disclosure to the user; (2) the name-request prompt is framed as social friendliness, not data collection; (3) the bot uses a human name, human-sounding role label, and Dublin dialect while weakly disclosing its AI nature in turn 1. The "What I store" modal exists but is an opt-in discovery mechanism, not a pre-collection consent prompt.</p>
+
+    <h3>Framework 3: Conversation Flow Anatomy</h3>
+    <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on Intent (clear purpose per flow) but fails critically on <strong>Slots</strong> (no input validation before API dispatch) and <strong>Recovery Ladder</strong> (of 5 failure scenarios -- gibberish, misspelling, API timeout, no Discogs match, empty Last.fm -- only gibberish reaches step 2 of the 3-step ladder; none reach the human-handoff step 3). The Opener and Closer are partial: identity is in turn 1 but capability is delayed to turn 3, and no explicit read-back/confirm follows recommendations.</p>
+
+    <div class="bug-table-wrap" style="margin-top:20px">
+      <table class="bug-table">
+        <thead>
+          <tr>
+            <th>Framework</th>
+            <th>Item</th>
+            <th>Score</th>
+            <th>Evidence</th>
+            <th>Severity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Knowledge domain (closed vs open)</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>Music domain; easter eggs deliberate per victor.html brief</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Service provided (interpersonal support)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>LLM temp 0.9 + no domain guardrails risks overreach</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Goals (task-based vs chat-based)</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>Discovery panel resolves to Discogs purchase action</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Response generation (hybrid)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>No RAG verification of LLM claims; temp 0.9 hallucination risk</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Channel parity (text + voice)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>Voice STT bypasses gibberish validation that text path has</td>
+            <td>[DESIGN/CODE]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Human-aid (reachable at every stage)</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>"Prefer a real human?" bar always visible; "human" command works</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Permissions</td>
+            <td><span style="background:#555;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem">N/A</span></td>
+            <td>Commercial single-owner; no relevant dimension</td>
+            <td>&mdash;</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">Disclosure in turn 1</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>"AI powered" in msg 1 but embedded in rapport; msg 2 humanises</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">No fake-human cues</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>Human name "Bob"; Dublin slang; brief endorses mimicry</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">Register matches capability</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>System prompt claims "know band histories, album lore" unverifiable</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">Frustration handling (de-escalation)</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>Repeats cheerful template on every error; no register shift</td>
+            <td>[DESIGN/CODE]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">Chummy data extraction (localStorage)</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>loadMemory() writes on page load before any disclosure; name request is friendly-framed</td>
+            <td>[DESIGN/CODE]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">OPENER (identity + capability in turn 1)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>Identity in turn 1; capability delayed to turn 3 (2.4s delay)</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">INTENT (one clear purpose per flow)</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>Three distinct flows: artist search, genre explore, human handoff</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">SLOTS (validated with back/correction)</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>No slot validation; free-text fired directly at APIs</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">RECOVERY LADDER (5 failure scenarios)</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>4/5 scenarios dead-end silently; none reach step 3 (human handoff)</td>
+            <td>[DESIGN/CODE]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">CLOSER (confirm + explore + human path)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>No read-back/confirm; explore implicit; human path not proactively offered</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">Design the unexpected first</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>Gibberish/silence handled; rapid switches corrupt context; no idle timeout</td>
+            <td>[DESIGN]</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="overall-score" style="margin-top:20px">
+      <span class="big">2.0</span><span class="grade">D</span>
+      <div class="note">Design quality score &middot; 4 PASS &middot; 8 PARTIAL &middot; 5 FAIL &middot; 1 N/A &middot; <strong style="color:var(--accent)">CASA-blind: pre-consent localStorage + weak disclosure</strong></div>
+    </div>
+
+    <p style="margin-top:16px;font-size:0.82rem;color:var(--text-dim)">The bot functions as a music discovery tool but fails as a trustworthy conversational agent. The CASA-blind design choices (pre-consent tracking, weak bot disclosure, human mimicry) are the most damaging findings. The conversation flow anatomy is structurally incomplete: the recovery ladder is non-functional for most failure modes, and no input validation exists. The six priority fixes with exact code changes are documented in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>.</p>
+  </div>
+
   <!-- Navigation -->
   <a class="back-link" href="victor.html">&larr; Back to project brief</a>
 
