@@ -98,7 +98,7 @@ canvas{position:fixed;inset:0;z-index:0}
 (function(){
 "use strict";
 var API_PROXY="https://rr-records-proxy.dan-m-kelly.workers.dev";
-(function(){if(typeof LLM_KEY==="undefined")window.LLM_KEY="";if(typeof LFM_KEY==="undefined")window.LFM_KEY="";if(typeof DGS_KEY==="undefined")window.DGS_KEY="";if(API_PROXY){LLM_KEY="proxy";LLM_URL="proxy";LLM_MODEL="deepseek-chat";LFM_KEY="proxy";DGS_KEY="proxy"}})();
+(function(){if(typeof LLM_KEY==="undefined")window.LLM_KEY="";if(typeof LFM_KEY==="undefined")window.LFM_KEY="";if(typeof DGS_KEY==="undefined")window.DGS_KEY="";if(API_PROXY){window.LLM_KEY="proxy";window.LLM_URL="proxy";window.LLM_MODEL="deepseek-chat";window.LFM_KEY="proxy";window.DGS_KEY="proxy"}})();
 
 // === State ===
 var conv=[],artistName="",lastSearch="";
