@@ -55,6 +55,8 @@ body{
 .app-brand-tagline{font-size:0.72rem;color:#C4A44A;letter-spacing:0.5px;font-weight:500}
 .app-brand-sub{font-size:0.6rem;color:rgba(196,164,74,0.6);letter-spacing:0.5px;display:flex;gap:16px}
 .app-brand-sub span{color:rgba(196,164,74,0.6);white-space:nowrap}
+.brand-info-link{color:var(--accent2);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.brand-info-link:hover{color:#5FBFAF}
 /* CHAT PANEL */
 .chat{
   display:flex;flex-direction:column;border-right:1px solid var(--border);
@@ -78,6 +80,13 @@ body{
   background:#2A2A2A;color:var(--text-dim);
 }
 .chat-top-badge.live{background:rgba(74,158,142,0.25);color:var(--accent2);}
+.chat-clear-btn{
+  margin-left:8px;font-size:0.62rem;padding:3px 14px;border-radius:12px;
+  font-weight:600;text-transform:uppercase;letter-spacing:0.5px;
+  background:transparent;color:var(--text-dim);border:1px solid var(--border);
+  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;
+}
+.chat-clear-btn:hover{color:var(--accent);border-color:var(--accent)}
 .chat-msgs{
   flex:1 1 0;min-height:0;overflow-y:auto;padding:20px;
   display:flex;flex-direction:column;gap:16px;
@@ -454,7 +463,7 @@ body{
   <div class="app-brand-text">
     <span class="app-brand-name">Round <span>&amp;</span> Round Records</span>
     <span class="app-brand-tagline">Independent since 2005 &bull; 32 Market Arcade, Dublin</span>
-    <div class="app-brand-sub"><span>Vinyl &bull; CD &bull; Expert Advice</span><span>AI-Powered Music Discovery</span></div>
+    <div class="app-brand-sub"><span>Vinyl &bull; CD &bull; Expert Advice</span><span>AI-Powered Music Discovery</span><span class="brand-info-link" onclick="showMemInfo()">What I store</span></div>
   </div>
 </div>
 <div class="app">
@@ -468,6 +477,7 @@ body{
         <span id="bobLabel">Music guru &amp; vinyl hunter</span>
       </div>
       <span class="chat-top-badge" id="bobBadge">basic</span>
+      <button class="chat-clear-btn" id="clearMemBtn" onclick="clearMemory()" title="Clear what Bob remembers">Clear memory</button>
     </div>
     <div class="chat-msgs" id="chatMessages"></div>
     <div class="chat-input-wrap">
@@ -548,6 +558,58 @@ var conv=[],artistName="",discogsCache={};
 var lastBobAsked=false;
 var navHistory=[];
 var spokeLast=false;
+var expectingName=false;
+
+// === Memory (localStorage) ===
+var bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};
+function loadMemory(){
+  try{var raw=localStorage.getItem("bob_memory");if(raw){var p=JSON.parse(raw);bobMemory=p}}catch(e){}
+  bobMemory.visits=(bobMemory.visits||0)+1;
+  bobMemory.lastVisit=new Date().toISOString();
+  bobMemory.recentArtists=bobMemory.recentArtists||[];
+  bobMemory.recentGenres=bobMemory.recentGenres||[];
+  bobMemory.totalSearches=bobMemory.totalSearches||0;
+  bobMemory.userName=bobMemory.userName||"";
+  expectingName=!bobMemory.userName;
+  saveMemory();
+}
+function saveMemory(){try{localStorage.setItem("bob_memory",JSON.stringify(bobMemory))}catch(e){}}
+function clearMemory(){
+  var disc=document.getElementById("discovery");if(disc.classList.contains("mobile-open"))disc.classList.remove("mobile-open");
+  localStorage.removeItem("bob_memory");
+  bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};
+  expectingName=true;
+  addMsg("All clear! I've forgotten everything about you. Fresh start.",'bot');
+  document.getElementById("bobLabel").textContent="Music guru · AI-powered";
+}
+function rememberArtist(a){
+  if(!a)return;
+  var existing=bobMemory.recentArtists.indexOf(a);
+  if(existing>-1)bobMemory.recentArtists.splice(existing,1);
+  bobMemory.recentArtists.unshift(a);
+  if(bobMemory.recentArtists.length>10)bobMemory.recentArtists.pop();
+  bobMemory.totalSearches++;saveMemory();
+}
+function rememberGenre(g){
+  if(!g)return;
+  var existing=bobMemory.recentGenres.indexOf(g);
+  if(existing>-1)bobMemory.recentGenres.splice(existing,1);
+  bobMemory.recentGenres.unshift(g);
+  if(bobMemory.recentGenres.length>5)bobMemory.recentGenres.pop();
+  bobMemory.totalSearches++;saveMemory();
+}
+function getMemoryPreamble(){
+  var parts=[];
+  if(bobMemory.userName)parts.push("The user's name is "+bobMemory.userName+". Address them by name now and then.");
+  if(bobMemory.visits>1)parts.push("This is their "+bobMemory.visits+ordinalSuffix(bobMemory.visits)+" visit. We've chatted before.");
+  if(bobMemory.recentArtists&&bobMemory.recentArtists.length)parts.push("They've searched for: "+bobMemory.recentArtists.slice(0,5).join(", ")+".");
+  if(bobMemory.recentGenres&&bobMemory.recentGenres.length)parts.push("Genres they've explored: "+bobMemory.recentGenres.slice(0,3).join(", ")+".");
+  if(parts.length)return "[Returning customer] "+parts.join(" ")+" Reference shared history naturally. If name known, use it. ";
+  return "";
+}
+function ordinalSuffix(n){var s=["th","st","nd","rd"];var v=n%100;return s[(v-20)%10]||s[v]||s[0]}
+function showMemInfo(){document.getElementById("memInfoModal").classList.add("open")}
+loadMemory();
 
 // === DOM ===
 var chatMsgs=document.getElementById("chatMessages");
@@ -792,6 +854,7 @@ async function exploreGenre(tag){
     artistName=tag.charAt(0).toUpperCase()+tag.slice(1);
     pushNav(tag);
     renderDiscovery(sim,tgs,[],null);
+    rememberGenre(tag);
     addMsg("Exploring <strong>"+tag+"</strong>. Found "+artists.length+" top artists. Click any name or genre chip to keep digging!",'bot');
   }else{addMsg("Couldn't find artists for &quot;"+tag+"&quot;. Try another genre!",'bot')}
 }
@@ -836,7 +899,7 @@ function buildDataMsg(sim,tgs,albs,info,evts){
 
 async function chatLLM(msg,dataMsg){
   if(!LLM_KEY)return null;
-  var msgs=[{role:"system",content:BOB_VOICE}];
+  var msgs=[{role:"system",content:getMemoryPreamble()+BOB_VOICE}];
   for(var i=0;i<conv.length;i++)msgs.push(conv[i]);
   if(dataMsg)msgs.push({role:"user",content:dataMsg});
   msgs.push({role:"user",content:msg});
@@ -918,6 +981,19 @@ var lastArtistSearch="";
 async function send(){
   var txt=chatInput.value.trim();if(!txt)return;
   addMsg(txt,"user");chatInput.value="";showTyping();
+
+  // Name capture — if Bob asked and user replies with something name-like
+  if(expectingName&&!bobMemory.userName){
+    var name=txt.replace(/^(i'm|i am|my name is|call me|it's|name's|the name's|people call me)\s+/i,"").replace(/[.!?,]$/,"").trim();
+    if(name&&name.split(/\s+/).length<=3&&name.length>=2){
+      bobMemory.userName=name;expectingName=false;saveMemory();
+      document.getElementById("bobLabel").textContent="Music guru · knows "+name;
+      hideTyping();
+      addMsg("Lovely to meet you, <strong>"+name+"</strong>! Right then, what are you into music-wise?",'bot');
+      addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);
+      lastBobAsked=true;return;
+    }
+  }
 
   // Gibberish/unclear input detection
   var isGibberish=false;
@@ -1008,6 +1084,7 @@ async function send(){
     artistName=displayName;lastArtistSearch=firstArtist;pushNav(displayName);
     var finalTags=mergedTags.sort(function(a,b){return b.count-a.count}).slice(0,12);
     renderDiscovery(mergedSim.slice(0,12),finalTags,mergedAlb.slice(0,16),mergedBio);
+    rememberArtist(firstArtist);
     if(LLM_KEY){var dM=buildDataMsg(mergedSim.slice(0,6),finalTags,mergedAlb.slice(0,8),mergedBio,null);if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}}
   }
 
@@ -1086,12 +1163,38 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
   if(API_PROXY){b.textContent="LLM Enabled";b.classList.add("live");l.textContent="Music guru · AI-powered"}
   else if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM Enabled";b.classList.add("live");l.textContent="Music guru · AI-powered"}
   else{b.textContent="LLM Not Live";l.textContent="Music guru & vinyl hunter"}
-  addMsg("Hey! I'm <strong>Bob</strong>, your AI powered music guide at Round &amp; Round Records.",'bot');
-  setTimeout(function(){addMsg("Just like my friendly colleagues in our physical store, I love music and helping people explore.",'bot')},800);
-  setTimeout(function(){addMsg("Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot')},1600);
-  setTimeout(function(){addMsg("What are you into right now? Type anything, or if you want to chat to a human just write <strong>human</strong> and I'll share our contact details.",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},2400);
+  if(bobMemory.userName)l.textContent="Music guru · knows "+bobMemory.userName;
+
+  if(bobMemory.visits>1&&bobMemory.userName){
+    addMsg("Welcome back, <strong>"+bobMemory.userName+"</strong>! Great to see you again.",'bot');
+    setTimeout(function(){addMsg("I'm <strong>Bob</strong>, your AI music guide at Round &amp; Round Records. What are you in the mood for today?",'bot')},800);
+    setTimeout(function(){addSugg(bobMemory.recentArtists.length?bobMemory.recentArtists.slice(0,4).concat(["Human"]):["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},1600);
+  }else{
+    addMsg("Hey! I'm <strong>Bob</strong>, your AI powered music guide at Round &amp; Round Records.",'bot');
+    setTimeout(function(){addMsg("Just like my friendly colleagues in our physical store, I love music and helping people explore.",'bot')},800);
+    setTimeout(function(){addMsg("Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot')},1600);
+    setTimeout(function(){
+      if(!bobMemory.userName){addMsg("Oh, and I didn't catch your name! What should I call you?",'bot');expectingName=true}
+      else{addMsg("What are you into right now? Type anything, or if you want to chat to a human just write <strong>human</strong> and I'll share our contact details.",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true}
+    },2400);
+  }
 })();
 </script>
+<!-- Memory info modal -->
+<div class="modal-overlay" id="memInfoModal">
+  <div class="modal" style="max-width:460px">
+    <h3>&#128190; What Bob stores</h3>
+    <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.6;margin:12px 0">Bob remembers a few things to make your visits better — <strong>all stored on your device</strong>, never sent to a server:</p>
+    <ul style="font-size:0.75rem;color:var(--text-dim);line-height:1.8;padding-left:18px;margin-bottom:16px">
+      <li>Your name (if you tell him)</li>
+      <li>Artists and genres you've searched</li>
+      <li>How many times you've visited</li>
+      <li>Your last visit date</li>
+    </ul>
+    <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin-bottom:18px">This lets Bob greet you by name, recall past chats, and pick up where you left off. To remove everything, click <strong style="color:var(--accent)">Clear memory</strong> beside Bob's status badge.</p>
+    <div class="modal-btns"><button class="modal-btn modal-btn-submit" onclick="document.getElementById('memInfoModal').classList.remove('open')">Got it</button></div>
+  </div>
+</div>
 </body>
 </html>
 <!-- deploy: 20260701180639 -->
