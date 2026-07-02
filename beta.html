@@ -44,25 +44,24 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 .section-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px;position:sticky;top:0;z-index:1;background:inherit;padding:2px 0}
 
 /* Album tile grid */
-.album-grid{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
-.album-tile{width:72px;text-align:center;cursor:pointer;transition:transform .15s}.album-tile:hover{transform:translateY(-2px)}
-.album-tile .at-img{width:60px;height:60px;border-radius:6px;object-fit:cover;display:block;margin:0 auto;border:2px solid rgba(255,255,255,0.08)}.album-tile .at-placeholder{width:60px;height:60px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:800;margin:0 auto}
-.album-tile .at-label{font-size:0.5rem;color:var(--text);margin-top:2px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:72px}
+.album-grid{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start}
+.album-tile{width:80px;text-align:center;cursor:pointer;transition:transform .15s}.album-tile:hover{transform:translateY(-2px)}
+.album-tile .at-img{width:68px;height:68px;border-radius:6px;object-fit:cover;display:block;margin:0 auto;border:2px solid rgba(255,255,255,0.08)}.album-tile .at-placeholder{width:68px;height:68px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;font-weight:800;margin:0 auto}
+.album-tile .at-label{font-size:0.55rem;color:var(--text);margin-top:3px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:80px}
 
 /* Artist card grid */
-.artist-grid{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
-.artist-card{width:calc(50% - 3px);display:flex;align-items:center;gap:6px;padding:6px 7px;border-radius:8px;cursor:pointer;transition:all .15s;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}.artist-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
-.artist-card .ac-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#fff;font-weight:700;flex-shrink:0}
-.artist-card .ac-info{min-width:0}.artist-card .ac-name{font-size:0.62rem;font-weight:600;color:var(--text);line-height:1.2}.artist-card .ac-match{font-size:0.52rem;color:var(--accent3)}
+.artist-grid{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.artist-card{width:calc(50% - 4px);display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .15s;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}.artist-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
+.artist-card .ac-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#fff;font-weight:700;flex-shrink:0}
+.artist-card .ac-info{min-width:0}.artist-card .ac-name{font-size:0.72rem;font-weight:600;color:var(--text);line-height:1.2}.artist-card .ac-match{font-size:0.58rem;color:var(--accent3)}
 
-/* Genre cloud */
-.genre-cloud{display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start}
-.genre-chip{padding:5px 11px;border-radius:14px;font-size:0.63rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.04);color:var(--dim);border:1px solid rgba(255,255,255,0.05);transition:all .15s;letter-spacing:0.2px}.genre-chip:hover{background:rgba(74,158,142,0.2);color:var(--accent2);border-color:rgba(74,158,142,0.3)}
+/* Genre mind map */
+#genreMap{display:block;width:100%;height:calc(100% - 22px)}
 
 /* Center hero overlay */
-.hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;text-align:center;pointer-events:none;width:180px}
-.hero-img{width:56px;height:56px;border-radius:50%;object-fit:cover;margin:0 auto;display:block;box-shadow:0 0 30px rgba(232,93,63,0.25),0 0 60px rgba(232,93,63,0.06);border:2px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--accent)}
-.hero-name{font-size:0.9rem;font-weight:900;color:var(--text);margin-top:4px;text-shadow:0 0 16px rgba(0,0,0,0.8)}.hero-bio{font-size:0.55rem;color:var(--dim);line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.hero-bio.expanded{display:block;-webkit-line-clamp:unset;overflow:visible}.hero-more{font-size:0.52rem;color:var(--accent2);cursor:pointer;pointer-events:auto;margin-top:2px;display:inline-block}
+.hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;text-align:center;pointer-events:none}
+.hero-img{width:72px;height:72px;border-radius:50%;object-fit:cover;margin:0 auto;display:block;box-shadow:0 0 30px rgba(232,93,63,0.25),0 0 60px rgba(232,93,63,0.06);border:2px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--accent)}
+.hero-name{font-size:1rem;font-weight:900;color:var(--text);margin-top:6px;text-shadow:0 0 16px rgba(0,0,0,0.8)}
 
 /* Top bar */
 .disclosure{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(5,5,8,0.9);border-bottom:1px solid rgba(255,255,255,0.05);padding:5px 14px;text-align:center;font-size:0.55rem;color:var(--dim);backdrop-filter:blur(12px);pointer-events:none}.disclosure strong{color:var(--accent2)}
@@ -72,8 +71,9 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
   .chat-pane{width:100%;height:50%;flex-shrink:1}
   .disc-area{height:50%}
   .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
-  .hero-overlay{width:140px}.hero-img{width:40px;height:40px}.hero-name{font-size:0.7rem}.hero-bio{font-size:0.5rem;-webkit-line-clamp:2}
-  .album-tile{width:56px}.album-tile .at-img,.album-tile .at-placeholder{width:46px;height:46px}
+  .hero-overlay{width:auto}.hero-img{width:48px;height:48px}.hero-name{font-size:0.8rem}
+  .album-tile{width:64px}.album-tile .at-img,.album-tile .at-placeholder{width:52px;height:52px}
+  .artist-card .ac-av{width:28px;height:28px}.artist-card .ac-name{font-size:0.62rem}
 }
 </style>
 </head>
@@ -110,19 +110,17 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
       <div class="artist-grid" id="artistsContent"></div>
     </div>
     <div class="disc-section genres">
-      <div class="section-label">Genres</div>
-      <div class="genre-cloud" id="genresContent"></div>
+      <div class="section-label">Genre Mind Map</div>
+      <canvas id="genreMap" style="width:100%;height:100%"></canvas>
     </div>
     <div class="disc-section genres" style="background:rgba(123,104,238,0.04)">
       <div class="section-label">Bob says</div>
-      <div class="genre-cloud" id="chatContent" style="font-size:0.58rem;color:var(--dim);line-height:1.5"></div>
+      <div id="chatContent" style="font-size:0.72rem;color:var(--dim);line-height:1.5;padding:4px"></div>
     </div>
   </div>
   <div class="hero-overlay" id="heroOverlay">
     <div class="hero-img placeholder" id="heroImg">&#127925;</div>
     <div class="hero-name" id="heroName">Bob</div>
-    <div class="hero-bio" id="heroBio" onclick="this.classList.toggle('expanded')"></div>
-    <span class="hero-more" id="heroMore" style="display:none" onclick="var b=document.getElementById('heroBio');b.classList.toggle('expanded');this.textContent=b.classList.contains('expanded')?'… less':'… more'">… more</span>
   </div>
 </div>
 
@@ -173,7 +171,7 @@ function updateNodePositions(){
   var hcx=hr.left+hr.width/2,hcy=hr.top+hr.height/2;
   nodePositions.push({x:hcx,y:hcy});
   var da=document.getElementById("discArea"),dr=da.getBoundingClientRect();
-  document.querySelectorAll(".album-tile,.artist-card,.genre-chip").forEach(function(el){
+  document.querySelectorAll(".album-tile,.artist-card").forEach(function(el){
     var r=el.getBoundingClientRect();
     if(r.left>=dr.left&&r.top>=dr.top){
       nodePositions.push({x:r.left+r.width/2,y:r.top+r.height/2});
@@ -311,29 +309,48 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
     return'<div class="artist-card" onclick="betaChat(\''+s.name.replace(/'/g,"\\'")+'\')"><div class="ac-av" style="background:'+GENRE_PALETTE[i%7]+'">'+(s.name.charAt(0)+(s.name.indexOf(" ")>-1?s.name.charAt(s.name.indexOf(" ")+1):"")).toUpperCase()+'</div><div class="ac-info"><div class="ac-name">'+esc(s.name)+'</div><div class="ac-match">'+Math.round(s.match)+'% match</div></div></div>';
   }).join("");
 
-  // Genre cloud
-  var gc=document.getElementById("genresContent");
-  gc.innerHTML=tgs.slice(0,14).map(function(t,i){
-    return'<span class="genre-chip" style="font-size:'+(0.55+Math.random()*0.15).toFixed(2)+'rem" onclick="betaChat(\''+t.name.replace(/'/g,"\\'")+'\')">'+esc(t.name)+'</span>';
-  }).join("");
+  // Genre mind map
+  drawGenreMap(tgs.slice(0,14));
 
   // Chat quadrant
   var cc=document.getElementById("chatContent");
-  if(chatTexts&&chatTexts.length)cc.innerHTML=chatTexts.map(function(t){return'<p style="margin-bottom:6px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:6px">'+esc(t.slice(0,180))+(t.length>180?"…":"")+'</p>'}).join("");
-  else cc.innerHTML='<p style="font-style:italic">Ask Bob about an artist to see his thoughts here</p>';
+  if(chatTexts&&chatTexts.length)cc.innerHTML=chatTexts.map(function(t){return'<p style="margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;font-size:0.72rem">'+esc(t.slice(0,250))+(t.length>250?"…":"")+'</p>'}).join("");
+  else cc.innerHTML='<p style="font-style:italic;font-size:0.7rem">Ask Bob about an artist to see his thoughts here</p>';
 
   // Hero overlay
   document.getElementById("heroName").textContent=artistName.charAt(0).toUpperCase()+artistName.slice(1);
   var hi=document.getElementById("heroImg");
   if(artImg){hi.className="hero-img";hi.src=artImg;hi.onerror=function(){hi.className="hero-img placeholder";hi.innerHTML='&#127925;'}}
   else{hi.className="hero-img placeholder";hi.innerHTML='&#127925;'}
-  var hb=document.getElementById("heroBio");
-  if(bio&&bio.bio){hb.textContent=bio.bio;hb.style.display="";document.getElementById("heroMore").style.display=bio.bio.length>300?"inline-block":"none"}
-  else{hb.textContent="";hb.style.display="none";document.getElementById("heroMore").style.display="none"}
 
   if(albs.length)albs.forEach(function(a){addKnown(a.name);if(a.artist)addKnown(a.artist)});
   if(sim.length)sim.forEach(function(s){addKnown(s.name)});
-  setTimeout(updateNodePositions,200);
+  setTimeout(updateNodePositions,300);
+}
+
+// Genre mind map renderer
+function drawGenreMap(tags){
+  var c=document.getElementById("genreMap"),ctx=c.getContext("2d");
+  var pw=c.parentElement;c.width=pw.clientWidth;c.height=pw.clientHeight-22;
+  if(!tags.length)return;
+  var cx=c.width/2,cy=c.height/2,maxR=Math.min(cx,cy)*0.75,rStep=maxR/(tags.length+1);
+  var colors=["#E85D3F","#C4A44A","#4A9E8E","#7B68EE","#DC143C","#FF8C00","#00CED1","#9370DB","#3CB371","#FF69B4","#FA8072","#6A5ACD","#20B2AA","#DAA520"];
+  // Center node
+  ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);ctx.fillStyle=colors[0];ctx.fill();
+  ctx.fillStyle="#fff";ctx.font="bold 8px Inter,system-ui";ctx.textAlign="center";ctx.fillText(tags[0].name,cx,cy+3);
+  // Radial nodes
+  tags.slice(1).forEach(function(t,i){
+    var angle=(Math.PI*2/(tags.length-1))*i-Math.PI/2;
+    var r=rStep*(i+1)+20;
+    var nx=cx+Math.cos(angle)*r,ny=cy+Math.sin(angle)*r;
+    // Connection line
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(nx,ny);
+    ctx.strokeStyle="rgba(255,255,255,0.12)";ctx.lineWidth=0.8;ctx.stroke();
+    // Node
+    ctx.fillStyle=colors[(i+1)%colors.length];
+    ctx.beginPath();ctx.arc(nx,ny,Math.max(10,14-i*0.3),0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.font=(7-i*0.15)+"px Inter,system-ui";ctx.fillText(t.name,nx,ny+3);
+  });
 }
 
 // Send
