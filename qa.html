@@ -161,6 +161,30 @@ body{
     </div>
   </div>
 
+  <!-- Academic Framework Leverage -->
+  <div class="section">
+    <div class="section-label">Academic Best Practice</div>
+    <h2>How the team applies chatbot research</h2>
+    <p>The QA process is grounded in <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. Each specialist agent owns the dimensions relevant to their domain:</p>
+
+    <div class="card-grid" style="margin-top:20px">
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">Seven-Dimension Chatbot Taxonomy</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Adamopoulou &amp; Moussiades (2020). <strong>@Fionn</strong> owns domain closure and service scope. <strong>@Dot</strong> owns goals, response generation, and channel. <strong>@Niamh</strong> owns human-aid reachability and permissions. <strong>@Siobhan</strong> ensures the UI makes each dimension visible.</p>
+      </div>
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">CASA — Computers Are Social Actors</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Reeves &amp; Nass (1996). <strong>@Siobhan</strong> owns the disclosure-in-turn-1 bright line (badge vs spoken self-ID). <strong>@Dot</strong> owns frustration de-escalation as conversation engineering. <strong>@Niamh</strong> owns chummy-data-extraction consent (localStorage disclosure before collection). <strong>@Fionn</strong> verifies personality register matches actual capability.</p>
+      </div>
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">Conversation Flow Anatomy</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. <strong>@Dot</strong> implements the recovery ladder in code (reword &rarr; options &rarr; human). <strong>@Siobhan</strong> designs the closer UI (read-back + keep exploring + human path). <strong>@Cormac</strong> uses "design the unexpected first" as a sprint-planning rule.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:20px"><strong>@Keelin</strong> (QA) cross-references all three frameworks in every review pass, flagging findings as [DESIGN] or [CODE] so ownership is clear. <strong>@Cormac</strong> (Manager) uses framework-alignment scores as delivery quality gates.</p>
+  </div>
+
   <!-- Bug Register -->
   <div class="section">
     <div class="section-label">Bug Register</div>
