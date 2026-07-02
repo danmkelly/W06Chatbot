@@ -276,11 +276,16 @@ body{
 .artist-hero-tag{
   background:rgba(255,255,255,0.06);color:var(--text-dim);
   padding:2px 6px;border-radius:8px;font-size:0.58rem;
+  cursor:pointer;transition:all .15s;
 }
+.artist-hero-tag:hover{background:rgba(74,158,142,0.25);color:var(--accent2)}
 .artist-hero-bio{
   font-size:0.7rem;color:var(--text-dim);line-height:1.4;
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
 }
+.artist-hero-bio.expanded{display:block;-webkit-line-clamp:unset;overflow:visible}
+.artist-hero-more{font-size:0.62rem;color:var(--accent2);cursor:pointer;font-weight:600;display:inline-block;margin-top:2px}
+.artist-hero-more:hover{color:#5FBFAF}
 .artist-hero-stats{
   display:flex;gap:12px;margin-top:6px;font-size:0.6rem;color:var(--text-dim);
 }
@@ -464,7 +469,7 @@ body{
   <div class="brand-record"><div class="brand-label"></div></div>
   <div class="app-brand-text">
     <span class="app-brand-name">Round <span>&amp;</span> Round Records</span>
-    <span class="app-brand-tagline">Independent since 2005 &bull; 32 Market Arcade, Dublin</span>
+    <span class="app-brand-tagline">Independent since 2005 &bull; 32 Main Street, Dublin</span>
     <div class="app-brand-sub"><span>Vinyl &bull; CD &bull; Expert Advice</span><span>AI-Powered Music Discovery</span><span class="brand-info-link" onclick="showMemInfo()">What I store</span></div>
   </div>
 </div>
@@ -626,6 +631,11 @@ var albumGrid=document.getElementById("albumGrid");
 var genreChips=document.getElementById("genreChips");
 
 // === Helpers ===
+function toggleBio(id,btn){
+  var el=document.getElementById(id);
+  if(el.classList.contains("expanded")){el.classList.remove("expanded");btn.textContent="… more"}
+  else{el.classList.add("expanded");btn.textContent="… less"}
+}
 var knownNames=[]; // Artists/albums to make clickable in chat
 function enrichLinks(html){
   if(!knownNames.length||html.indexOf("chat-link")>-1)return html;
@@ -820,9 +830,13 @@ function renderDiscovery(sim,tgs,albs,info){
   // Hero
   var heroHtml='<div class="artist-hero-name">'+artistName+'</div>';
   if(tgs&&tgs.length>0){
-    heroHtml+='<div class="artist-hero-tags">'+tgs.slice(0,6).map(function(t){return'<span class="artist-hero-tag">'+t.name+'</span>'}).join("")+'</div>';
+    heroHtml+='<div class="artist-hero-tags">'+tgs.slice(0,6).map(function(t){return'<span class="artist-hero-tag" onclick="exploreGenre(\''+t.name.replace(/'/g,"\\'")+'\')">'+t.name+'</span>'}).join("")+'</div>';
   }
-  if(info&&info.bio) heroHtml+='<div class="artist-hero-bio">'+info.bio+'</div>';
+  if(info&&info.bio){
+    var bioId='bio'+Math.random().toString(36).slice(2,8);
+    heroHtml+='<div class="artist-hero-bio" id="'+bioId+'">'+info.bio+'</div>';
+    if(info.bio.length>350)heroHtml+='<span class="artist-hero-more" onclick="toggleBio(\''+bioId+'\',this)">… more</span>';
+  }
   if(info&&info.listeners){
     heroHtml+='<div class="artist-hero-stats"><span class="artist-hero-stat"><strong>'+parseInt(info.listeners).toLocaleString()+'</strong> listeners</span><span class="artist-hero-stat"><strong>'+parseInt(info.playcount).toLocaleString()+'</strong> plays</span></div>';
   }
@@ -1033,7 +1047,7 @@ async function send(){
   if(txt.toLowerCase()==="human"){
     hideTyping();
     addMsg("Of course! Here's how to reach the real humans at Round &amp; Round Records:",'bot');
-    addMsg("<strong>Round &amp; Round Records</strong><br>32 Market Arcade, South Great George's Street<br>Dublin, D02 DH79<br><br><strong>Phone:</strong> +353 1 671 1711<br><strong>Email:</strong> <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2)'>hello@roundandroundrecords.ie</a> &mdash; <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2);font-weight:700'>Click here to send an email</a><br><br><strong>Opening hours:</strong><br>Mon-Sat: 10:00 - 18:00<br>Sun: 12:00 - 17:00<br><br><strong>Web:</strong> <a href='https://spindizzyrecords.com' target='_blank' style='color:var(--accent2)'>spindizzyrecords.com</a>",'bot');
+    addMsg("<strong>Round &amp; Round Records</strong><br>32 Main Street<br>Dublin, D02 DH79<br><br><strong>Phone:</strong> +353 1 671 1711<br><strong>Email:</strong> <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2)'>hello@roundandroundrecords.ie</a> &mdash; <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2);font-weight:700'>Click here to send an email</a><br><br><strong>Opening hours:</strong><br>Mon-Sat: 10:00 - 18:00<br>Sun: 12:00 - 17:00<br><br><strong>Web:</strong> <a href='https://spindizzyrecords.com' target='_blank' style='color:var(--accent2)'>spindizzyrecords.com</a>",'bot');
     addMsg("We'd love to see you in the shop! Anything else I can help with in the meantime?",'bot');
     return;
   }
@@ -1068,7 +1082,8 @@ async function send(){
 
   // Search for each real artist, collect all results then render merged
   var searchedAny=false;
-  var mergedSim=[],mergedAlb=[],mergedTags=[],mergedBio=null,firstArtist="";
+  var mergedAlb=[],mergedBio=null,firstArtist="";
+  var primarySim=[],primaryTags=[],primaryBio=null;
   var userArtists=artists.slice(); // Original from user message
   for(var ai=0;ai<artists.length;ai++){
     var an=artists[ai];
@@ -1078,20 +1093,19 @@ async function send(){
     searchedAny=true;
     if(!firstArtist)firstArtist=an;
     var s=await getSim(an),tgR=await getTgs(an),al=await getAlb(an),inf=await getBio(an),ev=await getEvt(an);
+    if(ai===0){primarySim=s||[];primaryTags=tgR||[];primaryBio=inf}
     if(!mergedBio&&inf)mergedBio=inf;
-    if(s&&s.length>0)s.forEach(function(x){if(!mergedSim.some(function(m){return m.name===x.name}))mergedSim.push(x)});
     if(al&&al.length>0)al.forEach(function(x){if(!mergedAlb.some(function(m){return m.artist===x.artist&&m.name===x.name}))mergedAlb.push(x)});
-    if(tgR&&tgR.length>0)tgR.forEach(function(t){var existing=mergedTags.find(function(m){return m.name===t.name});if(existing)existing.count+=t.count;else mergedTags.push({name:t.name,count:t.count})});
   }
   // Sort albums by playcount (descending) to mix artists naturally
   mergedAlb.sort(function(a,b){return b.playcount-a.playcount});
-  if(searchedAny&&(mergedSim.length||mergedAlb.length)){
+  if(searchedAny&&mergedAlb.length){
     var displayName=firstArtist.charAt(0).toUpperCase()+firstArtist.slice(1);
     artistName=displayName;lastArtistSearch=firstArtist;pushNav(displayName);
-    var finalTags=mergedTags.sort(function(a,b){return b.count-a.count}).slice(0,12);
-    renderDiscovery(mergedSim.slice(0,12),finalTags,mergedAlb.slice(0,16),mergedBio);
+    var finalTags=primaryTags.sort(function(a,b){return b.count-a.count}).slice(0,12);
+    renderDiscovery(primarySim.slice(0,12),finalTags,mergedAlb.slice(0,16),primaryBio||mergedBio);
     rememberArtist(firstArtist);
-    if(LLM_KEY){var dM=buildDataMsg(mergedSim.slice(0,6),finalTags,mergedAlb.slice(0,8),mergedBio,null);if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}}
+    if(LLM_KEY){var dM=buildDataMsg(primarySim.slice(0,6),finalTags,mergedAlb.slice(0,8),primaryBio||mergedBio,null);if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}}
   }
 
   // Fallback to tag search if no artist found
