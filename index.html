@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Round & Round Records - Chat with Bob</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;
+  --surface:#1A1A1A;
+  --surface2:#242424;
+  --border:#2E2E2E;
+  --text:#E8E4DD;
+  --text-dim:#8A857C;
+  --accent:#E85D3F;
+  --accent-glow:rgba(232,93,63,0.25);
+  --accent2:#4A9E8E;
+  --accent3:#C4A44A;
+  --bubble-bot:#1E1E1E;
+  --bubble-user:#E85D3F;
+  --radius:10px;
+  --radius-sm:6px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  min-height:100vh;overflow:hidden;
+}
+.app{
+  display:grid;grid-template-columns:400px 1fr;height:calc(100vh - 72px);
+}
+/* Brand bar */
+.app-brand{
+  height:72px;display:flex;flex-direction:row;align-items:center;gap:16px;
+  background:linear-gradient(180deg,#4A1C0E 0%,#2A0D04 50%,#0D0D0D 100%);border-bottom:3px solid var(--accent);
+  padding:0 24px;position:relative;overflow:hidden;
+}
+.app-brand::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse at 50% 70%,rgba(232,93,63,0.18) 0%,transparent 60%);
+  pointer-events:none;
+}
+.app-brand::after{
+  content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,164,74,0.4),transparent);
+}
+.brand-record{width:48px;height:48px;border-radius:50%;background:#111;position:relative;flex-shrink:0;box-shadow:0 0 16px rgba(232,93,63,0.5)}
+.brand-record::before{content:'';position:absolute;top:4px;left:4px;right:4px;bottom:4px;border-radius:50%;border:1px solid rgba(255,255,255,0.08);box-shadow:inset 0 0 0 3px rgba(255,255,255,0.04),inset 0 0 0 6px rgba(255,255,255,0.02)}
+.brand-label{width:15px;height:15px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#C0392B);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 8px rgba(232,93,63,0.5)}
+.brand-label::after{content:'';width:3px;height:3px;border-radius:50%;background:#333;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.app-brand-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.app-brand-name{font-size:1.2rem;font-weight:900;color:#F5E6D3;letter-spacing:2px;text-transform:uppercase;text-shadow:0 2px 12px rgba(0,0,0,0.5)}
+.app-brand-name span{color:var(--accent);text-shadow:0 0 16px var(--accent-glow)}
+.app-brand-tagline{font-size:0.72rem;color:#C4A44A;letter-spacing:0.5px;font-weight:500}
+.app-brand-sub{font-size:0.6rem;color:rgba(196,164,74,0.6);letter-spacing:0.5px;display:flex;gap:16px}
+.app-brand-sub span{color:rgba(196,164,74,0.6);white-space:nowrap}
+.brand-info-link{color:var(--accent2);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.brand-info-link:hover{color:#5FBFAF}
+/* CHAT PANEL */
+.chat{
+  display:flex;flex-direction:column;border-right:1px solid var(--border);
+  background:var(--bg);min-height:0;
+}
+.chat-top{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.chat-avatar{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),#C0392B);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;color:#fff;flex-shrink:0;
+}
+.chat-top-info{flex:1;min-width:0}
+.chat-top-info h2{font-size:0.95rem;font-weight:600;color:var(--text);}
+.chat-top-info span{font-size:0.65rem;color:var(--text-dim);display:block}
+.chat-top-right{margin-left:12px;display:flex;flex-direction:column;align-items:stretch;gap:4px;flex-shrink:0}
+.chat-top-badge{
+  font-size:0.7rem;padding:4px 14px;border-radius:12px;
+  font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+  background:#2A2A2A;color:var(--text-dim);text-align:center;white-space:nowrap;
+}
+.chat-top-badge.live{background:rgba(74,158,142,0.25);color:var(--accent2);}
+.chat-clear-btn{
+  font-size:0.62rem;padding:3px 14px;border-radius:12px;
+  font-weight:600;text-transform:uppercase;letter-spacing:0.5px;
+  background:transparent;color:var(--text-dim);border:1px solid var(--border);
+  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;text-align:center;
+}
+.chat-clear-btn:hover{color:var(--accent);border-color:var(--accent)}
+.chat-msgs{
+  flex:1 1 0;min-height:0;overflow-y:auto;padding:20px;
+  display:flex;flex-direction:column;gap:16px;
+  scroll-behavior:smooth;
+}
+.msg{max-width:85%;line-height:1.55;animation:fadeUp .35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.msg.bot{align-self:flex-start}
+.msg.user{align-self:flex-end}
+.msg-bubble{padding:12px 16px;border-radius:14px;font-size:0.88rem;}
+.msg.bot .msg-bubble{background:var(--bubble-bot);color:var(--text);border-bottom-left-radius:4px;}
+.msg.user .msg-bubble{background:var(--bubble-user);color:#fff;border-bottom-right-radius:4px;}
+.msg-meta{font-size:0.6rem;color:var(--text-dim);margin-top:4px;padding:0 4px;}
+.msg.user .msg-meta{text-align:right}
+
+.typing{display:flex;gap:4px;padding:6px 0}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+.chat-sugg{display:flex;flex-wrap:wrap;gap:6px}
+.chat-sugg-btn{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);
+  padding:7px 14px;border-radius:20px;font-size:0.78rem;cursor:pointer;
+  transition:all .15s;font-family:inherit;
+}
+.chat-sugg-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chat-link{color:var(--accent2);cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-weight:600}
+.chat-link:hover{color:#5FBFAF}
+
+.chat-input-wrap{
+  padding:14px 20px;border-top:1px solid var(--border);
+  display:flex;gap:10px;background:var(--surface);flex-shrink:0;
+}
+.chat-input{
+  flex:1;background:var(--bg);border:1px solid var(--border);border-radius:24px;
+  padding:10px 18px;font-size:0.88rem;outline:none;color:var(--text);
+  font-family:inherit;transition:border-color .15s;
+}
+.chat-input::placeholder{color:var(--text-dim)}
+.chat-input:focus{border-color:var(--accent)}
+.chat-send{
+  width:42px;height:42px;border-radius:50%;background:var(--accent);
+  color:#fff;border:none;cursor:pointer;font-size:1rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.chat-send:hover{background:#D14A30;transform:scale(1.05)}
+.chat-mic{
+  width:42px;height:42px;border-radius:50%;background:var(--surface2);
+  color:var(--text-dim);border:1px solid var(--border);cursor:pointer;
+  font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.chat-mic:hover{color:var(--text);border-color:var(--text-dim)}
+.chat-mic.listening{background:var(--accent);color:#fff;border-color:var(--accent);animation:pulse-ring 1.2s ease-in-out infinite}
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(232,93,63,0.5)}50%{box-shadow:0 0 0 12px rgba(232,93,63,0)}}
+.msg-speak{
+  display:inline-flex;width:22px;height:22px;border-radius:50%;
+  background:transparent;color:var(--text-dim);border:none;cursor:pointer;
+  font-size:0.7rem;align-items:center;justify-content:center;
+  vertical-align:middle;margin-left:2px;transition:all .15s;opacity:0.45;
+}
+.msg-speak:hover,.msg-speak.speaking{opacity:1}
+.msg-speak:hover{color:var(--accent2)}
+.msg-speak.speaking{color:var(--accent2);animation:pulse-ring 0.8s ease-in-out infinite}
+
+/* Human exit ramp */
+.chat-human-ramp{
+  padding:12px 20px;text-align:center;font-size:0.78rem;color:var(--text-dim);
+  flex-shrink:0;
+  cursor:pointer;transition:all .2s;border-top:1px solid rgba(196,164,74,0.15);
+  background:linear-gradient(180deg,rgba(196,164,74,0.06),rgba(196,164,74,0.02));
+  font-weight:500;letter-spacing:0.3px;
+}
+.chat-human-ramp:hover{color:#F5E6D3;background:rgba(196,164,74,0.12);border-top-color:rgba(196,164,74,0.3)}
+.human-ramp-icon{font-size:1rem;vertical-align:middle;margin-right:4px}
+.human-ramp-cta{color:var(--accent3);text-decoration:underline;font-weight:700}
+
+/* Record loading overlay */
+.disc-loading{
+  position:absolute;inset:0;background:rgba(8,8,8,0.95);
+  display:none;align-items:center;justify-content:center;z-index:10;
+  flex-direction:column;gap:20px;backdrop-filter:blur(8px);
+}
+.disc-loading.active{display:flex}
+.disc-turntable{perspective:600px}
+.disc-record{
+  width:140px;height:140px;position:relative;
+  transform:rotateX(55deg);transform-style:preserve-3d;
+  animation:rock-tonearm 0.8s ease-in-out;
+}
+.disc-platter{
+  width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%,#555 0%,#2A2A2A 50%,#0D0D0D 100%);
+  box-shadow:0 0 50px rgba(0,0,0,0.6),inset 0 0 30px rgba(0,0,0,0.4),0 0 80px rgba(232,93,63,0.15);
+  position:absolute;
+}
+.disc-vinyl{
+  width:125px;height:125px;border-radius:50%;
+  background:#111;
+  position:absolute;top:7px;left:7px;
+  animation:spin 1.2s linear infinite;
+  box-shadow:0 2px 20px rgba(0,0,0,0.7);
+}
+.disc-vinyl::before{
+  content:'';position:absolute;top:10px;left:10px;right:10px;bottom:10px;
+  border-radius:50%;border:1px solid rgba(255,255,255,0.05);
+  box-shadow:inset 0 0 0 6px rgba(255,255,255,0.03),inset 0 0 0 12px rgba(255,255,255,0.015),inset 0 0 0 18px rgba(255,255,255,0.01);
+}
+.disc-label{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),#C0392B);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  box-shadow:0 0 12px rgba(232,93,63,0.5);
+}
+.disc-label::after{
+  content:'';width:8px;height:8px;border-radius:50%;
+  background:#333;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+}
+.disc-tonearm{
+  width:3px;height:65px;background:linear-gradient(180deg,#AAA,#666);
+  position:absolute;top:-18px;right:10px;border-radius:1px;
+  transform:rotate(22deg);transform-origin:top center;
+}
+.disc-tonearm::before{
+  content:'';width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle,#888,#555);
+  position:absolute;top:-8px;left:-6px;
+}
+.disc-tonearm::after{
+  content:'';width:14px;height:4px;background:#999;border-radius:2px;
+  position:absolute;bottom:0;left:-6px;
+}
+.disc-text{
+  color:var(--accent3);font-size:0.82rem;letter-spacing:0.8px;font-weight:600;
+  animation:pulse-text 1.5s ease-in-out infinite;
+}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse-text{0%,100%{opacity:0.4}50%{opacity:1}}
+
+/* Back button */
+.back-bar{display:flex;align-items:center;gap:10px;padding:10px 20px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.back-btn{background:var(--accent);border:none;color:#fff;padding:6px 16px;border-radius:16px;font-size:0.75rem;cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s;letter-spacing:0.3px}
+.back-btn:hover{background:#D14A30;transform:scale(1.03)}
+.back-label{font-size:0.7rem;color:var(--text);font-weight:500}
+
+/* Discovery */
+.discovery{
+  background:var(--surface);overflow-y:auto;overflow-x:hidden;
+  display:flex;flex-direction:column;position:relative;
+}
+.discovery-close{display:none}
+.discovery-fab{display:none}
+.discovery::-webkit-scrollbar{width:4px}
+.discovery::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.d-empty{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:40px 24px;text-align:center;
+}
+.d-empty-inner{max-width:260px}
+.d-empty-icon{font-size:3rem;margin-bottom:12px;opacity:0.5}
+.d-empty h3{font-size:0.9rem;font-weight:600;margin-bottom:6px;color:var(--text-dim)}
+.d-empty p{font-size:0.78rem;color:var(--text-dim);line-height:1.5}
+
+.section{padding:0}
+.section-hdr{
+  padding:10px 20px 6px;display:flex;align-items:center;gap:6px;
+  position:sticky;top:0;background:var(--surface);z-index:2;
+}
+.section-hdr-icon{font-size:0.85rem;opacity:0.7}
+.section-hdr h4{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-dim)}
+.section-count{font-size:0.6rem;color:var(--text-dim);margin-left:auto}
+
+/* Artist hero */
+.artist-hero{
+  padding:16px 20px;background:linear-gradient(135deg,var(--surface2),var(--surface));
+  border-bottom:1px solid var(--border);
+}
+.artist-hero-name{font-size:1.2rem;font-weight:800;color:var(--text);margin-bottom:2px}
+.artist-hero-sub{font-size:0.7rem;color:var(--accent3);margin-bottom:6px}
+.artist-hero-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
+.artist-hero-tag{
+  background:rgba(255,255,255,0.06);color:var(--text-dim);
+  padding:2px 6px;border-radius:8px;font-size:0.58rem;
+  cursor:pointer;transition:all .15s;
+}
+.artist-hero-tag:hover{background:rgba(74,158,142,0.25);color:var(--accent2)}
+.artist-hero-bio{
+  font-size:0.7rem;color:var(--text-dim);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.artist-hero-bio.expanded{display:block;-webkit-line-clamp:unset;overflow:visible}
+.artist-hero-more{font-size:0.62rem;color:var(--accent2);cursor:pointer;font-weight:600;display:inline-block;margin-top:2px}
+.artist-hero-more:hover{color:#5FBFAF}
+.artist-hero-stats{
+  display:flex;gap:12px;margin-top:6px;font-size:0.6rem;color:var(--text-dim);
+}
+.artist-hero-stat strong{color:var(--text)}
+
+/* Horizontal scroll: similar artists */
+.similar-row{padding:0 16px 8px}
+.similar-scroll{
+  display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+}
+.similar-scroll::-webkit-scrollbar{height:0}
+.similar-card{
+  flex-shrink:0;width:80px;text-align:center;cursor:pointer;
+  scroll-snap-align:start;transition:transform .15s;
+}
+.similar-card:hover{transform:translateY(-3px)}
+.similar-card-avatar{
+  width:52px;height:52px;border-radius:50%;margin:0 auto 4px;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.62rem;font-weight:700;color:#fff;
+  box-shadow:0 4px 20px var(--accent-glow);
+}
+
+.similar-card-name{font-size:0.62rem;font-weight:600;color:var(--text);line-height:1.2;max-width:80px}
+.similar-card-match{font-size:0.55rem;color:var(--accent);margin-top:1px}
+
+/* Album grid */
+.album-section{padding:0 20px 16px;flex:1;min-height:0;overflow-y:auto}
+.album-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.album-card{
+  background:var(--surface2);border-radius:4px;
+  overflow:hidden;cursor:pointer;transition:all .2s;
+  border:1px solid transparent;
+}
+.album-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.album-card-img{
+  width:100%;aspect-ratio:1;object-fit:cover;display:block;
+  background:var(--bg);
+}
+.album-card-body{padding:6px 7px 7px}
+.album-card-name{font-size:0.62rem;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:1px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.album-card-artist{font-size:0.55rem;color:var(--accent3);margin-bottom:1px}
+.album-card-plays{font-size:0.52rem;color:var(--text-dim)}
+
+/* Genre chips */
+.genre-section{padding:0 16px 10px}
+.genre-chips{display:flex;flex-wrap:wrap;gap:4px}
+.genre-chip{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);
+  padding:4px 10px;border-radius:14px;font-size:0.64rem;cursor:pointer;
+  transition:all .15s;font-family:inherit;
+}
+.genre-chip:hover{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+
+/* Footer */
+.foot{
+  padding:12px 20px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  font-size:0.62rem;color:var(--text-dim);
+}
+.foot a{color:var(--text-dim);text-decoration:none}
+.foot a:hover{color:var(--text)}
+.foot .key-link{cursor:pointer;text-decoration:underline;font-size:0.6rem}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:90%;max-width:420px;animation:fadeUp .25s ease}
+.modal h3{font-size:1rem;margin-bottom:4px;color:var(--text)}
+.modal .modal-artist{font-size:0.75rem;color:var(--accent3);margin-bottom:16px}
+.modal-field{margin-bottom:12px}
+.modal-field label{display:block;font-size:0.7rem;font-weight:600;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
+.modal-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:0.85rem;color:var(--text);font-family:inherit;outline:none;transition:border-color .15s}
+.modal-field input:focus{border-color:var(--accent)}
+.modal-btns{display:flex;gap:10px;margin-top:20px}
+.modal-btn{padding:10px 20px;border-radius:var(--radius-sm);font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.modal-btn-submit{flex:1;background:var(--accent);color:#fff;border:none}
+.modal-btn-submit:hover{background:#D14A30}
+.modal-btn-cancel{background:transparent;color:var(--text-dim);border:1px solid var(--border)}
+.modal-btn-cancel:hover{color:var(--text);border-color:var(--text-dim)}
+.modal-done{text-align:center;padding:20px 0}
+.modal-done-icon{font-size:2rem;margin-bottom:8px}
+.modal-done p{font-size:0.85rem;color:var(--text-dim);line-height:1.5}
+
+/* Album badges */
+.album-badges{display:flex;gap:4px;margin-top:6px}
+.album-badge{padding:3px 7px;border-radius:4px;font-size:0.55rem;font-weight:700;cursor:pointer;text-decoration:none;text-transform:uppercase;letter-spacing:0.3px;transition:all .15s;display:inline-block}
+.album-badge-buy{background:rgba(74,158,142,0.2);color:var(--accent2);border:1px solid rgba(74,158,142,0.3)}
+.album-badge-buy:hover{background:var(--accent2);color:#fff}
+.album-badge-discogs{background:rgba(51,51,51,0.6);color:#aaa;border:1px solid rgba(255,255,255,0.08)}
+.album-badge-discogs:hover{background:#333;color:#fff}
+.album-badge-req{background:rgba(196,164,74,0.15);color:var(--accent3);border:1px solid rgba(196,164,74,0.3)}
+.album-badge-req:hover{background:var(--accent3);color:#fff}
+
+/* Mobile — tablet portrait and below */
+@media(max-width:768px){
+  body{overflow:hidden;display:flex;flex-direction:column;height:100vh}
+
+  /* Compact brand bar */
+  .app-brand{height:56px;padding:0 12px;gap:10px;flex-shrink:0}
+  .app-brand::before{background:radial-gradient(ellipse at 20% 50%,rgba(232,93,63,0.18) 0%,transparent 60%)}
+  .brand-record{width:36px;height:36px}
+  .brand-record::before{top:3px;left:3px;right:3px;bottom:3px;box-shadow:inset 0 0 0 2px rgba(255,255,255,0.04),inset 0 0 0 4px rgba(255,255,255,0.02)}
+  .brand-label{width:11px;height:11px}
+  .brand-label::after{width:2px;height:2px}
+  .app-brand-name{font-size:0.95rem;letter-spacing:1px}
+  .app-brand-tagline{display:none}
+  .app-brand-sub{display:none}
+
+  /* App fills remaining space, 50/50 split */
+  .app{display:flex;flex-direction:column;flex:1 1 0;min-height:0;height:auto}
+
+  /* Chat — bottom 50% */
+  .chat{flex:1 1 0;min-height:0;border-right:none}
+  .chat-msgs{min-height:0}
+
+  /* Discovery — top 50%, back in document flow */
+  .discovery{
+    flex:1 1 0;min-height:0;position:relative;z-index:1;
+    border-top:1px solid var(--border);max-height:none;border-radius:0;
+    transform:none;transition:none;box-shadow:none;
+  }
+  .discovery::before{display:none}
+  .discovery .d-empty,.discovery #dContent{overflow-y:auto;flex:1;min-height:0}
+  .discovery #dContent{display:flex;flex-direction:column}
+
+  /* Back bar */
+  .back-bar{padding:6px 16px;flex-shrink:0}
+  .back-btn{font-size:0.7rem;padding:4px 12px}
+
+  /* Footer */
+  .foot{padding:10px 14px;font-size:0.58rem;gap:8px;flex-shrink:0}
+
+  /* Albums — 3 columns */
+  .album-grid{grid-template-columns:repeat(3,1fr)}
+  .album-card-img{aspect-ratio:1}
+
+  /* Similar artists — smaller cards */
+  .similar-card{width:72px}
+  .similar-card-avatar{width:44px;height:44px;font-size:0.55rem}
+
+  /* Sections less padding */
+  .artist-hero{padding:12px 16px}
+  .section-hdr{padding:8px 16px 4px}
+  .similar-row{padding:0 12px 4px}
+  .album-section{padding:0 16px 12px;overflow-y:visible}
+  .genre-section{padding:0 12px 8px}
+}
+
+/* Mobile — small phones */
+@media(max-width:500px){
+  .app-brand{height:52px;padding:0 10px;gap:8px}
+  .brand-record{width:32px;height:32px}
+  .brand-record::before{top:2px;left:2px;right:2px;bottom:2px}
+  .brand-label{width:10px;height:10px}
+  .brand-label::after{width:2px;height:2px}
+  .app-brand-name{font-size:0.85rem}
+  .app{height:auto}
+  .album-grid{grid-template-columns:1fr 1fr}
+  .chat-top{padding:10px 14px}
+  .chat-msgs{padding:14px}
+  .chat-input-wrap{padding:10px 14px}
+  .similar-card{width:64px}
+  .similar-card-avatar{width:40px;height:40px;font-size:0.5rem}
+  .artist-hero{padding:10px 14px}
+  .artist-hero-name{font-size:1rem}
+  .section-hdr{padding:6px 14px 2px}
+  .similar-row{padding:0 10px 4px}
+  .album-section{padding:0 14px 10px}
+  .genre-section{padding:0 10px 6px}
+  .d-empty{padding:24px 16px}
+  .foot{padding:8px 12px;font-size:0.55rem}
+}
+</style>
+</head>
+<body>
+<div class="app-brand">
+  <div class="brand-record"><div class="brand-label"></div></div>
+  <div class="app-brand-text">
+    <span class="app-brand-name">Round <span>&amp;</span> Round Records</span>
+    <span class="app-brand-tagline">Independent since 2005 &bull; 32 Main Street, Dublin</span>
+    <div class="app-brand-sub"><span>Vinyl &bull; CD &bull; Expert Advice</span><span>AI-Powered Music Discovery</span><span class="brand-info-link" onclick="showMemInfo()">What I store</span></div>
+  </div>
+</div>
+<div class="app">
+
+  <!-- CHAT PANEL -->
+  <div class="chat">
+    <div class="chat-top">
+      <div class="chat-avatar">&#127926;</div>
+      <div class="chat-top-info">
+        <h2>Bob</h2>
+        <span id="bobLabel">Music guru &amp; vinyl hunter</span>
+      </div>
+      <div class="chat-top-right">
+        <span class="chat-top-badge" id="bobBadge">basic</span>
+        <button class="chat-clear-btn" id="clearMemBtn" onclick="clearMemory()" title="Clear what Bob remembers">Clear memory</button>
+      </div>
+    </div>
+    <div class="chat-msgs" id="chatMessages"></div>
+    <div class="chat-input-wrap">
+      <input class="chat-input" id="chatInput" placeholder="Tell Bob about an artist or genre you love..." autofocus>
+      <button class="chat-mic" id="chatMic" aria-label="Voice input" title="Talk to Bob">&#127908;</button>
+      <button class="chat-send" id="chatSend" aria-label="Send">&#8594;</button>
+    </div>
+    <div class="chat-human-ramp" onclick="document.getElementById('chatInput').value='human';document.getElementById('chatSend').click()">
+      <span class="human-ramp-icon">&#128100;</span> Prefer a real human? <span class="human-ramp-cta">Click here</span> for our contact details
+    </div>
+  </div>
+
+  <!-- DISCOVERY PANEL -->
+  <div class="discovery" id="discovery">
+    <div class="disc-loading" id="discLoading">
+      <div class="disc-turntable">
+        <div class="disc-record">
+          <div class="disc-platter"></div>
+          <div class="disc-vinyl"><div class="disc-label"></div></div>
+          <div class="disc-tonearm"></div>
+        </div>
+      </div>
+      <div class="disc-text">Digging through the crates...</div>
+    </div>
+    <div class="d-empty" id="dEmpty">
+      <div class="d-empty-inner">
+        <div class="d-empty-icon">&#127925;</div>
+        <h3>Your Discovery Space</h3>
+        <p>Chat with Bob about any artist or genre. He'll fill this space with similar artists, essential albums, and genres to explore.</p>
+      </div>
+    </div>
+    <div id="dContent" style="display:none">
+      <div class="back-bar" id="backBar" style="display:none"><button class="back-btn" onclick="goBack()">&#8592; Back</button><span class="back-label" id="backLabel"></span></div>
+      <div class="artist-hero" id="artistHero"></div>
+      <div class="section">
+        <div class="section-hdr"><span class="section-hdr-icon">&#128101;</span><h4>Similar Artists</h4><span class="section-count" id="simCount">0</span></div>
+        <div class="similar-row"><div class="similar-scroll" id="similarScroll"></div></div>
+      </div>
+      <div class="section genre-section">
+        <div class="section-hdr"><span class="section-hdr-icon">&#127911;</span><h4>Explore These Genres</h4></div>
+        <div class="genre-chips" id="genreChips"></div>
+      </div>
+      <div class="section album-section">
+        <div class="section-hdr"><span class="section-hdr-icon">&#128191;</span><h4>Essential Albums</h4><span class="section-count" id="albCount">0</span></div>
+        <div class="album-grid" id="albumGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request-to-order modal -->
+  <div class="modal-overlay" id="reqModal">
+    <div class="modal" id="reqModalInner"></div>
+  </div>
+
+</div>
+
+<div class="foot">
+  Powered by <a href="https://www.last.fm" target="_blank">Last.fm</a> &amp; <a href="https://www.discogs.com" target="_blank">Discogs</a>
+</div>
+
+<script src="config.js"></script>
+<script>
+// === API Proxy (Cloudflare Worker URL - set after deploying worker) ===
+// Leave blank to use direct API access with config.js keys (local dev only)
+var API_PROXY="https://rr-records-proxy.dan-m-kelly.workers.dev";
+// Example after deploy: var API_PROXY="https://rr-records-proxy.your-subdomain.workers.dev";
+
+// === Key setup (only needed when API_PROXY is empty) ===
+(function(){
+  if(typeof LLM_KEY==="undefined")window.LLM_KEY="";
+  if(typeof LFM_KEY==="undefined")window.LFM_KEY="";
+  if(typeof DGS_KEY==="undefined")window.DGS_KEY="";
+  if(API_PROXY){LLM_KEY="proxy";LLM_URL="proxy";LLM_MODEL="deepseek-chat";LFM_KEY="proxy";DGS_KEY="proxy"}
+})();
+
+// === State ===
+var conv=[],artistName="",discogsCache={};
+var lastBobAsked=false;
+var navHistory=[];
+var spokeLast=false;
+var expectingName=false;
+
+// === Memory (localStorage) ===
+var bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};
+function loadMemory(){
+  try{var raw=localStorage.getItem("bob_memory");if(raw){var p=JSON.parse(raw);bobMemory=p}}catch(e){}
+  bobMemory.visits=(bobMemory.visits||0)+1;
+  bobMemory.lastVisit=new Date().toISOString();
+  bobMemory.recentArtists=bobMemory.recentArtists||[];
+  bobMemory.recentGenres=bobMemory.recentGenres||[];
+  bobMemory.totalSearches=bobMemory.totalSearches||0;
+  bobMemory.userName=bobMemory.userName||"";
+  expectingName=!bobMemory.userName;
+  saveMemory();
+}
+function saveMemory(){try{localStorage.setItem("bob_memory",JSON.stringify(bobMemory))}catch(e){}}
+function clearMemory(){
+  var disc=document.getElementById("discovery");if(disc.classList.contains("mobile-open"))disc.classList.remove("mobile-open");
+  localStorage.removeItem("bob_memory");
+  bobMemory={visits:0,lastVisit:"",recentArtists:[],recentGenres:[],totalSearches:0,userName:""};
+  expectingName=true;
+  addMsg("All clear! I've forgotten everything about you. Fresh start.",'bot');
+  document.getElementById("bobLabel").textContent="Music guru · AI-powered";
+}
+function rememberArtist(a){
+  if(!a)return;
+  var existing=bobMemory.recentArtists.indexOf(a);
+  if(existing>-1)bobMemory.recentArtists.splice(existing,1);
+  bobMemory.recentArtists.unshift(a);
+  if(bobMemory.recentArtists.length>10)bobMemory.recentArtists.pop();
+  bobMemory.totalSearches++;saveMemory();
+}
+function rememberGenre(g){
+  if(!g)return;
+  var existing=bobMemory.recentGenres.indexOf(g);
+  if(existing>-1)bobMemory.recentGenres.splice(existing,1);
+  bobMemory.recentGenres.unshift(g);
+  if(bobMemory.recentGenres.length>5)bobMemory.recentGenres.pop();
+  bobMemory.totalSearches++;saveMemory();
+}
+function getMemoryPreamble(){
+  var parts=[];
+  if(bobMemory.userName)parts.push("The user's name is "+bobMemory.userName+". Address them by name now and then.");
+  if(bobMemory.visits>1)parts.push("This is their "+bobMemory.visits+ordinalSuffix(bobMemory.visits)+" visit. We've chatted before.");
+  if(bobMemory.recentArtists&&bobMemory.recentArtists.length)parts.push("They've searched for: "+bobMemory.recentArtists.slice(0,5).join(", ")+".");
+  if(bobMemory.recentGenres&&bobMemory.recentGenres.length)parts.push("Genres they've explored: "+bobMemory.recentGenres.slice(0,3).join(", ")+".");
+  if(parts.length)return "[Returning customer] "+parts.join(" ")+" Reference shared history naturally. If name known, use it. ";
+  return "";
+}
+function ordinalSuffix(n){var s=["th","st","nd","rd"];var v=n%100;return s[(v-20)%10]||s[v]||s[0]}
+function showMemInfo(){document.getElementById("memInfoModal").classList.add("open")}
+
+// === DOM ===
+var chatMsgs=document.getElementById("chatMessages");
+var chatInput=document.getElementById("chatInput");
+var dEmpty=document.getElementById("dEmpty");
+var dContent=document.getElementById("dContent");
+var artistHero=document.getElementById("artistHero");
+var similarScroll=document.getElementById("similarScroll");
+var albumGrid=document.getElementById("albumGrid");
+var genreChips=document.getElementById("genreChips");
+
+// === Helpers ===
+function toggleBio(id){
+  var el=document.getElementById(id);if(!el)return;
+  var expanded=el.classList.contains("expanded");
+  el.classList.toggle("expanded");
+  var more=el.nextElementSibling;
+  if(more&&more.classList.contains("artist-hero-more"))more.textContent=expanded?"… more":"… less";
+}
+var knownNames=[]; // Artists/albums to make clickable in chat
+function enrichLinks(html){
+  if(!knownNames.length||html.indexOf("chat-link")>-1)return html;
+  var names=knownNames.slice().sort(function(a,b){return b.length-a.length});
+  names.forEach(function(n){
+    var rx=new RegExp('(^|\\s|>)('+n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')(?=[\\s,.\!?;:<]|$)','gi');
+    html=html.replace(rx,function(m,p1,p2){return p1+'<span class="chat-link" onclick="qa(\''+p2.replace(/'/g,"\\'")+'\')">'+p2+'</span>'});
+  });
+  return html;
+}
+function updateKnownNames(artists,albums,searchName){
+  knownNames=[];
+  if(searchName)knownNames.push(searchName);
+  if(artists)artists.forEach(function(a){knownNames.push(a.name)});
+  if(albums)albums.forEach(function(a){knownNames.push(a.name);if(a.artist)knownNames.push(a.artist)});
+  var seen={};knownNames=knownNames.filter(function(n){var k=n.toLowerCase();if(seen[k])return false;seen[k]=true;return n&&n.length>1});
+  // Re-scan all existing bot bubbles now that we have names
+  document.querySelectorAll(".msg.bot .msg-bubble").forEach(function(b){
+    b.innerHTML=enrichLinks(b.innerHTML);
+  });
+}
+function sc(){chatMsgs.scrollTop=chatMsgs.scrollHeight}
+function addMsg(t,s){
+  var d=document.createElement("div");d.className="msg "+s;
+  var now=new Date();var time=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
+  if(s==="bot")t=enrichLinks(t);else t=t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  d.innerHTML='<div class="msg-bubble">'+t+'</div><div class="msg-meta">'+(s==="bot"?"Bob":"You")+' &middot; '+time+(s==="bot"?' <button class="msg-speak" onclick="speakMsg(this)" title="Listen">&#128266;</button>':'')+'</div>';
+  chatMsgs.appendChild(d);sc();
+  if(spokeLast&&s==="bot"){
+    spokeLast=false;
+    setTimeout(function(){var btn=d.querySelector(".msg-speak");if(btn)speakMsg(btn)},150);
+  }
+}
+function addSugg(arr){
+  var d=document.createElement("div");d.className="msg bot";
+  d.innerHTML='<div class="chat-sugg">'+arr.map(function(x){return'<span class="chat-sugg-btn" onclick="qa(\''+x.replace(/'/g,"\\'")+'\')">'+x+'</span>'}).join("")+'</div>';
+  chatMsgs.appendChild(d);sc();
+}
+function showTyping(){var d=document.createElement("div");d.className="msg bot";d.innerHTML='<div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';d.id="t";chatMsgs.appendChild(d);sc()}
+function hideTyping(){var e=document.getElementById("t");if(e)e.remove()}
+function qa(t){chatInput.value=t;send()}
+
+// === Speech: voice input (STT) ===
+var micBtn=document.getElementById("chatMic");
+var recognition=null;
+if("webkitSpeechRecognition" in window || "SpeechRecognition" in window){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.continuous=false;recognition.interimResults=true;recognition.lang="en-IE";
+  recognition.onresult=function(e){
+    var transcript="";
+    for(var i=e.resultIndex;i<e.results.length;i++)transcript+=e.results[i][0].transcript;
+    chatInput.value=transcript;
+    if(e.results[0].isFinal){micBtn.classList.remove("listening");spokeLast=true;send()}
+  };
+  recognition.onerror=function(e){micBtn.classList.remove("listening");if(e.error==="not-allowed")addMsg("Microphone access was denied. Check your browser permissions.",'bot')};
+  recognition.onend=function(){micBtn.classList.remove("listening")};
+}
+if(!recognition)micBtn.style.display="none";
+micBtn.onclick=function(){
+  if(!recognition)return;
+  if(micBtn.classList.contains("listening")){recognition.stop();micBtn.classList.remove("listening")}
+  else{
+    try{recognition.start();micBtn.classList.add("listening")}
+    catch(ex){micBtn.classList.remove("listening")}
+  }
+};
+
+// === Speech: read Bob's messages aloud (TTS) ===
+function speakMsg(btn){
+  if(window.speechSynthesis.speaking){window.speechSynthesis.cancel();document.querySelectorAll(".msg-speak.speaking").forEach(function(b){b.classList.remove("speaking")});return}
+  var bubble=btn.closest(".msg").querySelector(".msg-bubble");
+  var text=(bubble.textContent||bubble.innerText).trim();
+  document.querySelectorAll(".msg-speak.speaking").forEach(function(b){b.classList.remove("speaking")});
+  btn.classList.add("speaking");
+  function doSpeak(t){
+    var u=new SpeechSynthesisUtterance(t);u.lang="en-IE";u.rate=1.0;u.pitch=1.0;
+    var voices=window.speechSynthesis.getVoices();
+    if(voices.length>0){
+      var ranked=voices.filter(function(v){return v.lang.indexOf("en")===0});
+      var best=null;
+      // Male voices only — Bob is a bloke
+      var femaleNames=["female","moira","fiona","zira","samantha","karen","susan","linda","catherine","mary","hazel","veena"];
+      ranked=ranked.filter(function(v){
+        var n=v.name.toLowerCase();
+        return !femaleNames.some(function(f){return n.indexOf(f)>-1});
+      });
+      if(ranked.length===0)ranked=voices.filter(function(v){return v.lang.indexOf("en")===0});
+      // Score: Irish (10) > UK (7) > any EN (3)
+      ranked.forEach(function(v){
+        var s=3;
+        if(v.lang==="en-IE")s=10;
+        else if(v.lang==="en-GB")s=7;
+        if(!best||s>best._score){v._score=s;best=v}
+      });
+      if(!best)best=voices[0];
+      u.voice=best;
+    }
+    u.onend=function(){btn.classList.remove("speaking")};
+    u.onerror=function(){btn.classList.remove("speaking")};
+    window.speechSynthesis.speak(u);
+  }
+  if(window.speechSynthesis.getVoices().length===0){
+    window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.onvoiceschanged=null;doSpeak(text)};
+  }else{doSpeak(text)}
+}
+
+// === Last.fm ===
+function lfm(p){var u=API_PROXY?API_PROXY+"/api/lastfm?"+p:"https://ws.audioscrobbler.com/2.0/?api_key="+LFM_KEY+"&format=json&"+p;return fetch(u).then(function(r){return r.ok?r.json():null}).catch(function(e){console.warn("LFM",e.message);return null})}
+async function getSim(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getsimilar&artist="+encodeURIComponent(a)+"&limit=12");return(d&&d.similarartists&&d.similarartists.artist)?d.similarartists.artist.map(function(x){var m=parseFloat(x.match);return{name:x.name,match:m<=1?Math.round(m*100):Math.round(m)}}):[]}
+async function getTgs(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettoptags&artist="+encodeURIComponent(a)+"&limit=10");return(d&&d.toptags&&d.toptags.tag)?d.toptags.tag.map(function(x){return{name:x.name,count:parseInt(x.count)}}):[]}
+async function getAlb(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.gettopalbums&artist="+encodeURIComponent(a)+"&limit=10");if(!d||!d.topalbums||!d.topalbums.album)return[];return d.topalbums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:a,playcount:parseInt(x.playcount)||0,img:img}})}
+async function getBio(a){if(!LFM_KEY)return null;var d=await lfm("method=artist.getinfo&artist="+encodeURIComponent(a));if(!d||!d.artist)return null;var bio=(d.artist.bio&&d.artist.bio.summary)?d.artist.bio.summary.replace(/<[^>]+>/g,"").replace(/<a[^>]*>.*?read more.*?<\/a>/gi,"").replace(/read more on last\.fm\.?/i,"").trim().slice(0,500):"";return{name:d.artist.name,bio:bio,listeners:d.artist.stats?d.artist.stats.listeners:"",playcount:d.artist.stats?d.artist.stats.playcount:""}}
+async function getEvt(a){if(!LFM_KEY)return[];var d=await lfm("method=artist.getevents&artist="+encodeURIComponent(a)+"&limit=2");if(!d||!d.events||!d.events.event)return[];var ev=d.events.event;if(!Array.isArray(ev))ev=[ev];return ev.map(function(e){return{title:e.title,venue:e.venue?e.venue.name:"",city:e.venue&&e.venue.city?e.venue.city.name:"",date:e.startDate,url:e.url}})}
+async function getTagArt(tag){if(!LFM_KEY)return[];var d=await lfm("method=tag.gettopartists&tag="+encodeURIComponent(tag)+"&limit=10");return(d&&d.topartists&&d.topartists.artist)?d.topartists.artist.map(function(x){return{name:x.name}}):[]}
+async function getTagAlb(tag){if(!LFM_KEY)return[];var d=await lfm("method=tag.gettopalbums&tag="+encodeURIComponent(tag)+"&limit=15");if(!d||!d.albums||!d.albums.album)return[];return d.albums.album.map(function(x){var img="";if(x.image){for(var i=x.image.length-1;i>=0;i--){if(x.image[i]["#text"]){img=x.image[i]["#text"];break}}}return{name:x.name,artist:x.artist?x.artist.name:"",playcount:parseInt(x.playcount)||0,img:img}})}
+var DISCOVERY_TAGS=["irish","french","british","american","canadian","australian","german","italian","spanish","japanese","swedish","norwegian","dutch","brazilian","african","indian","latin","celtic","rock","pop","indie","folk","punk","metal","jazz","electronic","hip-hop","dance","blues","soul","funk","reggae","classical","ambient","experimental","progressive","psychedelic","garage","shoegaze","post-punk","new wave","synthpop","grunge","britpop","trip-hop","drum and bass","house","techno","trance","dubstep","ska","2 tone","rockabilly","rocksteady","dub","disco","hardcore","emo","screamo","post-rock","math rock","slowcore","dream pop","noise","industrial","ebm","idm","breakbeat","jungle","uk garage","gabber","hardstyle","vaporwave","lo-fi","hyperpop","alt-country","americana","bluegrass","zydeco","gospel","r&b","motown","doo-wop","crooner","swing","bebop","cool jazz","fusion","bossa nova","samba","tango","flamenco","rebetiko"];
+
+function findBestTag(txt){
+  var t=txt.toLowerCase();var best="";var bestLen=0;
+  for(var i=0;i<DISCOVERY_TAGS.length;i++){
+    var tag=DISCOVERY_TAGS[i];
+    if(t.indexOf(tag)>-1&&tag.length>bestLen){best=tag;bestLen=tag.length}
+  }
+  return best;
+}
+
+function renderDiscoveryTag(tag,albs,sim){
+  document.getElementById("discLoading").classList.remove("active");
+  dEmpty.style.display="none";dContent.style.display="block";
+  var label=tag.charAt(0).toUpperCase()+tag.slice(1);
+  artistHero.innerHTML='<div class="artist-hero-name">'+label+'</div><div class="artist-hero-sub">Top albums &amp; artists on Last.fm</div><div class="artist-hero-tags"><span class="artist-hero-tag">'+tag+'</span></div>';
+  document.getElementById("simCount").textContent=sim.length;
+  similarScroll.innerHTML=sim.map(function(a,i){return'<div class="similar-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><div class="similar-card-avatar" id="simav'+i+'">'+(a.name.charAt(0)+a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'</div><div class="similar-card-name">'+a.name+'</div><div class="similar-card-match">top artist</div></div>'}).join("");
+  enrichSimImages(sim);
+  document.getElementById("albCount").textContent=albs.length;
+  albumGrid.innerHTML=albs.map(function(a){
+    var img=a.img||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#242424" width="200" height="200"/><text x="100" y="115" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#555">No Art</text></svg>');
+    return'<div class="album-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+(a.artist||tag)+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div>'+albumBadges(a.artist||tag,a.name)+'</div></div>';
+  }).join("");
+  genreChips.innerHTML='';
+  enrichAlbumBadges();
+  updateKnownNames(sim,albs,label);
+}
+
+// === Discogs marketplace check ===
+async function checkDiscogs(artist,title){
+  var key=artist+"|"+title;
+  if(discogsCache[key]!==undefined)return discogsCache[key];
+  if(typeof DGS_KEY==="undefined"||!DGS_KEY)return null;
+  try{
+    var q=encodeURIComponent((artist+" "+title).replace(/\([^)]*\)/g,"").trim());
+    console.log("[Discogs] Checking:",artist,"-",title);
+    var dgsUrl=API_PROXY?API_PROXY+"/api/discogs?q="+q+"&type=release&per_page=1":"https://api.discogs.com/database/search?q="+q+"&type=release&per_page=1&token="+DGS_KEY;
+    var r=await fetch(dgsUrl);
+    if(!r.ok){console.warn("[Discogs] HTTP",r.status);discogsCache[key]=null;return null}
+    var d=await r.json();
+    if(d&&d.results&&d.results.length>0&&d.results[0].id){
+      var sellUrl="https://www.discogs.com/sell/release/"+d.results[0].id;
+      var infoUrl="https://www.discogs.com"+d.results[0].uri;
+      discogsCache[key]={sell:sellUrl,info:infoUrl};
+      console.log("[Discogs] Found:",artist,"-",title,"=>",sellUrl);return discogsCache[key];
+    }
+    console.log("[Discogs] No match:",artist,"-",title);discogsCache[key]=null;return null;
+  }catch(e){discogsCache[key]=null;return null}
+}
+
+async function enrichAlbumBadges(){
+  console.log("[Discogs] Enriching badges, key present:",!!DGS_KEY);
+  var cards=document.querySelectorAll(".album-card");console.log("[Discogs] Cards found:",cards.length);
+  for(var i=0;i<cards.length;i++){
+    var c=cards[i];
+    var a=c.querySelector(".album-card-artist"),t=c.querySelector(".album-card-name"),b=c.querySelector(".album-badges");
+    if(!a||!t||!b)continue;
+    var artist=a.textContent.trim(),title=t.textContent.trim();
+    var url=await checkDiscogs(artist,title);
+    if(url&&url.sell)b.innerHTML='<a class="album-badge album-badge-buy" href="'+url.sell+'" target="_blank" onclick="event.stopPropagation()">Buy Now</a><a class="album-badge album-badge-discogs" href="'+url.info+'" target="_blank" onclick="event.stopPropagation()">Info on Discogs</a>';
+  }
+}
+
+function albumBadgesHTML(artist,title){
+  var dq=encodeURIComponent((artist||"")+" "+(title||""));
+  return'<div class="album-badges"><span class="album-badge album-badge-req" onclick="event.stopPropagation();openReq(\''+(artist||"").replace(/'/g,"\\'")+'\',\''+(title||"").replace(/'/g,"\\'")+'\')">Order</span><a class="album-badge album-badge-discogs" href="https://www.discogs.com/search/?q='+dq+'&type=release" target="_blank" onclick="event.stopPropagation()">Info on Discogs</a></div>';
+}
+function albumBadges(artist,title){return albumBadgesHTML(artist,title)}
+
+// === Render discovery ===
+function renderDiscovery(sim,tgs,albs,info){
+  document.getElementById("discLoading").classList.remove("active");
+  dEmpty.style.display="none";dContent.style.display="block";
+
+  // Hero
+  var heroHtml='<div class="artist-hero-name">'+artistName+'</div>';
+  var bioId=null;
+  if(tgs&&tgs.length>0){
+    heroHtml+='<div class="artist-hero-tags">'+tgs.slice(0,6).map(function(t){return'<span class="artist-hero-tag" onclick="exploreGenre(\''+t.name.replace(/'/g,"\\'")+'\')">'+t.name+'</span>'}).join("")+'</div>';
+  }
+  if(info&&info.bio){
+    bioId='bio'+Math.random().toString(36).slice(2,8);
+    heroHtml+='<div class="artist-hero-bio" id="'+bioId+'" onclick="toggleBio(\''+bioId+'\')">'+info.bio+'</div>';
+  }
+  if(info&&info.listeners){
+    heroHtml+='<div class="artist-hero-stats"><span class="artist-hero-stat"><strong>'+parseInt(info.listeners).toLocaleString()+'</strong> listeners</span><span class="artist-hero-stat"><strong>'+parseInt(info.playcount).toLocaleString()+'</strong> plays</span></div>';
+  }
+  artistHero.innerHTML=heroHtml;
+
+  // Add … more link only if bio actually overflows the 3-line clamp
+  if(bioId){
+    var bioEl=document.getElementById(bioId);
+    if(bioEl&&bioEl.scrollHeight>bioEl.clientHeight){
+      var more=document.createElement("span");
+      more.className="artist-hero-more";
+      more.textContent="… more";
+      more.onclick=function(e){toggleBio(bioId);e.stopPropagation()};
+      bioEl.parentNode.insertBefore(more,bioEl.nextSibling);
+    }
+  }
+
+  // Similar artists horizontal scroll
+  document.getElementById("simCount").textContent=sim.length;
+  similarScroll.innerHTML=sim.map(function(a,i){return'<div class="similar-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><div class="similar-card-avatar" id="simav'+i+'">'+(a.name.charAt(0)+a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'</div><div class="similar-card-name">'+a.name+'</div><div class="similar-card-match">'+Math.round(a.match)+'% match</div></div>'}).join("");
+  enrichSimImages(sim);
+
+  // Albums grid
+  document.getElementById("albCount").textContent=albs.length;
+  albumGrid.innerHTML=albs.map(function(a){
+    var img=a.img||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#242424" width="200" height="200"/><text x="100" y="115" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#555">No Art</text></svg>');
+    return'<div class="album-card" onclick="qa(\''+a.name.replace(/'/g,"\\'")+'\')"><img class="album-card-img" src="'+img+'" alt="'+a.name+'" loading="lazy" onerror="this.src=\'data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"200\\" height=\\"200\\" viewBox=\\"0 0 200 200\\"><rect fill=\\"#242424\\" width=\\"200\\" height=\\"200\\"/><text x=\\"100\\" y=\\"115\\" text-anchor=\\"middle\\" font-family=\\"sans-serif\\" font-size=\\"14\\" fill=\\"#555\\">No Art</text></svg>')+'"><div class="album-card-body"><div class="album-card-artist">'+a.artist+'</div><div class="album-card-name">'+a.name+'</div><div class="album-card-plays">'+a.playcount.toLocaleString()+' plays</div>'+albumBadges(a.artist,a.name)+'</div></div>';
+  }).join("");
+
+  // Genre chips
+  genreChips.innerHTML=tgs.map(function(t){return'<span class="genre-chip" onclick="exploreGenre(\''+t.name.replace(/'/g,"\\'")+'\')">'+t.name+'</span>'}).join("");
+  enrichAlbumBadges();
+  updateKnownNames(sim,albs,artistName);
+}
+
+async function exploreGenre(tag){
+  showTyping();
+  var artists=await getTagArt(tag);
+  hideTyping();
+  if(artists.length>0){
+    var sim=artists.map(function(a){return{name:a.name,match:100}});
+    var tgs2=await getTgs(tag);
+    var tgs=[{name:tag,count:artists.length}];
+    if(tgs2.length>0)tgs=tgs.concat(tgs2.slice(0,8));
+    artistName=tag.charAt(0).toUpperCase()+tag.slice(1);
+    pushNav(tag);
+    renderDiscovery(sim,tgs,[],null);
+    rememberGenre(tag);
+    addMsg("Exploring <strong>"+tag+"</strong>. Found "+artists.length+" top artists. Click any name or genre chip to keep digging!",'bot');
+  }else{addMsg("Couldn't find artists for &quot;"+tag+"&quot;. Try another genre!",'bot')}
+}
+
+function extractArtists(txt){
+  var t=txt.toLowerCase().replace(/[.,!?;:'"()]/g," ").trim();
+  // Normalize contractions
+  t=t.replace(/\bi'm\b/g,"i am").replace(/\byou're\b/g,"you are").replace(/\bwe're\b/g,"we are");
+  // Strip lead-in phrases
+  t=t.replace(/^(i am |we are |i |we )(really |kinda |sort of |pretty |absolutely |so |super )?(into |a fan of |loving |enjoying |listening to |liking |digging |feeling |getting into )/i,"");
+  t=t.replace(/^(what('s| is) (similar to|like) |suggest |recommend |find me |show me |search for |tell me about |tell me more about |what about |how about |give me |give me more on |more on |more about |more from |play me |put on |i want |i need |looking for |check out |ever heard of |do you know |can you |explain |describe |i like |i love |i enjoy |i adore |i fancy |i am into |i'm into )/i,"");
+  var parts=t.split(/\s+(?:and|or)\s+|,\s*/);
+  var results=[];
+  parts.forEach(function(p){
+    var w=p.trim().split(/\s+/).filter(function(x){return x.length>1&&!/^(the|and|or|but|for|nor|yet|so|in|on|at|to|by|from|with|about|into|upon|over|under|above|below|between|through|during|before|after|behind|beyond|near|off|out|up|down|of|also|get|got|has|had|been|was|were|are|its|not|very|much|well|even|still|always|never|long|time|favorite|favourite|thing|things|stuff|way|lot|lots|bit|kind|sort)$/i.test(x)});
+    if(w.length>=1)results.push(w.slice(0,3).join(" "));
+  });
+  return results.filter(function(r){return r&&r.length>=2});
+}
+
+function isRealArtistName(an,txt){
+  if(!an||an.length<3)return false;
+  var nw="more|less|newer|older|recent|early|late|latest|anything|something|maybe|please|show|tell|give|find|search|look|what|who|how|when|where|can|you|could|would|should|will|just|only|also|get|got|has|had|been|was|were|are|its|not|very|much|well|even|still|always|never|long|time|favorite|favourite|thing|things|stuff|way|lot|lots|bit|kind|sort|like|love|hate|prefer|fancy|want|need|their|his|her|your|our|best|top|good|bad|great|nice|cool|ok|okay|yeah|yes|nope|no|thanks|thank|cheers|first|second|third|last|next|previous|the|that|this|these|those|about|from|with|some|any|all|there|here|now|then|again|back|me|give|more|ever|heard|know|explain|describe|check|play|listen|into|really|kinda|sort|pretty|absolutely|lost|also|and|or|but";
+  var words=an.split(/\s+/);
+  var allNoise=words.every(function(w){return nw.indexOf(w)>-1});
+  return !allNoise&&(txt?txt.split(/\s+/).length<=15:true);
+}
+
+// === LLM ===
+var BOB_VOICE="You are Bob, a music guide at Round & Round Records, a small independent record shop in Dublin (est. 2005). You live for music: you know band histories, album lore, recording stories, genre connections. You're warm, curious, genuinely excited to chat about music. Dublin flavour: use 'grand','deadly','class','sound','craic' like seasoning. Ask follow-up questions. Guide the conversation. Suggest artists they'd like and explain why. Never list data - mention specifics naturally in conversation. Keep it 2-5 sentences unless telling a good story. No em dashes. No markdown. Just talk like a person.";
+
+function buildDataMsg(sim,tgs,albs,info,evts){
+  var parts=[];
+  if(sim&&sim.length)parts.push("Similar: "+sim.slice(0,6).map(function(a){return a.name+" ("+Math.round(a.match)+"%)"}).join(", "));
+  if(tgs&&tgs.length)parts.push("Genres: "+tgs.slice(0,5).map(function(t){return t.name}).join(", "));
+  if(albs&&albs.length)parts.push("Top albums: "+albs.slice(0,5).map(function(a){return a.name+" - "+a.artist}).join(" | "));
+  if(info&&info.bio)parts.push("Bio: "+info.bio.slice(0,250));
+  if(info&&info.listeners)parts.push("Last.fm listeners: "+parseInt(info.listeners).toLocaleString());
+  if(evts&&evts.length)parts.push("Upcoming: "+evts.map(function(e){return e.title+" at "+e.venue+", "+e.city+" ("+e.date+")"}).join(" | "));
+  return "["+artistName+" data] "+parts.join(" | ");
+}
+
+async function chatLLM(msg,dataMsg){
+  if(!LLM_KEY)return null;
+  var msgs=[{role:"system",content:getMemoryPreamble()+BOB_VOICE}];
+  for(var i=0;i<conv.length;i++)msgs.push(conv[i]);
+  if(dataMsg)msgs.push({role:"user",content:dataMsg});
+  msgs.push({role:"user",content:msg});
+  try{
+    var llmUrl=API_PROXY?API_PROXY+"/api/llm":(LLM_URL||"https://api.deepseek.com/v1/chat/completions");
+    var fetchOpts={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:LLM_MODEL||"deepseek-chat",messages:msgs,temperature:0.9,max_tokens:400})};
+    if(!API_PROXY)fetchOpts.headers.Authorization="Bearer "+LLM_KEY;
+    console.log("[Bob] LLM:",artistName,"proxy:",!!API_PROXY);
+    var r=await fetch(llmUrl,fetchOpts);
+    if(!r.ok){var et=await r.text();console.error("[Bob] LLM err:",r.status,et.slice(0,200));if(et.indexOf("Insufficient")>-1||et.indexOf("balance")>-1||r.status===402){var b=document.getElementById("bobBadge");b.textContent="no credits";b.style.background="#C0392B";b.classList.remove("live")}return null}
+    var d=await r.json();var reply=d.choices[0].message.content.trim();
+    console.log("[Bob] reply:",reply.slice(0,200));
+    conv.push({role:"user",content:msg});conv.push({role:"assistant",content:reply});
+    if(conv.length>20)conv=conv.slice(-20);
+    return reply;
+  }catch(e){console.warn("[Bob] fail:",e.message);return null}
+}
+
+// === Context-aware follow-up detection ===
+function isFollowUp(txt){
+  if(!lastBobAsked)return false;
+  var t=txt.toLowerCase().trim();
+  var words=t.split(/\s+/);
+  // Short response to a question Bob asked
+  if(words.length<=3)return true;
+  // Common follow-up patterns
+  if(/^(yeah|yes|no|maybe|not really|kind of|sort of|i think|probably|the (first|second|third|last|early|late|later|newer|older)|both|either|neither|all of them|none|don't know|not sure)/i.test(t))return true;
+  return false;
+}
+function bobAskedQ(reply){lastBobAsked=/[?]/.test(reply)||/\b(what|which|when|where|who|how|do you|have you|are you|would you|fancy|prefer|into|like)\b/i.test(reply)}
+
+// === Save/restore navigation ===
+function pushNav(label){navHistory.push({artist:artistName,label:label});updateBackBar()}
+function updateBackBar(){
+  var bb=document.getElementById("backBar"),bl=document.getElementById("backLabel");
+  if(navHistory.length>1){bb.style.display="flex";var prev=navHistory[navHistory.length-2];bl.textContent=prev.label}else{bb.style.display="none"}
+}
+function goBack(){
+  if(navHistory.length<2)return;
+  navHistory.pop(); // Remove current
+  var prev=navHistory[navHistory.length-1]; // Peek previous
+  artistName=prev.artist;
+  updateBackBar();
+  // Notify chat
+  addMsg("I went back to <strong>"+prev.label+"</strong>.",'bot');
+  // Re-search
+  showTyping();
+  getSim(prev.artist).then(function(s){
+    getTgs(prev.artist).then(function(tg){
+      getAlb(prev.artist).then(function(al){
+        getBio(prev.artist).then(function(inf){renderDiscovery(s,tg,al,inf);hideTyping()})
+      })
+    })
+  })
+}
+
+async function extractEntities(text){
+  if(!LLM_KEY)return[];
+  var msgs=[{role:"system",content:"Extract all artist/band names and album titles mentioned in this text. Return ONLY a JSON array of strings, nothing else. Example: [\"Radiohead\",\"OK Computer\",\"Thom Yorke\"]. If none found, return []."},{role:"user",content:text}];
+  try{
+    var llmUrl=API_PROXY?API_PROXY+"/api/llm":(LLM_URL||"https://api.deepseek.com/v1/chat/completions");
+    var opts={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:LLM_MODEL||"deepseek-chat",messages:msgs,temperature:0,max_tokens:200,response_format:{type:"json_object"}})};
+    if(!API_PROXY)opts.headers.Authorization="Bearer "+LLM_KEY;
+    var r=await fetch(llmUrl,opts);
+    if(!r.ok)return[];
+    var d=await r.json();
+    var content=d.choices[0].message.content.trim();
+    try{
+      var parsed=JSON.parse(content);
+      var arr=Array.isArray(parsed)?parsed:(parsed.artists||parsed.names||parsed.entities||[]);
+      return arr.filter(function(x){return typeof x==="string"&&x.length>1});
+    }catch(e){return[]}
+  }catch(e){return[]}
+}
+
+// === Send ===
+var lastArtistSearch="";
+
+async function send(){
+  var txt=chatInput.value.trim();if(!txt)return;
+  addMsg(txt,"user");chatInput.value="";showTyping();
+
+  if(txt==="CLS"){hideTyping();clearMemory();return;}
+
+  // Name capture — if Bob asked and user replies with something name-like
+  if(expectingName&&!bobMemory.userName){
+    var name=txt.replace(/^(i'm|i am|my name is|call me|it's|name's|the name's|people call me)\s+/i,"").replace(/[.!?,]$/,"").trim();
+    if(name&&name.split(/\s+/).length<=3&&name.length>=2){
+      bobMemory.userName=name;expectingName=false;saveMemory();
+      document.getElementById("bobLabel").textContent="Music guru · knows "+name;
+      hideTyping();
+      addMsg("Lovely to meet you, <strong>"+name+"</strong>! Right then, what are you into music-wise?",'bot');
+      addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);
+      lastBobAsked=true;return;
+    }
+  }
+
+  // Gibberish/unclear input detection
+  var isGibberish=false;
+  var clean=txt.replace(/[^a-zA-Z]/g,'').toLowerCase();
+  if(txt.length<2)isGibberish=true;
+  else if(/^[^a-zA-Z0-9\s]{3,}$/.test(txt))isGibberish=true;
+  else if(/(.)\1{4,}/.test(txt))isGibberish=true;
+  else if(/^(.)\1*$/.test(txt.replace(/\s/g,'')))isGibberish=true;
+  else if(clean.length<2&&txt.length>2)isGibberish=true;
+  // Keyboard mashing patterns
+  else if(/^(asdf|qwer|zxcv|uiop|hjkl|nm,.)/i.test(clean))isGibberish=true;
+  else if(/(asdf|qwer|zxcv|uiop|hjkl|tyui|ghjk|bnm,|vbnm|dfgh|wert|sdfg|xcvb)/i.test(clean))isGibberish=true;
+  // Bare conversational words with no artist intent
+  else if(/^(yes|no|ok|okay|yeah|yep|nope|maybe|sure|idk|dunno|hello|hi|hey|thanks|thx|ty|bye|cya|lol|haha|hehe|what|why|when|who|how|help|test|testing|asdf|fdsa)$/i.test(txt))isGibberish=true;
+  // Very short and doesn't look like an artist name
+  else if(txt.split(/\s+/).length===1&&txt.length<5&&!/^[A-Z]/.test(txt))isGibberish=true;
+  // Consonant-heavy gibberish: ratio > 3:1 or no vowels (skip all-caps acronyms)
+  else if(clean.length>=4&&!/^[A-Z]{2,6}$/.test(txt.trim())){
+    var vowels=clean.match(/[aeiou]/g);var vCount=vowels?vowels.length:0;
+    var cCount=clean.length-vCount;
+    if(vCount===0||cCount/vCount>3)isGibberish=true;
+  }
+  if(isGibberish){
+    hideTyping();
+    addMsg("I didn't quite catch that! Give me an artist name to explore, a genre you're curious about, or just tell me what kind of music you're into. I'm all ears!",'bot');
+    addSugg(["Radiohead","Pixies","Jazz","Irish artists","90s indie"]);
+    return;
+  }
+
+  // "human" command: show contact details
+  if(txt.toLowerCase()==="human"){
+    hideTyping();
+    addMsg("Of course! Here's how to reach the real humans at Round &amp; Round Records:",'bot');
+    addMsg("<strong>Round &amp; Round Records</strong><br>32 Main Street<br>Dublin, D02 DH79<br><br><strong>Phone:</strong> +353 1 671 1711<br><strong>Email:</strong> <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2)'>hello@roundandroundrecords.ie</a> &mdash; <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2);font-weight:700'>Click here to send an email</a><br><br><strong>Opening hours:</strong><br>Mon-Sat: 10:00 - 18:00<br>Sun: 12:00 - 17:00<br><br><strong>Web:</strong> <a href='https://spindizzyrecords.com' target='_blank' style='color:var(--accent2)'>spindizzyrecords.com</a>",'bot');
+    addMsg("We'd love to see you in the shop! Anything else I can help with in the meantime?",'bot');
+    return;
+  }
+
+  // STEP 1: ALWAYS let the LLM respond first. No gatekeeping.
+  if(LLM_KEY&&LLM_URL&&LLM_MODEL){
+    var llmReply=await chatLLM(txt,null);
+    hideTyping();
+    if(llmReply){addMsg(llmReply,"bot");bobAskedQ(llmReply);
+      // Use LLM entity extraction for accurate links (no regex - too many false positives)
+      extractEntities(llmReply).then(function(ents){
+        ents.forEach(function(n){if(knownNames.indexOf(n)===-1)knownNames.push(n)});
+        var lb=chatMsgs.querySelector(".msg.bot:last-child .msg-bubble");
+        if(lb)lb.innerHTML=enrichLinks(lb.innerHTML);
+      });
+    }
+    // If LLM failed, fall through to rule-based below
+  }
+  if(!LLM_KEY||!LLM_URL||!LLM_MODEL)hideTyping();
+
+  // STEP 2: Find artists to search - from LLM entity extraction
+  var artists=extractArtists(txt);
+  var tag=findBestTag(txt);
+  // Augment with LLM-extracted entities for better accuracy
+  if(llmReply&&LLM_KEY){
+    var ents=await extractEntities(llmReply);
+    ents.forEach(function(a){var lower=a.toLowerCase();if(artists.indexOf(lower)===-1)artists.push(lower)});
+  }
+
+  // Show loading if we're about to search
+  if(artists.length||(tag&&!searchedAny))document.getElementById("discLoading").classList.add("active");
+
+  // Search for each real artist, collect all results then render merged
+  var searchedAny=false;
+  var mergedAlb=[],mergedBio=null,firstArtist="";
+  var primarySim=[],primaryTags=[],primaryBio=null;
+  var userArtists=artists.slice(); // Original from user message
+  for(var ai=0;ai<artists.length;ai++){
+    var an=artists[ai];
+    var isFromLLM=ai>=userArtists.length;
+    if(!isRealArtistName(an,isFromLLM?null:txt)&&artists.length===1)continue;
+    if(!isRealArtistName(an,isFromLLM?null:txt))continue;
+    searchedAny=true;
+    if(!firstArtist)firstArtist=an;
+    var s=await getSim(an),tgR=await getTgs(an),al=await getAlb(an),inf=await getBio(an),ev=await getEvt(an);
+    if(ai===0){primarySim=s||[];primaryTags=tgR||[];primaryBio=inf}
+    if(!mergedBio&&inf)mergedBio=inf;
+    if(al&&al.length>0)al.forEach(function(x){if(!mergedAlb.some(function(m){return m.artist===x.artist&&m.name===x.name}))mergedAlb.push(x)});
+  }
+  // Sort albums by playcount (descending) to mix artists naturally
+  mergedAlb.sort(function(a,b){return b.playcount-a.playcount});
+  if(searchedAny&&mergedAlb.length){
+    var displayName=firstArtist.charAt(0).toUpperCase()+firstArtist.slice(1);
+    artistName=displayName;lastArtistSearch=firstArtist;pushNav(displayName);
+    var finalTags=primaryTags.sort(function(a,b){return b.count-a.count}).slice(0,12);
+    renderDiscovery(primarySim.slice(0,12),finalTags,mergedAlb.slice(0,16),primaryBio||mergedBio);
+    rememberArtist(firstArtist);
+    if(LLM_KEY){var dM=buildDataMsg(primarySim.slice(0,6),finalTags,mergedAlb.slice(0,8),primaryBio||mergedBio,null);if(dM){conv.push({role:"user",content:"[Panel: "+dM+"]"});if(conv.length>20)conv=conv.slice(-20)}}
+  }
+
+  // Fallback to tag search if no artist found
+  if(!searchedAny&&tag){
+    var ts=await getTagArt(tag),ta=await getTagAlb(tag);
+    if(ta&&ta.length>0){
+      artistName=tag.charAt(0).toUpperCase()+tag.slice(1);lastArtistSearch=artistName;pushNav(tag);
+      if(ts&&ts.length>0)renderDiscovery(ts.map(function(x){return{name:x.name,match:100}}),[],ta,null);
+      else renderDiscoveryTag(tag,ta,ts||[]);
+      if(LLM_KEY){var dM2=buildDataMsg(ts,[],ta,null,null);if(dM2){conv.push({role:"user",content:"[Panel: "+dM2+"]"});if(conv.length>20)conv=conv.slice(-20)}}
+    }
+  }
+
+  if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
+    addMsg("I'm listening! Tell me about an artist or genre you love and I'll dig in.",'bot');addSugg(["Radiohead","Irish rock","90s indie","Jazz","Ska","Electronic"])
+  }
+}
+
+// === Discogs image enrichment for similar artists ===
+var simImageCache={};
+async function enrichSimImages(sim){
+  if(!sim||!sim.length)return;
+  var hasKey=typeof DGS_KEY!=="undefined"&&DGS_KEY;
+  if(!hasKey&&!API_PROXY)return;
+  var loaded=0;
+  for(var i=0;i<sim.length;i++){
+    var a=sim[i];
+    var el=document.getElementById("simav"+i);
+    if(simImageCache[a.name]){if(el)el.innerHTML='<img src="'+simImageCache[a.name]+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.parentElement.innerHTML=\''+a.name.charAt(0)+(a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'\'">';loaded++;continue}
+    try{
+      var q=encodeURIComponent(a.name);
+      var dgsUrl=API_PROXY?API_PROXY+"/api/discogs?q="+q+"&type=artist&per_page=1":"https://api.discogs.com/database/search?q="+q+"&type=artist&per_page=1&token="+DGS_KEY;
+      var r=await fetch(dgsUrl);if(!r.ok)continue;
+      var d=await r.json();
+      if(d&&d.results&&d.results.length>0&&d.results[0].cover_image){
+        simImageCache[a.name]=d.results[0].cover_image;
+        if(el)el.innerHTML='<img src="'+d.results[0].cover_image+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.parentElement.innerHTML=\''+a.name.charAt(0)+(a.name.charAt(a.name.indexOf(" ")+1||1)).toUpperCase()+'\'">';
+        loaded++;
+      }
+    }catch(e){}
+    if(i<sim.length-1)await new Promise(function(r){setTimeout(r,180)});
+  }
+  console.log("[Images] Loaded:",loaded,"/",sim.length);
+}
+
+// === Request-to-order modal ===
+function openReq(artist,title){
+  document.getElementById("reqModalInner").innerHTML=
+    '<h3>Request to Order</h3>'+
+    '<div class="modal-artist">'+artist+' &mdash; '+title+'</div>'+
+    '<div class="modal-field"><label>Your name</label><input id="reqName" placeholder="Your full name"></div>'+
+    '<div class="modal-field"><label>Email</label><input id="reqEmail" type="email" placeholder="you@email.com"></div>'+
+    '<div class="modal-field"><label>Phone (optional)</label><input id="reqPhone" type="tel" placeholder="+353 1 234 5678"></div>'+
+    '<p style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">No payment needed until we confirm we can find stock. We\'ll email you within 48 hours.</p>'+
+    '<div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeReq()">Cancel</button><button class="modal-btn modal-btn-submit" onclick="submitReq(\''+artist.replace(/'/g,"\\'")+'\',\''+title.replace(/'/g,"\\'")+'\')">Send Request</button></div>';
+  document.getElementById("reqModal").classList.add("open");
+}
+function closeReq(){document.getElementById("reqModal").classList.remove("open")}
+function submitReq(artist,title){
+  var name=document.getElementById("reqName").value.trim();
+  var email=document.getElementById("reqEmail").value.trim();
+  var phone=document.getElementById("reqPhone").value.trim();
+  if(!name||!email){alert("Please fill in your name and email.");return}
+  console.log("[Order request]",{artist:artist,title:title,name:name,email:email,phone:phone});
+  document.getElementById("reqModalInner").innerHTML=
+    '<div class="modal-done"><div class="modal-done-icon">&#9989;</div><p>Thanks, '+name+'! We\'ll hunt down <strong>'+artist+' &mdash; '+title+'</strong> for you.<br><br>We\'ll email '+email+' within 48 hours. No payment needed until we confirm stock.</p><button class="modal-btn modal-btn-submit" style="width:100%" onclick="closeReq()">Got it</button></div>';
+}
+document.getElementById("reqModal").addEventListener("click",function(e){if(e.target===this)closeReq()});
+
+// === Init ===
+document.getElementById("chatSend").addEventListener("click",send);
+chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
+(function(){
+  var b=document.getElementById("bobBadge"),l=document.getElementById("bobLabel");
+  if(API_PROXY){b.textContent="LLM Enabled";b.classList.add("live");l.textContent="Music guru · AI-powered"}
+  else if(LLM_KEY&&LLM_URL&&LLM_MODEL){b.textContent="LLM Enabled";b.classList.add("live");l.textContent="Music guru · AI-powered"}
+  else{b.textContent="LLM Not Live";l.textContent="Music guru & vinyl hunter"}
+
+  loadMemory();
+  if(bobMemory.userName)l.textContent="Music guru · knows "+bobMemory.userName;
+
+  if(bobMemory.visits>1&&bobMemory.userName){
+    addMsg("Welcome back, <strong>"+bobMemory.userName+"</strong>! Great to see you again.",'bot');
+    setTimeout(function(){addMsg("I'm <strong>Bob</strong>, your AI music guide at Round &amp; Round Records. What are you in the mood for today?",'bot')},800);
+    setTimeout(function(){addSugg(bobMemory.recentArtists.length?bobMemory.recentArtists.slice(0,4).concat(["Human"]):["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true},1600);
+  }else{
+    addMsg("Hey! I'm <strong>Bob</strong>, an AI chatbot powered by DeepSeek. I'm your music guide here at Round &amp; Round Records.",'bot');
+    setTimeout(function(){addMsg("I remember a few things between visits to make your experience better &mdash; your name, what you've searched for, that kind of thing. It all stays on your device, never sent anywhere. You can clear it any time.",'bot')},800);
+    setTimeout(function(){addMsg("So! Tell me an artist you love, or ask about a genre you're curious about. I'll dig up similar artists, top albums, and interesting discoveries from across the music world!",'bot')},1600);
+    setTimeout(function(){
+      if(!bobMemory.userName){addMsg("I'd love to remember your name for next time (just on your device, nowhere else). What should I call you?",'bot');expectingName=true}
+      else{addMsg("What are you into right now? Type anything, or if you want to chat to a human just write <strong>human</strong> and I'll share our contact details.",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);lastBobAsked=true}
+    },2400);
+  }
+})();
+</script>
+<!-- Memory info modal -->
+<div class="modal-overlay" id="memInfoModal">
+  <div class="modal" style="max-width:460px">
+    <h3>&#128190; What Bob stores</h3>
+    <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.6;margin:12px 0">Bob remembers a few things to make your visits better — <strong>all stored on your device</strong>, never sent to a server:</p>
+    <ul style="font-size:0.75rem;color:var(--text-dim);line-height:1.8;padding-left:18px;margin-bottom:16px">
+      <li>Your name (if you tell him)</li>
+      <li>Artists and genres you've searched</li>
+      <li>How many times you've visited</li>
+      <li>Your last visit date</li>
+    </ul>
+    <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin-bottom:18px">This lets Bob greet you by name, recall past chats, and pick up where you left off. To remove everything, click <strong style="color:var(--accent)">Clear memory</strong> beside Bob's status badge.</p>
+    <div class="modal-btns"><button class="modal-btn modal-btn-submit" onclick="document.getElementById('memInfoModal').classList.remove('open')">Got it</button></div>
+  </div>
+</div>
+</body>
+</html>
+<!-- deploy: 20260701180639 -->

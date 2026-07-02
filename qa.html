@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Dashboard — Round &amp; Round Records Chatbot</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;--surface:#1A1A1A;--surface2:#242424;--border:#2E2E2E;
+  --text:#E8E4DD;--text-dim:#8A857C;--accent:#E85D3F;--accent-glow:rgba(232,93,63,0.3);
+  --accent2:#4A9E8E;--accent3:#C4A44A;--font:'Inter',system-ui,-apple-system,sans-serif;
+}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;
+}
+.page{max-width:960px;margin:0 auto;padding:60px 24px 80px}
+
+.hero{text-align:center;padding:60px 0 50px;border-bottom:1px solid var(--border);margin-bottom:50px}
+.hero-icon{font-size:3.5rem;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(232,93,63,0.4))}
+.hero h1{font-size:2.2rem;font-weight:900;color:#F5E6D3;letter-spacing:-0.5px;margin-bottom:10px}
+.hero-sub{font-size:0.95rem;color:var(--text-dim);max-width:640px;margin:0 auto;line-height:1.6}
+
+.section{margin-bottom:48px}
+.section-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px}
+.section h2{font-size:1.5rem;font-weight:800;margin-bottom:16px;color:#F5E6D3}
+.section h3{font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--text)}
+.section p{font-size:0.92rem;color:var(--text-dim);margin-bottom:14px;line-height:1.75}
+.section ul{font-size:0.85rem;color:var(--text-dim);line-height:1.8;padding-left:20px;margin-bottom:14px}
+.section ul li{margin-bottom:4px}
+
+/* Scorecard */
+.scorecard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.sc-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;text-align:center}
+.sc-item .sc-value{font-size:2.4rem;font-weight:900;color:var(--accent);display:block}
+.sc-item .sc-label{font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;margin-top:4px}
+.sc-item .sc-detail{font-size:0.65rem;color:var(--text-dim);margin-top:6px;line-height:1.4}
+
+.overall-score{text-align:center;padding:20px;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-top:12px}
+.overall-score .big{font-size:3.5rem;font-weight:900;color:var(--accent3)}
+.overall-score .grade{font-size:1.4rem;font-weight:800;color:var(--text);margin-left:10px}
+.overall-score .note{font-size:0.72rem;color:var(--text-dim);margin-top:4px}
+
+/* Bug table */
+.bug-table-wrap{overflow-x:auto;margin-top:20px}
+.bug-table{width:100%;border-collapse:collapse;font-size:0.72rem}
+.bug-table th{background:var(--surface2);color:var(--text-dim);text-align:left;padding:10px 12px;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border);white-space:nowrap}
+.bug-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:top;line-height:1.5}
+.bug-table tr:hover td{background:rgba(255,255,255,0.02)}
+.bug-table .id{color:var(--accent);font-weight:700;white-space:nowrap}
+.bug-table .desc{color:var(--text)}
+.bug-table .fix{font-size:0.65rem}
+.sev-crit{color:#fff;background:#C0392B;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.sev-high{color:#fff;background:#E67E22;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.sev-med{color:#000;background:#F1C40F;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.sev-low{color:#fff;background:#7F8C8D;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.status-open{color:var(--accent);font-weight:600}
+.status-fixed{color:var(--accent2);font-weight:600}
+
+/* Back link */
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent2);text-decoration:none;font-size:0.82rem;font-weight:600;margin-top:30px;transition:color .15s}
+.back-link:hover{color:#5FBFAF}
+
+@media(max-width:700px){
+  .scorecard{grid-template-columns:1fr 1fr}
+  .hero h1{font-size:1.5rem}
+  .bug-table{font-size:0.65rem}
+  .bug-table th,.bug-table td{padding:6px 8px}
+}
+@media(max-width:500px){
+  .scorecard{grid-template-columns:1fr}
+  .page{padding:40px 16px 60px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-icon">&#128269;</div>
+    <h1>QA Dashboard</h1>
+    <p class="hero-sub">Maintained by <strong style="color:var(--accent3)">@Keelin</strong> &mdash; QA specialist for the Round &amp; Round Records chatbot. Testing approach, scoring rubric, and bug register.</p>
+  </div>
+
+  <!-- Testing Approach -->
+  <div class="section">
+    <div class="section-label">Testing Methodology</div>
+    <h2>How Bob is tested</h2>
+    <p>All testing follows a <strong>real-user simulation</strong> model: tests are written as if a frustrated customer at 11pm on a Saturday is trying to use the bot. No test assumes a happy path. Every test includes a verification step that <strong>can be automated</strong> using a headless browser or simulated DOM interaction.</p>
+
+    <h3>Test categories</h3>
+    <p>The <strong>61-case test plan</strong> (test-plan.md) covers 11 categories:</p>
+    <ul>
+      <li><strong>Greeting flow</strong> &mdash; first visit, return visit, name capture</li>
+      <li><strong>Artist search</strong> &mdash; single/multi artist, misspelled, gibberish</li>
+      <li><strong>Genre exploration</strong> &mdash; chips, tags, keyword search</li>
+      <li><strong>Discovery panel</strong> &mdash; hero, similar artists, albums, genres, bio expander</li>
+      <li><strong>Human handoff</strong> &mdash; contact details, address verification</li>
+      <li><strong>Memory/persistence</strong> &mdash; localStorage, clear, CLS command</li>
+      <li><strong>Voice STT</strong> &mdash; mic, transcription, auto-send</li>
+      <li><strong>Voice TTS</strong> &mdash; speaker icon, playback, cancel</li>
+      <li><strong>Mobile</strong> &mdash; breakpoints, layout, touch targets</li>
+      <li><strong>Error handling</strong> &mdash; API failure, gibberish, fallbacks</li>
+      <li><strong>UI elements</strong> &mdash; modals, buttons, badges, addresses</li>
+    </ul>
+
+    <h3>Automated verification</h3>
+    <p>Each test case specifies <strong>what DOM element to check</strong>, <strong>what text to assert</strong>, and <strong>what network call to verify</strong>. Tests are designed to be run by a headless browser script (Puppeteer/Playwright) that:</p>
+    <ul>
+      <li>Sets the viewport to the target device width</li>
+      <li>Simulates clicks, typing, and voice input</li>
+      <li>Asserts DOM state after each interaction</li>
+      <li>Captures screenshots on failure</li>
+      <li>Logs console errors as test failures</li>
+    </ul>
+  </div>
+
+  <!-- Scoring -->
+  <div class="section">
+    <div class="section-label">Scoring Rubric</div>
+    <h2>Quality score: 2.9 / 5.0 &mdash; Grade C+</h2>
+    <p>Weighted across 6 categories (full rubric in scoring-rubric.md). Scores are versioned and tracked per deployment.</p>
+
+    <div class="scorecard">
+      <div class="sc-item">
+        <span class="sc-value">3.5</span>
+        <span class="sc-label">Conversation Accuracy</span>
+        <span class="sc-detail">25% weight<br>Artist/entity extraction solid; follow-up confusion is weakness</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.0</span>
+        <span class="sc-label">UI/UX Quality</span>
+        <span class="sc-detail">20% weight<br>Dark theme cohesive; modal overlay click missing</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.5</span>
+        <span class="sc-label">Memory &amp; Personalisation</span>
+        <span class="sc-detail">15% weight<br>localStorage solid; cache leak in simImageCache</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">3.0</span>
+        <span class="sc-label">Voice Interaction</span>
+        <span class="sc-detail">15% weight<br>STT + TTS functional; TTS orphan on slow voice load</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">2.0</span>
+        <span class="sc-label">Mobile Experience</span>
+        <span class="sc-detail">15% weight<br>50/50 split works but cramped; no toggle; nested scroll</span>
+      </div>
+      <div class="sc-item">
+        <span class="sc-value">2.0</span>
+        <span class="sc-label">Robustness</span>
+        <span class="sc-detail">10% weight<br>Race conditions, XSS vulnerability, undefined refs</span>
+      </div>
+    </div>
+
+    <div class="overall-score">
+      <span class="big">2.9</span><span class="grade">C+</span>
+      <div class="note">Baseline score · 17 bugs tracked · 2 critical, 3 high, 5 medium, 7 low</div>
+    </div>
+  </div>
+
+  <!-- Academic Framework Leverage -->
+  <div class="section">
+    <div class="section-label">Academic Best Practice</div>
+    <h2>How the team applies chatbot research</h2>
+    <p>The QA process is grounded in <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. Each specialist agent owns the dimensions relevant to their domain:</p>
+
+    <div class="card-grid" style="margin-top:20px">
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">Seven-Dimension Chatbot Taxonomy</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Adamopoulou &amp; Moussiades (2020). <strong>@Fionn</strong> owns domain closure and service scope. <strong>@Dot</strong> owns goals, response generation, and channel. <strong>@Niamh</strong> owns human-aid reachability and permissions. <strong>@Siobhan</strong> ensures the UI makes each dimension visible.</p>
+      </div>
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">CASA — Computers Are Social Actors</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Reeves &amp; Nass (1996). <strong>@Siobhan</strong> owns the disclosure-in-turn-1 bright line (badge vs spoken self-ID). <strong>@Dot</strong> owns frustration de-escalation as conversation engineering. <strong>@Niamh</strong> owns chummy-data-extraction consent (localStorage disclosure before collection). <strong>@Fionn</strong> verifies personality register matches actual capability.</p>
+      </div>
+      <div class="card-h" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <h4 style="font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:4px">Conversation Flow Anatomy</h4>
+        <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin:0">Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. <strong>@Dot</strong> implements the recovery ladder in code (reword &rarr; options &rarr; human). <strong>@Siobhan</strong> designs the closer UI (read-back + keep exploring + human path). <strong>@Cormac</strong> uses "design the unexpected first" as a sprint-planning rule.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:20px"><strong>@Keelin</strong> (QA) cross-references all three frameworks in every review pass, flagging findings as [DESIGN] or [CODE] so ownership is clear. <strong>@Cormac</strong> (Manager) uses framework-alignment scores as delivery quality gates.</p>
+  </div>
+
+  <!-- Bug Register -->
+  <div class="section">
+    <div class="section-label">Bug Register</div>
+    <h2>17 bugs tracked</h2>
+    <p>Found via static code analysis of index.html (lines 1-1234). Updated per deployment.</p>
+
+    <div class="bug-table-wrap">
+      <table class="bug-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Severity</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>How it was fixed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="id">BUG-001</td>
+            <td><span class="sev-crit">Critical</span></td>
+            <td class="desc">XSS: user input in innerHTML. <code>&lt;img src=x onerror=alert(1)&gt;</code> executes as JS.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">HTML-escape user messages in <code>addMsg()</code> with <code>.replace(/&/g,...)</code> for <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>. Line 667.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-002</td>
+            <td><span class="sev-crit">Critical</span></td>
+            <td class="desc">ReferenceError: <code>isRealArtist</code> and <code>isGenreQuery</code> never defined. Blocks all non-LLM fallback.</td>
+            <td class="status-fixed">Fixed</td>
+            <td class="fix">Removed undefined variable check. Replaced with guardless fallback message at line 1137.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-003</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc"><code>enrichLinks</code> rewrites innerHTML of existing bot bubbles, breaking any non-inline DOM references.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Use TreeWalker to wrap text nodes instead of reassigning innerHTML.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-004</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc">Race condition: stale <code>enrichAlbumBadges</code> updates old DOM after new search renders.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add generation counter; abort stale enrichment passes.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-005</td>
+            <td><span class="sev-high">High</span></td>
+            <td class="desc">TTS <code>speaking</code> class orphaned when voices never load (background tab, slow connection).</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add 3-second timeout fallback; cancel pending <code>onvoiceschanged</code> on new click.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-006</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">Mobile: nested <code>overflow-y:auto</code> on discovery + children creates scroll traps.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Set <code>overflow-y:hidden</code> on <code>.discovery</code> in mobile media query.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-007</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">"What I store" modal doesn't close on overlay click. Only "Got it" button works.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add click listener on <code>#memInfoModal</code> overlay.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-008</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc"><code>goBack()</code> leaves typing indicator stuck on API error in nested <code>.then()</code> chain.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add <code>.catch()</code> to promise chain; use <code>Promise.all</code>.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-009</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc"><code>checkDiscogs</code>: concurrent calls for same album bypass cache, causing duplicate API hits.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Use pending-promise cache: store fetch promise before await, dedupe concurrent callers.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-010</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">Mobile: <code>clearMemory</code> references <code>mobile-open</code> class that is never set (dead code from planned toggle).</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Remove dead code or implement mobile discovery toggle.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-011</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>simImageCache</code> + <code>discogsCache</code> never cleared: unbounded memory growth.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Add cache clearing to <code>clearMemory()</code>; optionally add LRU eviction.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-012</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>extractArtists</code> splits "Mumford and Sons" by "and", searching for "sons" as an artist.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Try full phrase first; use LLM entity extraction before regex splitting.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-013</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc">Gibberish detection flags lowercase "u2" (but not "U2"); short alphanumeric names catchable.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Exclude all-alphanumeric strings from short-name gibberish check.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-014</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>addSugg</code> suggestion text not HTML-escaped (defense-in-depth gap in localStorage recall).</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Escape artist names before inserting into suggestion chip template.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-015</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>enrichLinks</code> regex can match inside HTML attributes if LLM outputs markup.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Walk text nodes with TreeWalker; only wrap names in text, not HTML.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-016</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>speechSynthesis.cancel()</code> cancels speech in all browser tabs, not just our utterances.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Document limitation. Web Speech API shares across browsing context.</td>
+          </tr>
+          <tr>
+            <td class="id">BUG-017</td>
+            <td><span class="sev-low">Low</span></td>
+            <td class="desc"><code>renderDiscoveryTag</code> relies on caller for nav state; inconsistent with <code>renderDiscovery</code>.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">Make both render functions self-contained regarding navigation state.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Design & Pedagogical Review -->
+  <div class="section">
+    <div class="section-label">Design &amp; Pedagogical Review</div>
+    <h2>Academic framework assessment &mdash; Design Score: 2.0 / 5.0 &mdash; Grade D</h2>
+    <p>Beyond the code-level bug register above, this separate pass assesses Bob against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>.</p>
+
+    <h3>Framework 1: Seven-Dimension Chatbot Taxonomy (Adamopoulou &amp; Moussiades 2020)</h3>
+    <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. Bob is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
+
+    <h3>Framework 2: CASA &mdash; Computers Are Social Actors (Reeves &amp; Nass 1996)</h3>
+    <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob is rated <strong>CASA-BLIND</strong> on three critical checks: (1) localStorage is written on page load before any disclosure to the user; (2) the name-request prompt is framed as social friendliness, not data collection; (3) the bot uses a human name, human-sounding role label, and Dublin dialect while weakly disclosing its AI nature in turn 1. The "What I store" modal exists but is an opt-in discovery mechanism, not a pre-collection consent prompt.</p>
+
+    <h3>Framework 3: Conversation Flow Anatomy</h3>
+    <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on Intent (clear purpose per flow) but fails critically on <strong>Slots</strong> (no input validation before API dispatch) and <strong>Recovery Ladder</strong> (of 5 failure scenarios -- gibberish, misspelling, API timeout, no Discogs match, empty Last.fm -- only gibberish reaches step 2 of the 3-step ladder; none reach the human-handoff step 3). The Opener and Closer are partial: identity is in turn 1 but capability is delayed to turn 3, and no explicit read-back/confirm follows recommendations.</p>
+
+    <div class="bug-table-wrap" style="margin-top:20px">
+      <table class="bug-table">
+        <thead>
+          <tr>
+            <th>Framework</th>
+            <th>Item</th>
+            <th>Score</th>
+            <th>Evidence</th>
+            <th>Severity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Knowledge domain (closed vs open)</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>Music domain; easter eggs deliberate per victor.html brief</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Service provided (interpersonal support)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>LLM temp 0.9 + no domain guardrails risks overreach</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Goals (task-based vs chat-based)</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>Discovery panel resolves to Discogs purchase action</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Response generation (hybrid)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>No RAG verification of LLM claims; temp 0.9 hallucination risk</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Channel parity (text + voice)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>Voice STT bypasses gibberish validation that text path has</td>
+            <td>[DESIGN/CODE]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Human-aid (reachable at every stage)</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>"Prefer a real human?" bar always visible; "human" command works</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
+            <td class="desc">Permissions</td>
+            <td><span style="background:#555;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem">N/A</span></td>
+            <td>Commercial single-owner; no relevant dimension</td>
+            <td>&mdash;</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">Disclosure in turn 1</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>"AI powered" in msg 1 but embedded in rapport; msg 2 humanises</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">No fake-human cues</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>Human name "Bob"; Dublin slang; brief endorses mimicry</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">Register matches capability</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>System prompt claims "know band histories, album lore" unverifiable</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">Frustration handling (de-escalation)</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>Repeats cheerful template on every error; no register shift</td>
+            <td>[DESIGN/CODE]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);font-weight:600">CASA</td>
+            <td class="desc">Chummy data extraction (localStorage)</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>loadMemory() writes on page load before any disclosure; name request is friendly-framed</td>
+            <td>[DESIGN/CODE]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">OPENER (identity + capability in turn 1)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>Identity in turn 1; capability delayed to turn 3 (2.4s delay)</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">INTENT (one clear purpose per flow)</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>Three distinct flows: artist search, genre explore, human handoff</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">SLOTS (validated with back/correction)</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>No slot validation; free-text fired directly at APIs</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">RECOVERY LADDER (5 failure scenarios)</td>
+            <td><span class="sev-crit">FAIL</span></td>
+            <td>4/5 scenarios dead-end silently; none reach step 3 (human handoff)</td>
+            <td>[DESIGN/CODE]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">CLOSER (confirm + explore + human path)</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>No read-back/confirm; explore implicit; human path not proactively offered</td>
+            <td>[DESIGN]</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent3);font-weight:600">Flow</td>
+            <td class="desc">Design the unexpected first</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>Gibberish/silence handled; rapid switches corrupt context; no idle timeout</td>
+            <td>[DESIGN]</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="overall-score" style="margin-top:20px">
+      <span class="big">2.0</span><span class="grade">D</span>
+      <div class="note">Design quality score &middot; 4 PASS &middot; 8 PARTIAL &middot; 5 FAIL &middot; 1 N/A &middot; <strong style="color:var(--accent)">CASA-blind: pre-consent localStorage + weak disclosure</strong></div>
+    </div>
+
+    <p style="margin-top:16px;font-size:0.82rem;color:var(--text-dim)">The bot functions as a music discovery tool but fails as a trustworthy conversational agent. The CASA-blind design choices (pre-consent tracking, weak bot disclosure, human mimicry) are the most damaging findings. The conversation flow anatomy is structurally incomplete: the recovery ladder is non-functional for most failure modes, and no input validation exists. The six priority fixes with exact code changes are documented in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>.</p>
+  </div>
+
+  <!-- Navigation -->
+  <a class="back-link" href="victor.html">&larr; Back to project brief</a>
+
+</div>
+</body>
+</html>

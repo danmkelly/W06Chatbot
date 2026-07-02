@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W06 Chatbot - Project Brief for Victor</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;--surface:#1A1A1A;--surface2:#242424;--border:#2E2E2E;
+  --text:#E8E4DD;--text-dim:#8A857C;--accent:#E85D3F;--accent-glow:rgba(232,93,63,0.3);
+  --accent2:#4A9E8E;--accent3:#C4A44A;--font:'Inter',system-ui,-apple-system,sans-serif;
+}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;
+}
+.page{max-width:900px;margin:0 auto;padding:60px 24px 80px}
+
+/* Hero */
+.hero{text-align:center;padding:60px 0 50px;border-bottom:1px solid var(--border);margin-bottom:50px}
+.hero-icon{font-size:3.5rem;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(232,93,63,0.4))}
+.hero h1{font-size:2.4rem;font-weight:900;color:#F5E6D3;letter-spacing:-0.5px;margin-bottom:10px}
+.hero h1 span{color:var(--accent)}
+.hero-sub{font-size:0.95rem;color:var(--text-dim);max-width:600px;margin:0 auto;line-height:1.6}
+
+/* Sections */
+.section{margin-bottom:48px}
+.section-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px}
+.section h2{font-size:1.5rem;font-weight:800;margin-bottom:16px;color:#F5E6D3}
+.section p{font-size:0.92rem;color:var(--text-dim);margin-bottom:14px;line-height:1.75}
+.section p strong{color:var(--text)}
+
+/* Card grid */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:20px;transition:all .2s;
+}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card-icon{font-size:1.6rem;margin-bottom:10px}
+.card h4{font-size:0.82rem;font-weight:700;margin-bottom:6px;color:var(--text)}
+.card p{font-size:0.72rem;color:var(--text-dim);line-height:1.5}
+
+/* Tech list */
+.tech-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.tech-badge{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  padding:8px 16px;border-radius:20px;font-size:0.78rem;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+}
+.tech-badge-icon{font-size:1rem}
+
+/* Architecture diagram */
+.arch{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:20px}
+.arch-flow{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.arch-node{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:14px 20px;text-align:center;font-size:0.78rem;font-weight:600;
+}
+.arch-node.label{background:var(--accent);color:#fff;border-color:var(--accent);font-size:0.7rem}
+.arch-arrow{color:var(--accent3);font-size:1.2rem;font-weight:700}
+.arch-node.small{font-size:0.68rem;padding:10px 14px}
+
+/* CTA */
+.cta{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:linear-gradient(-45deg,var(--accent),#C0392B,#E85D3F,#D14A30,#E85D3F);
+  background-size:400% 400%;
+  color:#fff;padding:20px 40px;border-radius:12px;text-decoration:none;
+  font-weight:800;letter-spacing:0.5px;margin-top:30px;transition:all .2s;
+  box-shadow:0 8px 30px rgba(232,93,63,0.3);
+  animation:wave-cta 2.5s ease infinite;
+}
+.cta-main{font-size:1.1rem}
+.cta-tagline{font-size:0.7rem;font-weight:500;opacity:0.85;font-style:italic;letter-spacing:0.2px}
+.cta:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.5)}
+.cta-sub{text-align:center;font-size:0.72rem;color:var(--text-dim);margin-top:8px}
+@keyframes wave-cta{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+/* Footer */
+.foot{text-align:center;padding:40px 0 0;border-top:1px solid var(--border);margin-top:50px}
+.foot p{font-size:0.7rem;color:var(--text-dim)}
+
+@media(max-width:700px){
+  .card-grid{grid-template-columns:1fr}
+  .hero h1{font-size:1.6rem}
+  .arch-flow{flex-direction:column}
+  .arch-arrow{transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-icon">&#127925;</div>
+    <h1>Hi <span style="color:var(--accent3)">Victor</span>! Welcome to the W06 Chatbot project.</h1>
+    <p class="hero-sub">This page gives you the context and technical story behind the demo &mdash; what problem it solves, how it works, and where to find the working solution.</p>
+  </div>
+
+  <!-- The Business Challenge -->
+  <div class="section">
+    <div class="section-label">The Business Challenge</div>
+    <h2>Bringing the record shop counter online</h2>
+    <p><strong>Round &amp; Round Records</strong> (R&amp;R) is a small independent retailer of vinyl records and CDs. Their differentiator has always been <strong>personal, knowledgeable service</strong>: the staff act as music guides, helping customers find hard-to-get records, advising on different pressings and versions, and introducing people to new music based on their existing tastes.</p>
+    <p>The problem: <strong>business has increasingly moved online</strong>, where customers browse and search for items on a screen. There's no opportunity for the friendly, expert advice that makes R&amp;R special. <strong>How do you replicate that personal touch digitally?</strong></p>
+    <p>The answer: a friendly, AI-powered chatbot named <strong>Bob</strong> that mimics the experience of talking to a knowledgeable staff member in the physical shop.</p>
+  </div>
+
+  <!-- How it works -->
+  <div class="section">
+    <div class="section-label">How Bob Works</div>
+    <h2>AI-powered music discovery, grounded in real catalogues</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">&#129302;</div>
+        <h4>Conversational AI</h4>
+        <p>Bob is powered by <strong>DeepSeek</strong>, a large language model. He understands natural conversation: you can say "I like Pixies and Metric" or "best Irish albums of the 90s" and he'll have a genuinely knowledgeable chat about music, just like a real record shop assistant.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128191;</div>
+        <h4>Real Catalogue Data</h4>
+        <p>Bob uses <strong>Last.fm's</strong> massive music database to find similar artists, top albums by play count, genre tags, artist biographies, and even upcoming live events. Everything he suggests is grounded in real data.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128722;</div>
+        <h4>Purchase Path</h4>
+        <p>Every album Bob suggests links to <strong>Discogs</strong>, the world's largest physical music marketplace. Since R&amp;R Records is a fictional business created for this assignment and has no real catalogue, Discogs serves as a proxy for what would be the shop's actual inventory in a real deployment.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Limitations -->
+  <div class="section">
+    <div class="section-label">Limitations &amp; Known Weak Spots</div>
+    <h2>Where Bob still struggles</h2>
+    <p>Like any real-world AI project, Bob has rough edges. Here are the honest ones:</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">&#128270;</div>
+        <h4>NLP Entity Extraction</h4>
+        <p>Bob uses a <strong>second LLM call</strong> to extract artist and album names from his own responses for clickable links. This is far more accurate than regex, but it adds latency. The regex fallback (used when the LLM call is slow) is brittle: it strips common conversational words but can still extract phrases like "the early stuff" as artist names. Multi-word artist names with common words (e.g. "The The", "!!!") are particularly challenging.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128191;</div>
+        <h4>Discogs Data Quality</h4>
+        <p>The Discogs catalogue is <strong>community-maintained and messy</strong>. The same release often exists under multiple entries with different titles: "OK Computer", "OK Computer (1997 Release)", "OK Computer - Radiohead". Our fuzzy matching handles most cases, but some albums simply won't be found because the Last.fm album name doesn't match any Discogs title variant. The "Buy Now" detection also relies on a single release match, so if the top result is a bootleg or wrong pressing, the link may be suboptimal.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#9888;</div>
+        <h4>Conversation Context</h4>
+        <p>Bob maintains conversation history (last 10 exchanges) within the current session, and <strong>persists memory across visits</strong> using browser localStorage — including your name, recent searches, and favourite genres. On return visits, Bob greets you personally and references past chats. This memory is <strong>device-only</strong>: no data leaves your browser. A "Clear memory" button lets you wipe it at any time.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#9200;</div>
+        <h4>API Latency</h4>
+        <p>A single user query triggers up to <strong>4 parallel API calls</strong> (Last.fm similar artists, Last.fm top albums, Last.fm tags, and the main LLM response). The entity extraction adds a 5th LLM call. On slow connections, the discovery panel can take 2-4 seconds to populate. The LLM response appears first (STEP 1), but the album grid and purchase badges fill in later (STEP 2), creating a two-phase load experience.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128190;</div>
+        <h4>Browser Memory</h4>
+        <p>Bob uses <strong>localStorage</strong> to remember your preferences, recent searches, and your name between visits — <strong>no login required</strong>. Everything stays on your device; nothing is sent to a server. Memory is per-browser (not synced across devices). A "Clear memory" button in the chat header wipes all stored data instantly.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#127911;</div>
+        <h4>Genre &amp; Discovery Accuracy</h4>
+        <p>Genre-based searches ("best Irish albums of the 80s") use Last.fm's <strong>community-applied tags</strong>, which are crowd-sourced and can be inconsistent. An album tagged "irish" might be Irish folk, Irish rock, or just by an artist who once played in Dublin. There's no era filtering at the API level, so "80s Irish albums" returns all Irish-tagged albums regardless of decade. Bob's LLM compensates with its own knowledge, but the panel data is unfiltered.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Technical Architecture -->
+  <div class="section">
+    <div class="section-label">Technical Architecture</div>
+    <h2>Secure, serverless, and key-safe</h2>
+    <p>All three APIs (DeepSeek, Last.fm, Discogs) require secret keys. These are <strong>never exposed to the browser</strong>. A <strong>Cloudflare Worker</strong> acts as a thin proxy layer: the browser calls the worker, the worker injects the secret keys server-side, and the response flows back. No keys in source code, no keys in DevTools.</p>
+
+    <div class="arch">
+      <div class="arch-flow">
+        <div class="arch-node label">Browser</div>
+        <span class="arch-arrow">&rarr;</span>
+        <div class="arch-node label">Cloudflare Worker</div>
+        <span class="arch-arrow">&rarr;</span>
+        <div class="arch-node">
+          <div>DeepSeek LLM</div>
+          <div style="font-size:0.6rem;color:var(--text-dim);margin-top:2px">Conversational AI</div>
+        </div>
+        <div class="arch-node">
+          <div>Last.fm API</div>
+          <div style="font-size:0.6rem;color:var(--text-dim);margin-top:2px">Music catalogue</div>
+        </div>
+        <div class="arch-node">
+          <div>Discogs API</div>
+          <div style="font-size:0.6rem;color:var(--text-dim);margin-top:2px">Marketplace</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tech-row" style="margin-top:24px">
+      <div class="tech-badge"><span class="tech-badge-icon">&#127760;</span> GitHub Pages</div>
+      <div class="tech-badge"><span class="tech-badge-icon">&#9729;</span> Cloudflare Workers</div>
+      <div class="tech-badge"><span class="tech-badge-icon">&#129302;</span> DeepSeek Chat</div>
+      <div class="tech-badge"><span class="tech-badge-icon">&#127925;</span> Last.fm API</div>
+      <div class="tech-badge"><span class="tech-badge-icon">&#128191;</span> Discogs API</div>
+      <div class="tech-badge"><span class="tech-badge-icon">&#9889;</span> Vanilla JS</div>
+      <div class="tech-badge"><span class="tech-badge-icon">&#127912;</span> Pure CSS</div>
+    </div>
+  </div>
+
+  <!-- Agent Team -->
+  <div class="section">
+    <div class="section-label">Development Approach</div>
+    <h2>Built by a team of AI agent colleagues</h2>
+    <p>The project was developed using a structured team of specialist AI agents, each with a defined role, domain expertise, and boundaries. This mirrors how a real innovation team would operate.</p>
+    <p>The team's design decisions are grounded in <strong>three academic best-practice frameworks</strong> from the Customer Engagement &amp; AI module: the seven-dimension chatbot taxonomy (Adamopoulou &amp; Moussiades 2020), CASA / Computers Are Social Actors (Reeves &amp; Nass 1996), and conversation flow anatomy. Each specialist agent owns the framework dimensions relevant to their domain &mdash; from <strong>@Fionn</strong> (domain closure) through <strong>@Siobhan</strong> (CASA disclosure in UI), <strong>@Dot</strong> (recovery ladder implementation), <strong>@Niamh</strong> (localStorage consent), and <strong>@Keelin</strong> (cross-framework QA appraisal). <a href="qa.html" style="color:var(--accent2);font-weight:600">See the QA dashboard &rarr;</a></p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">&#128270;</div>
+        <h4>@Fionn &mdash; Researcher</h4>
+        <p>Music catalogue expert. Researched Spindizzy and Discogs catalogues, mapped data structures, and built the knowledge base that powers Bob's recommendations.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#127912;</div>
+        <h4>@Siobhan &mdash; Designer</h4>
+        <p>Web experience designer. Created the dark-theme UI, discovery panel layout, record-player loading animation, and all visual interactions.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128736;</div>
+        <h4>@Dot &mdash; Maker</h4>
+        <p>Chatbot engineer. Built Bob's conversation engine, API integrations, search logic, entity extraction, and the refinement/recommendation system.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128295;</div>
+        <h4>@Niamh &mdash; Backend</h4>
+        <p>Infrastructure engineer. Designed and deployed the Cloudflare Worker proxy that keeps all API keys secure on the server side.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128269;</div>
+        <h4>@Keelin &mdash; QA</h4>
+        <p>Quality assurance specialist. Built a 61-case automated test plan, a weighted scoring rubric (baseline 2.9/5), and a ranked 17-bug tracker. <a href="qa.html" style="color:var(--accent2);font-weight:600">View QA dashboard &rarr;</a></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128101;</div>
+        <h4>@Cormac &mdash; Manager</h4>
+        <p>Orchestrator and delivery lead. Decomposed tasks, dispatched work to specialists, ran quality gates, and synthesised outputs into the final product.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#129302;</div>
+        <h4>@Bob &mdash; The Bot</h4>
+        <p>The AI music guide himself. Powered by DeepSeek with Last.fm enrichment and Discogs marketplace integration. Friendly, knowledgeable, Dublin-flavoured.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- The Solution -->
+  <div class="section" style="text-align:center">
+    <div class="section-label">Try It Yourself</div>
+    <h2>The working chatbot is live</h2>
+    <p style="margin-bottom:24px">Click below to open Bob &mdash; R&amp;R Records' AI-powered music guide. Tell him an artist you love, ask about a genre, or just have a chat about music. The discovery panel fills with real data from Last.fm and Discogs.</p>
+
+    <a class="cta" href="index.html">
+      <span class="cta-main">&#127925; Chat with Bob at Round &amp; Round Records</span>
+      <span class="cta-tagline">And don't be afraid to ask Bob for a pint of Guinness, or who he thinks will win the World Cup!</span>
+    </a>
+    <p class="cta-sub">No login required. Fully functional with LLM, catalogue search, and marketplace integration.</p>
+  </div>
+
+  <!-- Footer -->
+  <div class="foot">
+    <p>W06 Chatbot &mdash; Customer Engagement &amp; Artificial Intelligence<br>Built for Round &amp; Round Records, 32 Main Street, Dublin</p>
+  </div>
+
+</div>
+</body>
+</html>

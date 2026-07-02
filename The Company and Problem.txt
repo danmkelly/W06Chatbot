@@ -1,0 +1,3 @@
+The company - Round and Round Records (aka R&R), a small retailer of vinyl records & CDs. They major on having a very personal touch with customers that come into the shop, acting as their personal music guides. They find hard to get records, they advise on different versions of albums/singles, and they help customers explore new music based on their existing tastes or things they heard elsewhere.
+
+The problem - R&R's business has increasingly moved online, where customers browse or search for items. There is no opportunity to offer the friendly advice that acts as R&Rs differentiator in the physical shop. How can they replicate that online? Maybe a friendly chatbot could come to the rescue ...
