@@ -80,7 +80,7 @@ body{
   <div class="hero">
     <div class="hero-icon">&#128269;</div>
     <h1>QA Dashboard</h1>
-    <p class="hero-sub">Maintained by <strong style="color:var(--accent3)">@Keelin</strong> &mdash; QA specialist for the Round &amp; Round Records chatbot. Testing approach, scoring rubric, and bug register.</p>
+    <p class="hero-sub">Maintained by <strong style="color:var(--accent3)">@Keelin</strong> &mdash; QA specialist for the Round &amp; Round Records chatbot. Testing approach, scoring rubric, and bug register. <strong>Last reviewed:</strong> 2026-07-02.</p>
   </div>
 
   <!-- Testing Approach -->
@@ -119,7 +119,7 @@ body{
   <!-- Scoring -->
   <div class="section">
     <div class="section-label">Scoring Rubric</div>
-    <h2>Quality score: 2.9 / 5.0 &mdash; Grade C+</h2>
+    <h2>Quality score: 3.0 / 5.0 &mdash; Grade C+</h2>
     <p>Weighted across 6 categories (full rubric in scoring-rubric.md). Scores are versioned and tracked per deployment.</p>
 
     <div class="scorecard">
@@ -149,15 +149,15 @@ body{
         <span class="sc-detail">15% weight<br>50/50 split works but cramped; no toggle; nested scroll</span>
       </div>
       <div class="sc-item">
-        <span class="sc-value">2.0</span>
+        <span class="sc-value">2.5</span>
         <span class="sc-label">Robustness</span>
-        <span class="sc-detail">10% weight<br>Race conditions, XSS vulnerability, undefined refs</span>
+        <span class="sc-detail">10% weight<br>2 criticals fixed; race conditions, TTS orphan remain</span>
       </div>
     </div>
 
     <div class="overall-score">
-      <span class="big">2.9</span><span class="grade">C+</span>
-      <div class="note">Baseline score · 17 bugs tracked · 2 critical, 3 high, 5 medium, 7 low</div>
+      <span class="big">3.0</span><span class="grade">C+</span>
+      <div class="note">Updated score · 18 bugs tracked · 0 critical, 3 high, 6 medium, 7 low · 2 criticals resolved since baseline</div>
     </div>
   </div>
 
@@ -188,8 +188,8 @@ body{
   <!-- Bug Register -->
   <div class="section">
     <div class="section-label">Bug Register</div>
-    <h2>17 bugs tracked</h2>
-    <p>Found via static code analysis of index.html (lines 1-1234). Updated per deployment.</p>
+    <h2>18 bugs tracked</h2>
+    <p>Found via static code analysis of index.html (lines 1-1235). Updated per deployment. Fresh QA pass: 2026-07-02.</p>
 
     <div class="bug-table-wrap">
       <table class="bug-table">
@@ -322,6 +322,13 @@ body{
             <td class="status-open">Open</td>
             <td class="fix">Make both render functions self-contained regarding navigation state.</td>
           </tr>
+          <tr>
+            <td class="id">BUG-018</td>
+            <td><span class="sev-med">Medium</span></td>
+            <td class="desc">Silent LLM failure: when LLM keys are configured but API is unreachable or returns error, <code>chatLLM()</code> returns null and no error message is displayed to the user. User sees their message sent with no reply.</td>
+            <td class="status-open">Open</td>
+            <td class="fix">After line 1081, check if <code>llmReply</code> was null despite keys being present: add <code>else { addMsg("Hmm, I hit a snag talking to my brain. The artist search still worked though - what else are you into?",'bot') }</code>.</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -330,14 +337,14 @@ body{
   <!-- Design & Pedagogical Review -->
   <div class="section">
     <div class="section-label">Design &amp; Pedagogical Review</div>
-    <h2>Academic framework assessment &mdash; Design Score: 2.0 / 5.0 &mdash; Grade D</h2>
+    <h2>Academic framework assessment &mdash; Design Score: 2.5 / 5.0 &mdash; Grade D+</h2>
     <p>Beyond the code-level bug register above, this separate pass assesses Bob against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>.</p>
 
     <h3>Framework 1: Seven-Dimension Chatbot Taxonomy (Adamopoulou &amp; Moussiades 2020)</h3>
     <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. Bob is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
 
     <h3>Framework 2: CASA &mdash; Computers Are Social Actors (Reeves &amp; Nass 1996)</h3>
-    <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob is rated <strong>CASA-BLIND</strong> on three critical checks: (1) localStorage is written on page load before any disclosure to the user; (2) the name-request prompt is framed as social friendliness, not data collection; (3) the bot uses a human name, human-sounding role label, and Dublin dialect while weakly disclosing its AI nature in turn 1. The "What I store" modal exists but is an opt-in discovery mechanism, not a pre-collection consent prompt.</p>
+    <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob has improved from the initial QA pass: disclosure in turn 1 is now explicit ("I'm Bob, an AI chatbot"), upgraded to PASS. Human name "Bob" and Dublin dialect remain as fake-human cues (FAIL). The consent disclosure for localStorage exists as a second message but the write still occurs on page load before the user reads it — partial improvement (FAIL → PARTIAL). The "What I store" modal exists but is an opt-in discovery mechanism, not a pre-collection consent prompt.</p>
 
     <h3>Framework 3: Conversation Flow Anatomy</h3>
     <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on Intent (clear purpose per flow) but fails critically on <strong>Slots</strong> (no input validation before API dispatch) and <strong>Recovery Ladder</strong> (of 5 failure scenarios -- gibberish, misspelling, API timeout, no Discogs match, empty Last.fm -- only gibberish reaches step 2 of the 3-step ladder; none reach the human-handoff step 3). The Opener and Closer are partial: identity is in turn 1 but capability is delayed to turn 3, and no explicit read-back/confirm follows recommendations.</p>
@@ -406,8 +413,8 @@ body{
           <tr>
             <td style="color:var(--accent);font-weight:600">CASA</td>
             <td class="desc">Disclosure in turn 1</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-            <td>"AI powered" in msg 1 but embedded in rapport; msg 2 humanises</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>"I'm Bob, an AI chatbot powered by DeepSeek" in first spoken message</td>
             <td>[DESIGN]</td>
           </tr>
           <tr>
@@ -434,8 +441,8 @@ body{
           <tr>
             <td style="color:var(--accent);font-weight:600">CASA</td>
             <td class="desc">Chummy data extraction (localStorage)</td>
-            <td><span class="sev-crit">FAIL</span></td>
-            <td>loadMemory() writes on page load before any disclosure; name request is friendly-framed</td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td>Disclosure text present (msg 2: "I remember a few things... stays on your device") but timing wrong: localStorage write occurs on page load before disclosure message renders</td>
             <td>[DESIGN/CODE]</td>
           </tr>
           <tr>
@@ -485,11 +492,11 @@ body{
     </div>
 
     <div class="overall-score" style="margin-top:20px">
-      <span class="big">2.0</span><span class="grade">D</span>
-      <div class="note">Design quality score &middot; 4 PASS &middot; 8 PARTIAL &middot; 5 FAIL &middot; 1 N/A &middot; <strong style="color:var(--accent)">CASA-blind: pre-consent localStorage + weak disclosure</strong></div>
+      <span class="big">2.5</span><span class="grade">D+</span>
+      <div class="note">Design quality score &middot; 5 PASS &middot; 8 PARTIAL &middot; 4 FAIL &middot; 1 N/A &middot; <strong style="color:var(--accent)">CASA: disclosure now explicit in turn 1; localStorage disclosure present but timing still wrong (write before message)</strong></div>
     </div>
 
-    <p style="margin-top:16px;font-size:0.82rem;color:var(--text-dim)">The bot functions as a music discovery tool but fails as a trustworthy conversational agent. The CASA-blind design choices (pre-consent tracking, weak bot disclosure, human mimicry) are the most damaging findings. The conversation flow anatomy is structurally incomplete: the recovery ladder is non-functional for most failure modes, and no input validation exists. The six priority fixes with exact code changes are documented in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>.</p>
+    <p style="margin-top:16px;font-size:0.82rem;color:var(--text-dim)">The bot functions as a music discovery tool with improved transparency since the initial QA pass. Two critical code bugs (XSS, ReferenceError) are resolved. The CASA disclosure is now explicit in turn 1 ("I'm Bob, an AI chatbot powered by DeepSeek"). The localStorage consent disclosure exists as a second message but still fires AFTER the write occurs — a timing fix is needed. Human mimicry (name "Bob", Dublin slang) remains. The conversation flow anatomy is structurally incomplete: the recovery ladder is non-functional for most failure modes, and no input validation exists. New finding: silent LLM API failure (BUG-018) means users get no response when the API is unreachable but keys are configured.</p>
   </div>
 
   <!-- Navigation -->
