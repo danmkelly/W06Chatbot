@@ -37,12 +37,12 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 /* Discovery area — right */
 .disc-area{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column}
 .disc-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;background:rgba(255,255,255,0.06);position:relative;z-index:1}
-.disc-section{padding:16px;overflow-y:auto;position:relative}
-/* Clear the 204px hero circle — padding on inner corners */
-.disc-section.albums{background:var(--albums-bg);padding:16px 116px 116px 16px}
-.disc-section.artists{background:var(--artists-bg);padding:16px 16px 116px 116px}
-.disc-section.genres{background:var(--genres-bg);padding:116px 116px 16px 16px}
-.disc-section:nth-child(4){padding:116px 16px 16px 116px}
+.disc-section{padding:16px;overflow:hidden;position:relative}
+/* Circular protection around hero — less padding, canvas shows the zone */
+.disc-section.albums{background:var(--albums-bg);padding:16px 80px 80px 16px}
+.disc-section.artists{background:var(--artists-bg);padding:0;overflow:visible}
+.disc-section.genres{background:var(--genres-bg);padding:80px 80px 16px 16px}
+.disc-section:nth-child(4){padding:80px 16px 16px 80px}
 .section-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px;position:sticky;top:0;z-index:1;background:inherit;padding:2px 0}
 
 /* Album tile grid — flexbox fills rows, uniform sizing */
@@ -55,9 +55,9 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 .at-badge-order{background:rgba(196,164,74,0.15);color:var(--accent3);border-color:rgba(196,164,74,0.3)}.at-badge-order:hover{background:var(--accent3);color:#fff}
 .at-badge-discogs{background:rgba(255,255,255,0.05);color:var(--dim);border-color:rgba(255,255,255,0.08)}.at-badge-discogs:hover{background:rgba(255,255,255,0.12);color:#fff}
 
-/* Artist tile grid — same style as albums */
-.artist-grid{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start}
-.artist-tile{flex:1 1 80px;min-width:80px;max-width:140px;text-align:center;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center}.artist-tile:hover{transform:translateY(-2px)}
+/* Artist tile — absolute positioned in arcs */
+.artist-grid{position:absolute;inset:0;pointer-events:none}
+.artist-tile{position:absolute;text-align:center;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center;pointer-events:auto;width:72px;transform:translate(-50%,-50%)}.artist-tile:hover{transform:translate(-50%,-50%) scale(1.1);z-index:2}
 .artist-tile .ar-img{border-radius:50%;object-fit:cover;display:block;width:100%;aspect-ratio:1;border:2px solid rgba(255,255,255,0.08)}.artist-tile .ar-placeholder{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;width:100%;aspect-ratio:1}
 .artist-tile .ar-label{font-size:0.5rem;color:var(--text);margin-top:3px;line-height:1.25;height:1.25em;overflow:hidden;width:100%;white-space:nowrap;text-overflow:ellipsis}
 .artist-tile .ar-match{font-size:0.55rem;color:var(--accent3);margin-top:1px;height:1.25em}
@@ -79,11 +79,10 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
   .disc-area{height:50%}
   .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
   .hero-img{width:120px;height:120px}
-  .disc-section.albums{padding:12px 70px 70px 12px}
-  .disc-section.artists{padding:12px 12px 70px 70px}
-  .disc-section.genres{padding:70px 70px 12px 12px}
-  .disc-section:nth-child(4){padding:70px 12px 12px 70px}
-  .artist-tile .ar-placeholder{font-size:0.8rem}
+  .disc-section.albums{padding:12px 60px 60px 12px}
+  .disc-section.artists{padding:0;overflow:visible}
+  .disc-section.genres{padding:60px 60px 12px 12px}
+  .disc-section:nth-child(4){padding:60px 12px 12px 60px}
 }
 </style>
 </head>
@@ -168,6 +167,12 @@ function draw(){
   // Outer ring at disc-area center
   var da=document.getElementById("discArea"),dar=da.getBoundingClientRect();
   var dcx=dar.left+dar.width/2,dcy=dar.top+dar.height/2;
+  // Circular protection zone
+  ctx.beginPath();ctx.arc(dcx,dcy,118,0,Math.PI*2);
+  ctx.fillStyle="rgba(5,5,8,0.45)";ctx.fill();
+  ctx.beginPath();ctx.arc(dcx,dcy,118,0,Math.PI*2);
+  ctx.strokeStyle="rgba(255,255,255,0.05)";ctx.lineWidth=0.8;ctx.stroke();
+  // Outer ring
   ctx.beginPath();ctx.arc(dcx,dcy,130,0,Math.PI*2);
   ctx.strokeStyle="rgba(255,255,255,0.06)";ctx.lineWidth=1.5;ctx.stroke();
   var qlabels=["ALBUMS","ARTISTS","GENRES","ARTIST INFO"],qangles=[-Math.PI*0.7,-Math.PI*0.2,Math.PI*0.3,Math.PI*0.8];
@@ -325,12 +330,28 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
     return'<div class="album-tile" onclick="betaChat(\''+a.name.replace(/'/g,"\\'")+'\')">'+(img?'<img class="at-img" src="'+img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="at-placeholder" style="display:none;background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>':'<div class="at-placeholder" style="background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>')+'<div class="at-label">'+esc(a.name)+'</div>'+badges+'</div>';
   }).join("");
 
-  // Artists tile grid
+  // Artists — positioned in concentric arcs by match %
   var arc=document.getElementById("artistsContent");
-  arc.innerHTML=sim.slice(0,12).map(function(s,i){
-    var init=(s.name.charAt(0)+(s.name.indexOf(" ")>-1?s.name.charAt(s.name.indexOf(" ")+1):"")).toUpperCase();
-    return'<div class="artist-tile" onclick="betaChat(\''+s.name.replace(/'/g,"\\'")+'\')"><div class="ar-placeholder" style="background:'+GENRE_PALETTE[i%7]+'">'+init+'</div><div class="ar-label">'+esc(s.name)+'</div><div class="ar-match">'+Math.round(s.match)+'% match</div></div>';
-  }).join("");
+  arc.innerHTML="";
+  var sorted=sim.slice(0,12).sort(function(a,b){return b.match-a.match});
+  var arcDefs=[{r:155,spread:0.55,count:3},{r:230,spread:0.6,count:4},{r:310,spread:0.65,count:5}];
+  var idx=0;
+  arcDefs.forEach(function(def){
+    var count=Math.min(def.count,sorted.length-idx);
+    var startAngle=-Math.PI/3;
+    for(var i=0;i<count;i++){
+      var s=sorted[idx+i];if(!s)break;
+      var angle=startAngle+(def.spread/(count-1||1))*i;
+      var xp=50+Math.cos(angle)*def.r,yp=50-Math.sin(angle)*def.r;
+      var init=(s.name.charAt(0)+(s.name.indexOf(" ")>-1?s.name.charAt(s.name.indexOf(" ")+1):"")).toUpperCase();
+      var el=document.createElement("div");el.className="artist-tile";
+      el.style.left=xp+"%";el.style.top=yp+"%";
+      el.innerHTML='<div class="ar-placeholder" style="background:'+GENRE_PALETTE[(idx+i)%7]+'">'+init+'</div><div class="ar-label">'+esc(s.name)+'</div><div class="ar-match">'+Math.round(s.match)+'% match</div>';
+      el.onclick=function(name){return function(){betaChat(name)}}(s.name);
+      arc.appendChild(el);
+    }
+    idx+=count;
+  });
 
   // Genre chips
   var gc=document.getElementById("genresContent");
