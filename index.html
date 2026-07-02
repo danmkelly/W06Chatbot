@@ -663,7 +663,7 @@ function sc(){chatMsgs.scrollTop=chatMsgs.scrollHeight}
 function addMsg(t,s){
   var d=document.createElement("div");d.className="msg "+s;
   var now=new Date();var time=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
-  if(s==="bot")t=enrichLinks(t);
+  if(s==="bot")t=enrichLinks(t);else t=t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   d.innerHTML='<div class="msg-bubble">'+t+'</div><div class="msg-meta">'+(s==="bot"?"Bob":"You")+' &middot; '+time+(s==="bot"?' <button class="msg-speak" onclick="speakMsg(this)" title="Listen">&#128266;</button>':'')+'</div>';
   chatMsgs.appendChild(d);sc();
   if(spokeLast&&s==="bot"){
@@ -1134,7 +1134,7 @@ async function send(){
   }
 
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
-    if(!isRealArtist&&!isGenreQuery){addMsg("I'm listening! Tell me about an artist or genre you love and I'll dig in.",'bot');addSugg(["Radiohead","Irish rock","90s indie","Jazz","Ska","Electronic"])}
+    addMsg("I'm listening! Tell me about an artist or genre you love and I'll dig in.",'bot');addSugg(["Radiohead","Irish rock","90s indie","Jazz","Ska","Electronic"])
   }
 }
 
