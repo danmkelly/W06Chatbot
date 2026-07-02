@@ -128,7 +128,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
     </div>
   </div>
   <div class="hero-overlay" id="heroOverlay">
-    <img class="hero-img placeholder" id="heroImg" src="" alt="" onerror="this.className='hero-img placeholder';this.src=''">
+    <div class="hero-img placeholder" id="heroImg"></div>
   </div>
 </div>
 
@@ -380,8 +380,13 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
 
   // Hero image
   var hi=document.getElementById("heroImg");
-  if(artImg){hi.className="hero-img";hi.src=artImg}
-  else{hi.className="hero-img placeholder";hi.src=""}
+  hi.innerHTML="";
+  if(artImg){
+    var img=document.createElement("img");
+    img.className="hero-img";img.src=artImg;img.alt="";
+    img.onerror=function(){hi.className="hero-img placeholder";hi.innerHTML=""};
+    hi.className="";hi.appendChild(img);
+  }else{hi.className="hero-img placeholder"}
 
   if(albs.length)albs.forEach(function(a){addKnown(a.name);if(a.artist)addKnown(a.artist)});
   if(sim.length)sim.forEach(function(s){addKnown(s.name)});
