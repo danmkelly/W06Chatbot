@@ -56,6 +56,8 @@ body{
 .sev-low{color:#fff;background:#7F8C8D;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
 .status-open{color:var(--accent);font-weight:600}
 .status-fixed{color:var(--accent2);font-weight:600}
+.design-closed{color:#fff;background:#C0392B;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
+.design-open{color:#fff;background:#27AE60;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap}
 
 /* Back link */
 .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent2);text-decoration:none;font-size:0.82rem;font-weight:600;margin-top:30px;transition:color .15s}
@@ -80,7 +82,7 @@ body{
   <div class="hero">
     <div class="hero-icon">&#128269;</div>
     <h1>QA Dashboard</h1>
-    <p class="hero-sub">Maintained by <strong style="color:var(--accent3)">@Keelin</strong> &mdash; QA specialist for the Round &amp; Round Records chatbot. Testing approach, scoring rubric, and bug register. <strong>Last reviewed:</strong> 2026-07-02.</p>
+    <p class="hero-sub">Maintained by <strong style="color:var(--accent3)">@Keelin</strong> &mdash; QA specialist for the Round &amp; Round Records chatbot. Grounded in <strong>three academic best-practice frameworks</strong> from the Customer Engagement &amp; AI module: chatbot taxonomy (Adamopoulou &amp; Moussiades 2020), CASA / Computers Are Social Actors (Reeves &amp; Nass 1996), and conversation flow anatomy. <strong>Design score: 3.0/5 (C+). Last reviewed:</strong> 2026-07-02.</p>
   </div>
 
   <!-- Testing Approach -->
@@ -357,6 +359,7 @@ body{
             <th>Framework</th>
             <th>Item</th>
             <th>Score</th>
+            <th>Status</th>
             <th>Evidence</th>
             <th>Severity</th>
             <th>Overlap with bugs</th>
@@ -369,7 +372,7 @@ body{
             <td class="id">F1</td>
             <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
             <td class="desc">Knowledge domain (closed vs open)</td>
-            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td><td><span class="design-closed">Closed</span></td>
             <td>Music domain; easter eggs deliberate per victor.html brief</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -380,7 +383,7 @@ body{
             <td class="id">F2</td>
             <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
             <td class="desc">Service provided (interpersonal support)</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td><td><span class="design-open">Open</span></td>
             <td>LLM temp 0.9 + no domain guardrails risks overreach</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -391,7 +394,7 @@ body{
             <td class="id">F3</td>
             <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
             <td class="desc">Goals (task-based vs chat-based)</td>
-            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td><td><span class="design-closed">Closed</span></td>
             <td>Discovery panel resolves to Discogs purchase action</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -402,7 +405,7 @@ body{
             <td class="id">F4</td>
             <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
             <td class="desc">Response generation (hybrid)</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td><td><span class="design-open">Open</span></td>
             <td>No RAG verification of LLM claims; temp 0.9 hallucination risk</td>
             <td>[DESIGN]</td>
             <td>BUG-012 (regex brittleness); hallucination gap is new</td>
@@ -413,7 +416,7 @@ body{
             <td class="id">F5</td>
             <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
             <td class="desc">Channel parity (text + voice)</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td><td><span class="design-open">Open</span></td>
             <td>Voice STT bypasses gibberish validation that text path has</td>
             <td>[DESIGN/CODE]</td>
             <td>BUG-005 (TTS); voice-STT validation gap is new</td>
@@ -424,7 +427,7 @@ body{
             <td class="id">F6</td>
             <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
             <td class="desc">Human-aid (reachable at every stage)</td>
-            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td><td><span class="design-closed">Closed</span></td>
             <td>"Prefer a real human?" bar always visible; "human" command works</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -435,7 +438,7 @@ body{
             <td class="id">F7</td>
             <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
             <td class="desc">Permissions</td>
-            <td><span style="background:#555;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem">N/A</span></td>
+            <td><span style="background:#555;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem">N/A</span></td><td><span class="design-closed">Closed</span></td>
             <td>Commercial single-owner; no relevant dimension</td>
             <td>&mdash;</td>
             <td>None</td>
@@ -446,7 +449,7 @@ body{
             <td class="id">F8</td>
             <td style="color:var(--accent);font-weight:600">CASA</td>
             <td class="desc">Disclosure in turn 1</td>
-            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td><td><span class="design-closed">Closed</span></td>
             <td>"I'm Bob, an AI chatbot powered by DeepSeek" in first message; no humanising filler in second message</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -457,7 +460,7 @@ body{
             <td class="id">F9</td>
             <td style="color:var(--accent);font-weight:600">CASA</td>
             <td class="desc">No fake-human cues</td>
-            <td><span class="sev-crit">FAIL</span></td>
+            <td><span class="sev-crit">FAIL</span></td><td><span class="design-open">Open</span></td>
             <td>Human name "Bob"; Dublin slang; brief endorses mimicry</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -468,7 +471,7 @@ body{
             <td class="id">F10</td>
             <td style="color:var(--accent);font-weight:600">CASA</td>
             <td class="desc">Register matches capability</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td><td><span class="design-open">Open</span></td>
             <td>System prompt claims "know band histories, album lore" unverifiable</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -479,7 +482,7 @@ body{
             <td class="id">F11</td>
             <td style="color:var(--accent);font-weight:600">CASA</td>
             <td class="desc">Frustration handling (de-escalation)</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td><td><span class="design-open">Open</span></td>
             <td>gibberishCount: after 2+ strikes, shifts register + offers human handoff; LLM error offers human path</td>
             <td>[DESIGN/CODE]</td>
             <td>BUG-008 (typing stuck on goBack) -- adds conversation-design dimension</td>
@@ -490,7 +493,7 @@ body{
             <td class="id">F12</td>
             <td style="color:var(--accent);font-weight:600">CASA</td>
             <td class="desc">Chummy data extraction (localStorage)</td>
-            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td><td><span class="design-closed">Closed</span></td>
             <td>Explicit consent: "yes or no?" before any write; saveMemory() guarded by consent==="yes"; if no, nothing stored; return visits with no consent reset all counters</td>
             <td>[DESIGN/CODE]</td>
             <td>Previously BUG-007 (modal overlay); resolved by consent flow</td>
@@ -501,7 +504,7 @@ body{
             <td class="id">F13</td>
             <td style="color:var(--accent3);font-weight:600">Flow</td>
             <td class="desc">OPENER (identity + capability in turn 1)</td>
-            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td><td><span class="design-closed">Closed</span></td>
             <td>"I can find similar artists, dig up albums, explore genres..." — identity + capabilities both in turn 1. Human handoff also disclosed.</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -512,7 +515,7 @@ body{
             <td class="id">F14</td>
             <td style="color:var(--accent3);font-weight:600">Flow</td>
             <td class="desc">INTENT (one clear purpose per flow)</td>
-            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td><td><span class="design-closed">Closed</span></td>
             <td>Three distinct flows: artist search, genre explore, human handoff</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -523,7 +526,7 @@ body{
             <td class="id">F15</td>
             <td style="color:var(--accent3);font-weight:600">Flow</td>
             <td class="desc">SLOTS (validated with back/correction)</td>
-            <td><span class="sev-crit">FAIL</span></td>
+            <td><span class="sev-crit">FAIL</span></td><td><span class="design-open">Open</span></td>
             <td>No slot validation; free-text fired directly at APIs</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -534,7 +537,7 @@ body{
             <td class="id">F16</td>
             <td style="color:var(--accent3);font-weight:600">Flow</td>
             <td class="desc">RECOVERY LADDER (5 failure scenarios)</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td><td><span class="design-open">Open</span></td>
             <td>Gibberish reaches step 3 (2+ strikes → de-escalation + human chip); LLM fallback offers human path; post-search "Keep exploring" + "Human" chips. Misspelling, no Discogs, empty results still silent.</td>
             <td>[DESIGN/CODE]</td>
             <td>BUG-002 (fallback), BUG-008 (typing on error), BUG-018 (silent LLM); structural analysis</td>
@@ -545,7 +548,7 @@ body{
             <td class="id">F17</td>
             <td style="color:var(--accent3);font-weight:600">Flow</td>
             <td class="desc">CLOSER (confirm + explore + human path)</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td><td><span class="design-open">Open</span></td>
             <td>No read-back/confirm; explore implicit; human path not proactively offered</td>
             <td>[DESIGN]</td>
             <td>None</td>
@@ -556,7 +559,7 @@ body{
             <td class="id">F18</td>
             <td style="color:var(--accent3);font-weight:600">Flow</td>
             <td class="desc">Design the unexpected first</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td><td><span class="design-open">Open</span></td>
             <td>Gibberish/silence handled; rapid switches corrupt context; no idle timeout</td>
             <td>[DESIGN]</td>
             <td>None</td>
