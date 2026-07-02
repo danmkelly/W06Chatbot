@@ -36,42 +36,44 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 
 /* Discovery area — right */
 .disc-area{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column}
-.disc-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr;gap:1px;background:rgba(255,255,255,0.04);position:relative;z-index:1}
-.disc-section{padding:12px;overflow-y:auto;position:relative}
-.disc-section.albums{grid-column:1/-1;background:var(--albums-bg);max-height:120px;display:flex;align-items:center;gap:10px;overflow-x:auto;overflow-y:hidden;flex-shrink:0}
+.disc-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;background:rgba(255,255,255,0.06);position:relative;z-index:1}
+.disc-section{padding:10px;overflow-y:auto;position:relative}
+.disc-section.albums{background:var(--albums-bg)}
 .disc-section.artists{background:var(--artists-bg)}
 .disc-section.genres{background:var(--genres-bg)}
-.section-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px;position:sticky;top:0;z-index:1}
+.section-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px;position:sticky;top:0;z-index:1;background:inherit;padding:2px 0}
 
-/* Album items */
-.album-item{flex-shrink:0;width:72px;text-align:center;cursor:pointer;transition:transform .15s}.album-item:hover{transform:translateY(-3px)}
-.album-item img{width:60px;height:60px;border-radius:6px;object-fit:cover;display:block;margin:0 auto;border:2px solid rgba(255,255,255,0.08)}.album-item .album-placeholder{width:60px;height:60px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#C0392B);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;font-weight:800;margin:0 auto}
-.album-item .al{font-size:0.52rem;color:var(--text);margin-top:3px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:72px}
+/* Album tile grid */
+.album-grid{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.album-tile{width:72px;text-align:center;cursor:pointer;transition:transform .15s}.album-tile:hover{transform:translateY(-2px)}
+.album-tile .at-img{width:60px;height:60px;border-radius:6px;object-fit:cover;display:block;margin:0 auto;border:2px solid rgba(255,255,255,0.08)}.album-tile .at-placeholder{width:60px;height:60px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:800;margin:0 auto}
+.album-tile .at-label{font-size:0.5rem;color:var(--text);margin-top:2px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:72px}
 
-/* Artist items */
-.artist-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:4px}.artist-item:hover{background:rgba(255,255,255,0.04)}
-.artist-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#C0392B);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;font-weight:700;flex-shrink:0}
-.artist-info{min-width:0}.artist-info .an{font-size:0.68rem;font-weight:600;color:var(--text)}.artist-info .am{font-size:0.55rem;color:var(--accent3)}
+/* Artist card grid */
+.artist-grid{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+.artist-card{width:calc(50% - 3px);display:flex;align-items:center;gap:6px;padding:6px 7px;border-radius:8px;cursor:pointer;transition:all .15s;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}.artist-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
+.artist-card .ac-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#fff;font-weight:700;flex-shrink:0}
+.artist-card .ac-info{min-width:0}.artist-card .ac-name{font-size:0.62rem;font-weight:600;color:var(--text);line-height:1.2}.artist-card .ac-match{font-size:0.52rem;color:var(--accent3)}
 
-/* Genre chips */
-.genre-chips{display:flex;flex-wrap:wrap;gap:4px}
-.genre-chip{padding:4px 10px;border-radius:12px;font-size:0.6rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.06);transition:all .15s}.genre-chip:hover{background:rgba(74,158,142,0.2);color:var(--accent2);border-color:rgba(74,158,142,0.3)}
+/* Genre cloud */
+.genre-cloud{display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start}
+.genre-chip{padding:5px 11px;border-radius:14px;font-size:0.63rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.04);color:var(--dim);border:1px solid rgba(255,255,255,0.05);transition:all .15s;letter-spacing:0.2px}.genre-chip:hover{background:rgba(74,158,142,0.2);color:var(--accent2);border-color:rgba(74,158,142,0.3)}
 
 /* Center hero overlay */
-.hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;text-align:center;pointer-events:none;width:220px}
-.hero-img{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto;display:block;box-shadow:0 0 40px rgba(232,93,63,0.3),0 0 80px rgba(232,93,63,0.08);border:3px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--accent)}
-.hero-name{font-size:1rem;font-weight:900;color:var(--text);margin-top:6px;text-shadow:0 0 16px rgba(0,0,0,0.8)}.hero-bio{font-size:0.58rem;color:var(--dim);line-height:1.4;margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.hero-bio.expanded{display:block;-webkit-line-clamp:unset;overflow:visible}.hero-more{font-size:0.55rem;color:var(--accent2);cursor:pointer;pointer-events:auto;margin-top:2px;display:inline-block}
+.hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;text-align:center;pointer-events:none;width:180px}
+.hero-img{width:56px;height:56px;border-radius:50%;object-fit:cover;margin:0 auto;display:block;box-shadow:0 0 30px rgba(232,93,63,0.25),0 0 60px rgba(232,93,63,0.06);border:2px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--accent)}
+.hero-name{font-size:0.9rem;font-weight:900;color:var(--text);margin-top:4px;text-shadow:0 0 16px rgba(0,0,0,0.8)}.hero-bio{font-size:0.55rem;color:var(--dim);line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.hero-bio.expanded{display:block;-webkit-line-clamp:unset;overflow:visible}.hero-more{font-size:0.52rem;color:var(--accent2);cursor:pointer;pointer-events:auto;margin-top:2px;display:inline-block}
 
 /* Top bar */
 .disclosure{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(5,5,8,0.9);border-bottom:1px solid rgba(255,255,255,0.05);padding:5px 14px;text-align:center;font-size:0.55rem;color:var(--dim);backdrop-filter:blur(12px);pointer-events:none}.disclosure strong{color:var(--accent2)}
 
 @media(max-width:768px){
   body{flex-direction:column}
-  .chat-pane{width:100%;height:55%;flex-shrink:1}
-  .disc-area{height:45%}
-  .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr}
-  .disc-section.albums{max-height:80px}
-  .hero-overlay{width:160px}.hero-img{width:44px;height:44px}.hero-name{font-size:0.8rem}
+  .chat-pane{width:100%;height:50%;flex-shrink:1}
+  .disc-area{height:50%}
+  .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+  .hero-overlay{width:140px}.hero-img{width:40px;height:40px}.hero-name{font-size:0.7rem}.hero-bio{font-size:0.5rem;-webkit-line-clamp:2}
+  .album-tile{width:56px}.album-tile .at-img,.album-tile .at-placeholder{width:46px;height:46px}
 }
 </style>
 </head>
@@ -99,17 +101,21 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 <!-- Discovery area -->
 <div class="disc-area" id="discArea">
   <div class="disc-grid">
-    <div class="disc-section albums" id="albumsSection">
+    <div class="disc-section albums">
       <div class="section-label">Albums</div>
-      <div id="albumsContent" style="display:flex;gap:10px"></div>
+      <div class="album-grid" id="albumsContent"></div>
     </div>
-    <div class="disc-section artists" id="artistsSection">
+    <div class="disc-section artists">
       <div class="section-label">Related Artists</div>
-      <div id="artistsContent"></div>
+      <div class="artist-grid" id="artistsContent"></div>
     </div>
-    <div class="disc-section genres" id="genresSection">
+    <div class="disc-section genres">
       <div class="section-label">Genres</div>
-      <div class="genre-chips" id="genresContent"></div>
+      <div class="genre-cloud" id="genresContent"></div>
+    </div>
+    <div class="disc-section genres" style="background:rgba(123,104,238,0.04)">
+      <div class="section-label">Bob says</div>
+      <div class="genre-cloud" id="chatContent" style="font-size:0.58rem;color:var(--dim);line-height:1.5"></div>
     </div>
   </div>
   <div class="hero-overlay" id="heroOverlay">
@@ -167,7 +173,7 @@ function updateNodePositions(){
   var hcx=hr.left+hr.width/2,hcy=hr.top+hr.height/2;
   nodePositions.push({x:hcx,y:hcy});
   var da=document.getElementById("discArea"),dr=da.getBoundingClientRect();
-  document.querySelectorAll(".album-item,.artist-item,.genre-chip").forEach(function(el){
+  document.querySelectorAll(".album-tile,.artist-card,.genre-chip").forEach(function(el){
     var r=el.getBoundingClientRect();
     if(r.left>=dr.left&&r.top>=dr.top){
       nodePositions.push({x:r.left+r.width/2,y:r.top+r.height/2});
@@ -292,24 +298,29 @@ function extractArtists(txt){
 
 // Render discovery
 function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
-  // Albums strip
+  // Albums tile grid
   var ac=document.getElementById("albumsContent");
-  ac.innerHTML=albs.slice(0,12).map(function(a,i){
+  ac.innerHTML=albs.slice(0,16).map(function(a,i){
     var img=a.img||"";
-    return'<div class="album-item" onclick="betaChat(\''+a.name.replace(/'/g,"\\'")+'\')">'+(img?'<img src="'+img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="album-placeholder" style="display:none">'+a.name.charAt(0)+'</div>':'<div class="album-placeholder" style="background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>')+'<div class="al">'+esc(a.name)+'</div></div>';
+    return'<div class="album-tile" onclick="betaChat(\''+a.name.replace(/'/g,"\\'")+'\')">'+(img?'<img class="at-img" src="'+img+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="at-placeholder" style="display:none;background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>':'<div class="at-placeholder" style="background:'+GENRE_PALETTE[i%7]+'">'+a.name.charAt(0)+'</div>')+'<div class="at-label">'+esc(a.name)+'</div></div>';
   }).join("");
 
-  // Artists list
+  // Artists card grid
   var arc=document.getElementById("artistsContent");
-  arc.innerHTML=sim.slice(0,8).map(function(s,i){
-    return'<div class="artist-item" onclick="betaChat(\''+s.name.replace(/'/g,"\\'")+'\')"><div class="artist-av" style="background:'+GENRE_PALETTE[i%7]+'">'+(s.name.charAt(0)+(s.name.indexOf(" ")>-1?s.name.charAt(s.name.indexOf(" ")+1):"")).toUpperCase()+'</div><div class="artist-info"><div class="an">'+esc(s.name)+'</div><div class="am">'+Math.round(s.match)+'% match</div></div></div>';
+  arc.innerHTML=sim.slice(0,12).map(function(s,i){
+    return'<div class="artist-card" onclick="betaChat(\''+s.name.replace(/'/g,"\\'")+'\')"><div class="ac-av" style="background:'+GENRE_PALETTE[i%7]+'">'+(s.name.charAt(0)+(s.name.indexOf(" ")>-1?s.name.charAt(s.name.indexOf(" ")+1):"")).toUpperCase()+'</div><div class="ac-info"><div class="ac-name">'+esc(s.name)+'</div><div class="ac-match">'+Math.round(s.match)+'% match</div></div></div>';
   }).join("");
 
-  // Genre chips
+  // Genre cloud
   var gc=document.getElementById("genresContent");
-  gc.innerHTML=tgs.slice(0,10).map(function(t){
-    return'<span class="genre-chip" onclick="betaChat(\''+t.name.replace(/'/g,"\\'")+'\')">'+esc(t.name)+'</span>';
+  gc.innerHTML=tgs.slice(0,14).map(function(t,i){
+    return'<span class="genre-chip" style="font-size:'+(0.55+Math.random()*0.15).toFixed(2)+'rem" onclick="betaChat(\''+t.name.replace(/'/g,"\\'")+'\')">'+esc(t.name)+'</span>';
   }).join("");
+
+  // Chat quadrant
+  var cc=document.getElementById("chatContent");
+  if(chatTexts&&chatTexts.length)cc.innerHTML=chatTexts.map(function(t){return'<p style="margin-bottom:6px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:6px">'+esc(t.slice(0,180))+(t.length>180?"…":"")+'</p>'}).join("");
+  else cc.innerHTML='<p style="font-style:italic">Ask Bob about an artist to see his thoughts here</p>';
 
   // Hero overlay
   document.getElementById("heroName").textContent=artistName.charAt(0).toUpperCase()+artistName.slice(1);
@@ -322,6 +333,7 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
 
   if(albs.length)albs.forEach(function(a){addKnown(a.name);if(a.artist)addKnown(a.artist)});
   if(sim.length)sim.forEach(function(s){addKnown(s.name)});
+  setTimeout(updateNodePositions,200);
 }
 
 // Send
