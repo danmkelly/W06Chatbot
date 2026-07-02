@@ -65,7 +65,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 
 /* Center hero — just the image, perfectly centered */
 .hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;pointer-events:none}
-.hero-img{width:68px;height:68px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 30px rgba(232,93,63,0.25),0 0 60px rgba(232,93,63,0.06);border:2px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--accent)}
+.hero-img{width:204px;height:204px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 40px rgba(232,93,63,0.25),0 0 80px rgba(232,93,63,0.08);border:3px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111;display:flex;align-items:center;justify-content:center;font-size:4rem;color:var(--accent)}
 
 /* Top bar */
 .disclosure{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(5,5,8,0.9);border-bottom:1px solid rgba(255,255,255,0.05);padding:5px 14px;text-align:center;font-size:0.55rem;color:var(--dim);backdrop-filter:blur(12px);pointer-events:none}.disclosure strong{color:var(--accent2)}
@@ -75,7 +75,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
   .chat-pane{width:100%;height:50%;flex-shrink:1}
   .disc-area{height:50%}
   .disc-grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
-  .hero-img{width:48px;height:48px}
+  .hero-img{width:120px;height:120px}
   .artist-card .ac-av{width:28px;height:28px}.artist-card .ac-name{font-size:0.62rem}
 }
 </style>
@@ -161,11 +161,11 @@ function draw(){
   // Outer ring at disc-area center
   var da=document.getElementById("discArea"),dar=da.getBoundingClientRect();
   var dcx=dar.left+dar.width/2,dcy=dar.top+dar.height/2;
-  ctx.beginPath();ctx.arc(dcx,dcy,105,0,Math.PI*2);
+  ctx.beginPath();ctx.arc(dcx,dcy,130,0,Math.PI*2);
   ctx.strokeStyle="rgba(255,255,255,0.06)";ctx.lineWidth=1.5;ctx.stroke();
   var qlabels=["ALBUMS","ARTISTS","GENRES","ARTIST INFO"],qangles=[-Math.PI*0.7,-Math.PI*0.2,Math.PI*0.3,Math.PI*0.8];
   qlabels.forEach(function(l,i){
-    var a=qangles[i],lx=dcx+Math.cos(a)*112,ly=dcy+Math.sin(a)*112;
+    var a=qangles[i],lx=dcx+Math.cos(a)*137,ly=dcy+Math.sin(a)*137;
     ctx.fillStyle="rgba(255,255,255,0.12)";ctx.font="6.5px Inter,system-ui";ctx.textAlign="center";
     ctx.fillText(l,lx,ly+2);
   });
