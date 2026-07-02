@@ -68,7 +68,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 
 /* Center hero — just the image, perfectly centered */
 .hero-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;pointer-events:none}
-.hero-img{width:204px;height:204px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 40px rgba(232,93,63,0.25),0 0 80px rgba(232,93,63,0.08);border:3px solid rgba(232,93,63,0.3)}.hero-img.placeholder{background:#111}
+.hero-img{width:204px;height:204px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 40px rgba(232,93,63,0.25),0 0 80px rgba(232,93,63,0.08);border:3px solid rgba(232,93,63,0.3)}.hero-img.placeholder{display:block;background:#111}
 
 /* Top bar */
 .disclosure{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(5,5,8,0.9);border-bottom:1px solid rgba(255,255,255,0.05);padding:5px 14px;text-align:center;font-size:0.55rem;color:var(--dim);backdrop-filter:blur(12px);pointer-events:none}.disclosure strong{color:var(--accent2)}
@@ -128,7 +128,7 @@ canvas{position:fixed;inset:0;z-index:5;pointer-events:none}
     </div>
   </div>
   <div class="hero-overlay" id="heroOverlay">
-    <div class="hero-img placeholder" id="heroImg"></div>
+    <img class="hero-img placeholder" id="heroImg" alt="" style="display:none">
   </div>
 </div>
 
@@ -378,15 +378,12 @@ function renderDiscovery(sim,tgs,albs,bio,artImg,chatTexts){
     ai.innerHTML='<p style="font-style:italic">Search an artist to see their info here</p>';
   }
 
-  // Hero image
+  // Hero image — direct img element
   var hi=document.getElementById("heroImg");
-  hi.innerHTML="";
   if(artImg){
-    var img=document.createElement("img");
-    img.className="hero-img";img.src=artImg;img.alt="";
-    img.onerror=function(){hi.className="hero-img placeholder";hi.innerHTML=""};
-    hi.className="";hi.appendChild(img);
-  }else{hi.className="hero-img placeholder"}
+    hi.className="hero-img";hi.src=artImg;hi.style.display="block";
+    hi.onerror=function(){hi.className="hero-img placeholder";hi.src="";hi.onerror=null};
+  }else{hi.className="hero-img placeholder";hi.src="";hi.style.display="block"}
 
   if(albs.length)albs.forEach(function(a){addKnown(a.name);if(a.artist)addKnown(a.artist)});
   if(sim.length)sim.forEach(function(s){addKnown(s.name)});
