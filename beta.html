@@ -418,7 +418,10 @@ async function send(){
   var artists=extractArtists(txt);
   if(artists.length){
     var an=artists[0];artistName=an;rememberArtist(an);
-    var sim=await getSim(an),albs=await getAlb(an),tgs=await getTgs(an),bio=await getBio(an),artImg=await getArtistImg(an);
+    var sim=await getSim(an),albs=await getAlb(an),tgs=await getTgs(an),bio=await getBio(an);
+    var artImg=(albs.length&&albs[0].img)?albs[0].img:null;
+    var artistImg=await getArtistImg(an);
+    if(artistImg)artImg=artistImg;
     renderDiscovery(sim,tgs,albs,bio,artImg,llmReply?[llmReply]:[]);
   }
 
