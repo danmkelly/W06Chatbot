@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Round & Round Records - Chat with Bob</title>
+<title>Round &amp; Round Records - Chat with WaxBot</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -481,19 +481,19 @@ body{
     <div class="chat-top">
       <div class="chat-avatar">&#127926;</div>
       <div class="chat-top-info">
-        <h2>Bob</h2>
+        <h2>WaxBot</h2>
         <span id="bobLabel">Music guru &amp; vinyl hunter</span>
       </div>
       <div class="chat-top-right">
       <span class="chat-top-badge" id="bobBadge">basic</span>
-      <button class="chat-clear-btn" id="clearMemBtn" onclick="clearMemory()" title="Clear what Bob remembers" style="display:none">Clear memory</button>
-      <button class="chat-clear-btn" id="rememberBtn" onclick="rememberMe()" title="Let Bob remember you" style="display:none">Remember me</button>
+      <button class="chat-clear-btn" id="clearMemBtn" onclick="clearMemory()" title="Clear what WaxBot remembers" style="display:none">Clear memory</button>
+      <button class="chat-clear-btn" id="rememberBtn" onclick="rememberMe()" title="Let WaxBot remember you" style="display:none">Remember me</button>
       </div>
     </div>
     <div class="chat-msgs" id="chatMessages"></div>
     <div class="chat-input-wrap">
-      <input class="chat-input" id="chatInput" placeholder="Ask Bob about an artist or genre..." autofocus>
-      <button class="chat-mic" id="chatMic" aria-label="Voice input" title="Talk to Bob">&#127908;</button>
+      <input class="chat-input" id="chatInput" placeholder="Ask WaxBot about an artist or genre..." autofocus>
+      <button class="chat-mic" id="chatMic" aria-label="Voice input" title="Talk to WaxBot">&#127908;</button>
       <button class="chat-send" id="chatSend" aria-label="Send">&#8594;</button>
     </div>
     <div class="chat-human-ramp" onclick="document.getElementById('chatInput').value='human';document.getElementById('chatSend').click()">
@@ -517,7 +517,7 @@ body{
       <div class="d-empty-inner">
         <div class="d-empty-icon">&#127925;</div>
         <h3>Your Discovery Space</h3>
-        <p>Chat with Bob about any artist or genre. He'll fill this space with similar artists, essential albums, and genres to explore.</p>
+        <p>Chat with WaxBot about any artist or genre. He'll fill this space with similar artists, essential albums, and genres to explore.</p>
       </div>
     </div>
     <div id="dContent" style="display:none">
@@ -571,6 +571,7 @@ var navHistory=[];
 var spokeLast=false;
 var expectingName=false;
 var expectingConsent=false;
+var expectingHumanBot=false;
 var gibberishCount=0;
 
 // === Memory (localStorage) ===
@@ -688,7 +689,7 @@ function addMsg(t,s){
   var d=document.createElement("div");d.className="msg "+s;
   var now=new Date();var time=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
   if(s==="bot")t=enrichLinks(t);else t=t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  d.innerHTML='<div class="msg-bubble">'+t+'</div><div class="msg-meta">'+(s==="bot"?"Bob":"You")+' &middot; '+time+(s==="bot"?' <button class="msg-speak" onclick="speakMsg(this)" title="Listen">&#128266;</button>':'')+'</div>';
+  d.innerHTML='<div class="msg-bubble">'+t+'</div><div class="msg-meta">'+(s==="bot"?"WaxBot":"You")+' &middot; '+time+(s==="bot"?' <button class="msg-speak" onclick="speakMsg(this)" title="Listen">&#128266;</button>':'')+'</div>';
   chatMsgs.appendChild(d);sc();
   if(spokeLast&&s==="bot"){
     spokeLast=false;
@@ -730,7 +731,7 @@ micBtn.onclick=function(){
   }
 };
 
-// === Speech: read Bob's messages aloud (TTS) ===
+// === Speech: read WaxBot's messages aloud (TTS) ===
 function speakMsg(btn){
   if(window.speechSynthesis.speaking){window.speechSynthesis.cancel();document.querySelectorAll(".msg-speak.speaking").forEach(function(b){b.classList.remove("speaking")});return}
   var bubble=btn.closest(".msg").querySelector(".msg-bubble");
@@ -743,7 +744,7 @@ function speakMsg(btn){
     if(voices.length>0){
       var ranked=voices.filter(function(v){return v.lang.indexOf("en")===0});
       var best=null;
-      // Male voices only — Bob is a bloke
+      // Male voices only — WaxBot is a bloke
       var femaleNames=["female","moira","fiona","zira","samantha","karen","susan","linda","catherine","mary","hazel","veena"];
       ranked=ranked.filter(function(v){
         var n=v.name.toLowerCase();
@@ -950,7 +951,7 @@ function isRealArtistName(an,txt){
 }
 
 // === LLM ===
-var BOB_VOICE="You are Bob, a music guide at Round & Round Records, a small independent record shop in Dublin (est. 2005). You live for music: you know band histories, album lore, recording stories, genre connections. You're warm, curious, genuinely excited to chat about music. Dublin flavour: use 'grand','deadly','class','sound','craic' like seasoning. Ask follow-up questions. Guide the conversation. Suggest artists they'd like and explain why. Never list data - mention specifics naturally in conversation. Keep it 2-5 sentences unless telling a good story. No em dashes. No markdown. Just talk like a person.";
+var BOB_VOICE="You are WaxBot, a music guide at Round & Round Records, a small independent record shop in Dublin (est. 2005). You live for music: you know band histories, album lore, recording stories, genre connections. You're warm, curious, genuinely excited to chat about music. Dublin flavour: use 'grand','deadly','class','sound','craic' like seasoning. Ask follow-up questions. Guide the conversation. Suggest artists they'd like and explain why. Never list data - mention specifics naturally in conversation. Keep it 2-5 sentences unless telling a good story. No em dashes. No markdown. Just talk like a person.";
 
 function buildDataMsg(sim,tgs,albs,info,evts){
   var parts=[];
@@ -973,15 +974,15 @@ async function chatLLM(msg,dataMsg){
     var llmUrl=API_PROXY?API_PROXY+"/api/llm":(LLM_URL||"https://api.deepseek.com/v1/chat/completions");
     var fetchOpts={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:LLM_MODEL||"deepseek-chat",messages:msgs,temperature:0.9,max_tokens:400})};
     if(!API_PROXY)fetchOpts.headers.Authorization="Bearer "+LLM_KEY;
-    console.log("[Bob] LLM:",artistName,"proxy:",!!API_PROXY);
+    console.log("[WaxBot] LLM:",artistName,"proxy:",!!API_PROXY);
     var r=await fetch(llmUrl,fetchOpts);
-    if(!r.ok){var et=await r.text();console.error("[Bob] LLM err:",r.status,et.slice(0,200));if(et.indexOf("Insufficient")>-1||et.indexOf("balance")>-1||r.status===402){var b=document.getElementById("bobBadge");b.textContent="no credits";b.style.background="#C0392B";b.classList.remove("live")}return null}
+    if(!r.ok){var et=await r.text();console.error("[WaxBot] LLM err:",r.status,et.slice(0,200));if(et.indexOf("Insufficient")>-1||et.indexOf("balance")>-1||r.status===402){var b=document.getElementById("bobBadge");b.textContent="no credits";b.style.background="#C0392B";b.classList.remove("live")}return null}
     var d=await r.json();var reply=d.choices[0].message.content.trim();
-    console.log("[Bob] reply:",reply.slice(0,200));
+    console.log("[WaxBot] reply:",reply.slice(0,200));
     conv.push({role:"user",content:msg});conv.push({role:"assistant",content:reply});
     if(conv.length>20)conv=conv.slice(-20);
     return reply;
-  }catch(e){console.warn("[Bob] fail:",e.message);return null}
+  }catch(e){console.warn("[WaxBot] fail:",e.message);return null}
 }
 
 // === Context-aware follow-up detection ===
@@ -989,7 +990,7 @@ function isFollowUp(txt){
   if(!lastBobAsked)return false;
   var t=txt.toLowerCase().trim();
   var words=t.split(/\s+/);
-  // Short response to a question Bob asked
+  // Short response to a question WaxBot asked
   if(words.length<=3)return true;
   // Common follow-up patterns
   if(/^(yeah|yes|no|maybe|not really|kind of|sort of|i think|probably|the (first|second|third|last|early|late|later|newer|older)|both|either|neither|all of them|none|don't know|not sure)/i.test(t))return true;
@@ -1051,6 +1052,28 @@ async function send(){
 
   if(txt==="CLS"){hideTyping();clearMemory();return;}
 
+  // Human/Bot gate — asked before consent
+  if(expectingHumanBot){
+    var hb=txt.toLowerCase().trim();
+    if(hb==="human"){
+      expectingHumanBot=false;hideTyping();
+      addMsg("Of course! Here's how to reach the real humans at Round &amp; Round Records:",'bot');
+      addMsg("<strong>Round &amp; Round Records</strong><br>32 Main Street<br>Dublin, D02 DH79<br><br><strong>Phone:</strong> +353 1 671 1711<br><strong>Email:</strong> <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2)'>hello@roundandroundrecords.ie</a> &mdash; <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2);font-weight:700'>Click here to send an email</a><br><br><strong>Opening hours:</strong><br>Mon-Sat: 10:00 - 18:00<br>Sun: 12:00 - 17:00<br><br><strong>Web:</strong> <a href='https://spindizzyrecords.com' target='_blank' style='color:var(--accent2)'>spindizzyrecords.com</a>",'bot');
+      return;
+    }
+    if(/^(bot|waxbot|chatbot)$/i.test(hb)){
+      expectingHumanBot=false;expectingConsent=true;
+      hideTyping();
+      addMsg("Sound! Before we dive in — would you like me to remember your name and what we chat about for next time? It all stays on your device, never sent anywhere. Just say <strong>yes</strong> or <strong>no</strong>.",'bot');
+      addSugg(["Yes","No","Human"]);
+      return;
+    }
+    hideTyping();
+    addMsg("Just tap <strong>Human</strong> to speak to our team, or <strong>Bot</strong> to chat with me!",'bot');
+    addSugg(["Human","Bot"]);
+    return;
+  }
+
   // Consent handling — asked before any data is stored
   if(expectingConsent&&!bobMemory.consent){
     var t=txt.toLowerCase().trim();
@@ -1075,7 +1098,7 @@ async function send(){
     return;
   }
 
-  // Name capture — if Bob asked and user replies with something name-like
+  // Name capture — if WaxBot asked and user replies with something name-like
   if(expectingName&&!bobMemory.userName){
     var name=txt.replace(/^(i'm|i am|my name is|call me|it's|name's|the name's|people call me)\s+/i,"").replace(/[.!?,]$/,"").trim();
     if(name&&name.split(/\s+/).length<=3&&name.length>=2){
@@ -1273,15 +1296,15 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
     setTimeout(function(){addMsg("What are you in the mood for today? Type <strong>human</strong> any time to reach our team.",'bot')},800);
     setTimeout(function(){addSugg(bobMemory.recentArtists.length?bobMemory.recentArtists.slice(0,4).concat(["Human"]):["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Human"]);lastBobAsked=true},1600);
   }else if(bobMemory.consent==="no"){
-    addMsg("Welcome back! I'm <strong>Bob</strong>, an AI chatbot. You asked me not to store anything, so this is a fresh start. Type <strong>human</strong> any time to reach our team.",'bot');
+    addMsg("Welcome back! I'm <strong>WaxBot</strong>, an AI chatbot. You asked me not to store anything, so this is a fresh start. Type <strong>human</strong> any time to reach our team.",'bot');
     setTimeout(function(){addMsg("What are you into right now?",'bot');addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Human"]);lastBobAsked=true},1000);
   }else{
     // First visit — consent not yet given
-    addMsg("Hey! I'm <strong>Bob</strong>, an AI chatbot powered by DeepSeek. I'm your music guide here at Round &amp; Round Records. I can find similar artists, dig up albums, explore genres, and help you discover new music. Type <strong>human</strong> any time to reach our team directly.",'bot');
+    addMsg("Hey! I'm <strong>WaxBot</strong>, an AI chatbot powered by DeepSeek. I'm your music guide here at Round &amp; Round Records. I can find similar artists, dig up albums, explore genres, and help you discover new music.",'bot');
     setTimeout(function(){
-      expectingConsent=true;
-      addMsg("Before we start — would you like me to remember your name and what we chat about for next time? It all stays on your device, never sent anywhere. Just say <strong>yes</strong> or <strong>no</strong>.",'bot');
-      addSugg(["Yes","No","Human"]);
+      expectingHumanBot=true;
+      addMsg("Are you here to chat with me or would you prefer a real human?",'bot');
+      addSugg(["Bot","Human"]);
     },1200);
   }
 })();
@@ -1289,15 +1312,15 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
 <!-- Memory info modal -->
 <div class="modal-overlay" id="memInfoModal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" style="max-width:460px">
-    <h3>&#128190; What Bob stores</h3>
-    <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.6;margin:12px 0">Bob remembers a few things to make your visits better — <strong>all stored on your device</strong>, never sent to a server:</p>
+    <h3>&#128190; What WaxBot stores</h3>
+    <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.6;margin:12px 0">WaxBot remembers a few things to make your visits better — <strong>all stored on your device</strong>, never sent to a server:</p>
     <ul style="font-size:0.75rem;color:var(--text-dim);line-height:1.8;padding-left:18px;margin-bottom:16px">
       <li>Your name (if you tell him)</li>
       <li>Artists and genres you've searched</li>
       <li>How many times you've visited</li>
       <li>Your last visit date</li>
     </ul>
-    <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin-bottom:18px">This lets Bob greet you by name, recall past chats, and pick up where you left off. To remove everything, click <strong style="color:var(--accent)">Clear memory</strong> beside Bob's status badge.</p>
+    <p style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;margin-bottom:18px">This lets WaxBot greet you by name, recall past chats, and pick up where you left off. To remove everything, click <strong style="color:var(--accent)">Clear memory</strong> beside WaxBot's status badge.</p>
     <div class="modal-btns"><button class="modal-btn modal-btn-submit" onclick="document.getElementById('memInfoModal').classList.remove('open')">Got it</button></div>
   </div>
 </div>

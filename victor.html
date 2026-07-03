@@ -19,8 +19,8 @@ body{
 /* Sidebar */
 .page-sidebar{position:sticky;top:24px;display:flex;flex-direction:column;gap:16px}
 .sidebar-cta{display:flex;flex-direction:column;justify-content:center;text-align:center;padding:20px 24px;border-radius:12px;text-decoration:none;font-weight:800;transition:all .2s;box-shadow:0 8px 30px rgba(0,0,0,0.3);flex:1}
-.sidebar-cta-bob{background:linear-gradient(-45deg,var(--accent),#C0392B,#E85D3F,#D14A30,#E85D3F);background-size:400% 400%;color:#fff;animation:wave-cta 2.5s ease infinite}
-.sidebar-cta-bob:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.5)}
+.sidebar-cta-WaxBot{background:linear-gradient(-45deg,var(--accent),#C0392B,#E85D3F,#D14A30,#E85D3F);background-size:400% 400%;color:#fff;animation:wave-cta 2.5s ease infinite}
+.sidebar-cta-WaxBot:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.5)}
 .sidebar-cta-qa{background:linear-gradient(135deg,#1A3A34,#2A5A4E);color:#fff;border:2px solid rgba(74,158,142,0.3)}
 .sidebar-cta-qa:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(74,158,142,0.3);border-color:var(--accent2)}
 .sidebar-cta .cta-main{font-size:1.05rem;display:block;margin-bottom:4px;color:#fff}
@@ -119,29 +119,29 @@ body{
     <h2>Bringing the record shop counter online</h2>
     <p><strong>Round &amp; Round Records</strong> (R&amp;R) is a small independent retailer of vinyl records and CDs. Their differentiator has always been <strong>personal, knowledgeable service</strong>: the staff act as music guides, helping customers find hard-to-get records, advising on different pressings and versions, and introducing people to new music based on their existing tastes.</p>
     <p>The problem: <strong>business has increasingly moved online</strong>, where customers browse and search for items on a screen. There's no opportunity for the friendly, expert advice that makes R&amp;R special. <strong>How do you replicate that personal touch digitally?</strong></p>
-    <p>The answer: a friendly, AI-powered chatbot named <strong>Bob</strong> that mimics the experience of talking to a knowledgeable staff member in the physical shop.</p>
+    <p>The answer: a friendly, AI-powered chatbot named <strong>WaxBot</strong> that mimics the experience of talking to a knowledgeable staff member in the physical shop.</p>
   </div>
 
   <!-- How it works -->
   <div class="section">
-    <div class="section-label">How Bob Works</div>
+    <div class="section-label">How WaxBot Works</div>
     <h2>AI-powered music discovery, grounded in real catalogues</h2>
 
     <div class="card-grid">
       <div class="card">
         <div class="card-icon">&#129302;</div>
         <h4>Conversational AI</h4>
-        <p>Bob is powered by <strong>DeepSeek</strong>, a large language model. He understands natural conversation: you can say "I like Pixies and Metric" or "best Irish albums of the 90s" and he'll have a genuinely knowledgeable chat about music, just like a real record shop assistant.</p>
+        <p>WaxBot is powered by <strong>DeepSeek</strong>, a large language model. He understands natural conversation: you can say "I like Pixies and Metric" or "best Irish albums of the 90s" and he'll have a genuinely knowledgeable chat about music, just like a real record shop assistant.</p>
       </div>
       <div class="card">
         <div class="card-icon">&#128191;</div>
         <h4>Real Catalogue Data</h4>
-        <p>Bob uses <strong>Last.fm's</strong> massive music database to find similar artists, top albums by play count, genre tags, artist biographies, and even upcoming live events. Everything he suggests is grounded in real data.</p>
+        <p>WaxBot uses <strong>Last.fm's</strong> massive music database to find similar artists, top albums by play count, genre tags, artist biographies, and even upcoming live events. Everything he suggests is grounded in real data.</p>
       </div>
       <div class="card">
         <div class="card-icon">&#128722;</div>
         <h4>Purchase Path</h4>
-        <p>Every album Bob suggests links to <strong>Discogs</strong>, the world's largest physical music marketplace. Since R&amp;R Records is a fictional business created for this assignment and has no real catalogue, Discogs serves as a proxy for what would be the shop's actual inventory in a real deployment.</p>
+        <p>Every album WaxBot suggests links to <strong>Discogs</strong>, the world's largest physical music marketplace. Since R&amp;R Records is a fictional business created for this assignment and has no real catalogue, Discogs serves as a proxy for what would be the shop's actual inventory in a real deployment.</p>
       </div>
     </div>
   </div>
@@ -149,14 +149,14 @@ body{
   <!-- Limitations -->
   <div class="section">
     <div class="section-label">Limitations &amp; Known Weak Spots</div>
-    <h2>Where Bob still struggles</h2>
-    <p>Like any real-world AI project, Bob has rough edges. Here are the honest ones:</p>
+    <h2>Where WaxBot still struggles</h2>
+    <p>Like any real-world AI project, WaxBot has rough edges. Here are the honest ones:</p>
 
     <div class="card-grid">
       <div class="card">
         <div class="card-icon">&#128270;</div>
         <h4>NLP Entity Extraction</h4>
-        <p>Bob uses a <strong>second LLM call</strong> to extract artist and album names from his own responses for clickable links. This is far more accurate than regex, but it adds latency. The regex fallback (used when the LLM call is slow) is brittle: it strips common conversational words but can still extract phrases like "the early stuff" as artist names. Multi-word artist names with common words (e.g. "The The", "!!!") are particularly challenging.</p>
+        <p>WaxBot uses a <strong>second LLM call</strong> to extract artist and album names from his own responses for clickable links. This is far more accurate than regex, but it adds latency. The regex fallback (used when the LLM call is slow) is brittle: it strips common conversational words but can still extract phrases like "the early stuff" as artist names. Multi-word artist names with common words (e.g. "The The", "!!!") are particularly challenging.</p>
       </div>
       <div class="card">
         <div class="card-icon">&#128191;</div>
@@ -166,7 +166,7 @@ body{
       <div class="card">
         <div class="card-icon">&#9888;</div>
         <h4>Conversation Context</h4>
-        <p>Bob maintains conversation history (last 10 exchanges) within the current session, and <strong>persists memory across visits</strong> using browser localStorage — including your name, recent searches, and favourite genres. On return visits, Bob greets you personally and references past chats. This memory is <strong>device-only</strong>: no data leaves your browser. A "Clear memory" button lets you wipe it at any time.</p>
+        <p>WaxBot maintains conversation history (last 10 exchanges) within the current session, and <strong>persists memory across visits</strong> using browser localStorage — including your name, recent searches, and favourite genres. On return visits, WaxBot greets you personally and references past chats. This memory is <strong>device-only</strong>: no data leaves your browser. A "Clear memory" button lets you wipe it at any time.</p>
       </div>
       <div class="card">
         <div class="card-icon">&#9200;</div>
@@ -176,12 +176,12 @@ body{
       <div class="card">
         <div class="card-icon">&#128190;</div>
         <h4>Browser Memory</h4>
-        <p>Bob uses <strong>localStorage</strong> to remember your preferences, recent searches, and your name between visits — <strong>no login required</strong>. Everything stays on your device; nothing is sent to a server. Memory is per-browser (not synced across devices). A "Clear memory" button in the chat header wipes all stored data instantly.</p>
+        <p>WaxBot uses <strong>localStorage</strong> to remember your preferences, recent searches, and your name between visits — <strong>no login required</strong>. Everything stays on your device; nothing is sent to a server. Memory is per-browser (not synced across devices). A "Clear memory" button in the chat header wipes all stored data instantly.</p>
       </div>
       <div class="card">
         <div class="card-icon">&#127911;</div>
         <h4>Genre &amp; Discovery Accuracy</h4>
-        <p>Genre-based searches ("best Irish albums of the 80s") use Last.fm's <strong>community-applied tags</strong>, which are crowd-sourced and can be inconsistent. An album tagged "irish" might be Irish folk, Irish rock, or just by an artist who once played in Dublin. There's no era filtering at the API level, so "80s Irish albums" returns all Irish-tagged albums regardless of decade. Bob's LLM compensates with its own knowledge, but the panel data is unfiltered.</p>
+        <p>Genre-based searches ("best Irish albums of the 80s") use Last.fm's <strong>community-applied tags</strong>, which are crowd-sourced and can be inconsistent. An album tagged "irish" might be Irish folk, Irish rock, or just by an artist who once played in Dublin. There's no era filtering at the API level, so "80s Irish albums" returns all Irish-tagged albums regardless of decade. WaxBot's LLM compensates with its own knowledge, but the panel data is unfiltered.</p>
       </div>
     </div>
   </div>
@@ -230,13 +230,13 @@ body{
     <h2>Built by a team of AI agent colleagues</h2>
     <p>The project was developed using a structured team of specialist AI agents, each with a defined role, domain expertise, and boundaries. This mirrors how a real innovation team would operate.</p>
     <p>The team's design decisions are grounded in <strong>three academic best-practice frameworks</strong> from the Customer Engagement &amp; AI module: the seven-dimension chatbot taxonomy (Adamopoulou &amp; Moussiades 2020), CASA / Computers Are Social Actors (Reeves &amp; Nass 1996), and conversation flow anatomy. Each specialist agent owns the framework dimensions relevant to their domain.</p>
-    <p style="margin-top:8px;padding:12px 16px;background:rgba(74,158,142,0.08);border:1px solid rgba(74,158,142,0.2);border-radius:8px"><strong style="color:var(--accent2)">&#128269; QA Dashboard:</strong> The solution has been assessed against all three frameworks with a full academic design review. <strong>Current design score: 3.0/5 (Grade C+)</strong>. 18 findings tracked with numbered F1-F18 identifiers, manual override and closed-by-human columns, and a separate 17-bug code-level register. <a href="qa.html" style="color:var(--accent2);font-weight:700">View the full QA dashboard &rarr;</a></p>
+    <p style="margin-top:8px;padding:12px 16px;background:rgba(74,158,142,0.08);border:1px solid rgba(74,158,142,0.2);border-radius:8px"><strong style="color:var(--accent2)">&#128269; QA Dashboard:</strong> The solution has been assessed against all three frameworks with a full academic design review. <strong>Current design score: 3.5/5 (Grade B-)</strong>. 18 findings tracked with numbered F1-F18 identifiers, manual override and closed-by-human columns, and a separate 17-bug code-level register. <a href="qa.html" style="color:var(--accent2);font-weight:700">View the full QA dashboard &rarr;</a></p>
 
     <div class="card-grid">
       <div class="card">
         <div class="card-icon">&#128270;</div>
         <h4>@Fionn &mdash; Researcher</h4>
-        <p>Music catalogue expert. Researched Spindizzy and Discogs catalogues, mapped data structures, and built the knowledge base that powers Bob's recommendations.</p>
+        <p>Music catalogue expert. Researched Spindizzy and Discogs catalogues, mapped data structures, and built the knowledge base that powers WaxBot's recommendations.</p>
       </div>
       <div class="card">
         <div class="card-icon">&#127912;</div>
@@ -246,7 +246,7 @@ body{
       <div class="card">
         <div class="card-icon">&#128736;</div>
         <h4>@Dot &mdash; Maker</h4>
-        <p>Chatbot engineer. Built Bob's conversation engine, API integrations, search logic, entity extraction, and the refinement/recommendation system.</p>
+        <p>Chatbot engineer. Built WaxBot's conversation engine, API integrations, search logic, entity extraction, and the refinement/recommendation system.</p>
       </div>
       <div class="card">
         <div class="card-icon">&#128295;</div>
@@ -265,7 +265,7 @@ body{
       </div>
       <div class="card">
         <div class="card-icon">&#129302;</div>
-        <h4>@Bob &mdash; The Bot</h4>
+        <h4>@WaxBot &mdash; The Bot</h4>
         <p>The AI music guide himself. Powered by DeepSeek with Last.fm enrichment and Discogs marketplace integration. Friendly, knowledgeable, Dublin-flavoured.</p>
       </div>
     </div>
@@ -278,12 +278,12 @@ body{
 
     <a class="sidebar-cta sidebar-cta-qa" href="qa.html">
       <span class="cta-main">&#128269; QA Dashboard</span>
-      <span class="cta-sub">Academic design review: 3.0/5 (C+). 18 findings tracked.</span>
+      <span class="cta-sub">Academic design review: 3.5/5 (B-). 18 findings tracked.</span>
     </a>
 
-    <a class="sidebar-cta sidebar-cta-bob" href="index.html">
-      <span class="cta-main">&#127925; Chat with Bob</span>
-      <span class="cta-tagline">And don't be afraid to ask Bob for a pint of Guinness, or who he thinks will win the World Cup!</span>
+    <a class="sidebar-cta sidebar-cta-WaxBot" href="index.html">
+      <span class="cta-main">&#127925; Chat with WaxBot</span>
+      <span class="cta-tagline">And don't be afraid to ask WaxBot for a pint of Guinness, or who he thinks will win the World Cup!</span>
     </a>
   </div>
 </div>

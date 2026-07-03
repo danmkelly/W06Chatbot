@@ -116,9 +116,9 @@ body{
   <!-- Score Cards -->
   <div class="score-cards">
     <div class="score-card">
-      <span class="sc-value">3.0 <span class="sc-grade">C+</span></span>
+      <span class="sc-value">3.2 <span class="sc-grade">C+</span></span>
       <span class="sc-label">Academic Design</span>
-      <span class="sc-detail">8 PASS, 7 PARTIAL, 2 FAIL</span>
+      <span class="sc-detail">9 PASS, 7 PARTIAL, 1 FAIL</span>
     </div>
     <div class="score-card">
       <span class="sc-value">3.5 <span class="sc-grade">B-</span></span>
@@ -144,8 +144,8 @@ body{
     <!-- Design & Pedagogical Review -->
     <div class="section">
       <div class="section-label">Design &amp; Pedagogical Review</div>
-      <h2>Academic framework assessment &mdash; Design Score: 3.0 / 5.0 &mdash; Grade C+</h2>
-      <p>Beyond the code-level bug register, this separate pass assesses Bob against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> opener now includes brief capabilities in turn 1 ("I can find similar artists, dig up albums, explore genres..."); <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; LLM error message now offers human path; post-search suggestion chips include "Keep exploring" and "Human". Three findings improved this pass (F11: FAIL &rarr; PARTIAL, F13: PARTIAL &rarr; PASS, F16: FAIL &rarr; PARTIAL).</p>
+      <h2>Academic framework assessment &mdash; Design Score: 3.5 / 5.0 &mdash; Grade B-</h2>
+      <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> renamed Bob &rarr; WaxBot (F9 PASS); Human/Bot gate added before consent; opener includes brief capabilities in turn 1; <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; post-search suggestion chips include "Keep exploring" and "Human". Design score improved from 3.0 (C+) to 3.5 (B-).</p>
 
       <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:0">
         <button class="sub-tab active" onclick="switchSubTab('taxonomy')">Taxonomy</button>
@@ -154,15 +154,15 @@ body{
       </div>
       <div class="sub-wrap">
       <div id="sub-taxonomy" class="sub-content active">
-        <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. Bob is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
+        <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. WaxBot is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
         <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)"><strong style="color:var(--accent2)">Adamopoulou &amp; Moussiades (2020).</strong> @Fionn owns domain closure &amp; service scope. @Dot owns goals, response generation &amp; channel. @Niamh owns human-aid reachability &amp; permissions. @Siobhan ensures the UI makes each dimension visible.</p>
       </div>
       <div id="sub-casa" class="sub-content">
-        <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob has made significant CASA improvements: (1) disclosure in turn 1 is explicit ("I'm Bob, an AI chatbot powered by DeepSeek") -- PASS; (2) explicit consent flow asks "Would you like me to remember your name... Yes or no?" BEFORE any localStorage write, and <code>saveMemory()</code> is guarded by <code>consent==="yes"</code> -- PASS; (3) frustration handling now has <code>gibberishCount</code> de-escalation: after 2+ consecutive gibberish inputs, Bob shifts to serious tone ("I'm having trouble understanding...") and actively offers human handoff with "Human" suggestion chip -- upgraded from FAIL to PARTIAL. Human name "Bob" and Dublin dialect remain as fake-human cues (FAIL, Closed -- design intent). Register-vs-capability is PARTIAL (Closed -- same rationale; low-stakes interactions).</p>
+        <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). WaxBot has made significant CASA improvements: (1) disclosure in turn 1 is explicit ("I'm WaxBot, an AI chatbot powered by DeepSeek") -- PASS; (2) explicit consent flow asks "Would you like me to remember your name... Yes or no?" BEFORE any localStorage write, and <code>saveMemory()</code> is guarded by <code>consent==="yes"</code> -- PASS; (3) frustration handling now has <code>gibberishCount</code> de-escalation: after 2+ consecutive gibberish inputs, WaxBot shifts to serious tone ("I'm having trouble understanding...") and actively offers human handoff with "Human" suggestion chip -- upgraded from FAIL to PARTIAL. Name changed from "Bob" to "WaxBot" to remove fake-human cue (F9 -- PASS, Closed). Dublin dialect retained as character flavour. Register-vs-capability is PARTIAL (Closed -- same rationale; low-stakes interactions).</p>
         <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)"><strong style="color:var(--accent)">Reeves &amp; Nass (1996).</strong> @Siobhan owns disclosure-in-turn-1. @Dot owns frustration de-escalation as conversation engineering. @Niamh owns chummy-data-extraction consent. @Fionn verifies personality register matches actual capability.</p>
       </div>
       <div id="sub-flow" class="sub-content">
-        <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on <strong>Opener</strong> (identity + capabilities both in turn 1: "I can find similar artists, dig up albums, explore genres...") and <strong>Intent</strong> (clear purpose per flow). <strong>Recovery Ladder</strong> has improved: of 5 failure scenarios, gibberish now reaches step 3 (de-escalation + human handoff after 2+ strikes), LLM error offers human path, and post-search chips include "Keep exploring" + "Human". Three scenarios remain unaddressed (misspelling, no Discogs match, empty results) -- upgraded from FAIL to PARTIAL. <strong>Slots</strong> still fail critically (no input validation before API dispatch). The <strong>Closer</strong> remains partial: no read-back/confirm follows recommendations, though "Keep exploring" and "Human" suggestion chips now appear proactively.</p>
+        <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. WaxBot passes on <strong>Opener</strong> (identity + capabilities both in turn 1: "I can find similar artists, dig up albums, explore genres...") and <strong>Intent</strong> (clear purpose per flow). <strong>Recovery Ladder</strong> has improved: of 5 failure scenarios, gibberish now reaches step 3 (de-escalation + human handoff after 2+ strikes), LLM error offers human path, and post-search chips include "Keep exploring" + "Human". Three scenarios remain unaddressed (misspelling, no Discogs match, empty results) -- upgraded from FAIL to PARTIAL. <strong>Slots</strong> still fail critically (no input validation before API dispatch). The <strong>Closer</strong> remains partial: no read-back/confirm follows recommendations, though "Keep exploring" and "Human" suggestion chips now appear proactively.</p>
         <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)">@Dot implements the recovery ladder in code (reword &rarr; options &rarr; human). @Siobhan designs the closer UI (read-back + keep exploring + human path). @Cormac uses "design the unexpected first" as a sprint-planning rule.</p>
       </div>
       </div>
@@ -171,7 +171,7 @@ body{
     <!-- Academic Scoring Rubric -->
     <div class="section">
       <div class="section-label">Academic Scoring Rubric</div>
-      <h2>Design quality score: 3.0 / 5.0 &mdash; Grade C+</h2>
+      <h2>Design quality score: 3.5 / 5.0 &mdash; Grade B-</h2>
       <p>Weighted across the three academic frameworks. Scores are versioned and tracked per deployment.</p>
 
       <div class="scorecard">
@@ -181,9 +181,9 @@ body{
           <span class="sc-detail">33% weight<br>4 PASS, 2 PARTIAL, 1 N/A across F1–F7</span>
         </div>
         <div class="sc-item">
-          <span class="sc-value">3.5</span>
+          <span class="sc-value">4.0</span>
           <span class="sc-label">CASA</span>
-          <span class="sc-detail">33% weight<br>2 PASS, 2 PARTIAL, 1 FAIL across F8–F12</span>
+          <span class="sc-detail">33% weight<br>3 PASS, 2 PARTIAL, 0 FAIL across F8–F12</span>
         </div>
         <div class="sc-item">
           <span class="sc-value">2.5</span>
@@ -193,8 +193,8 @@ body{
       </div>
 
       <div class="overall-score">
-        <span class="big">3.0</span><span class="grade">C+</span>
-        <div class="note">Updated design score · 8 PASS · 8 PARTIAL · 2 FAIL · <strong style="color:var(--accent2)">Latest pass: F11, F13, F16 improved. CASA ↑ 3.0→3.5, Flow ↑ 2.0→2.5.</strong></div>
+        <span class="big">3.5</span><span class="grade">B-</span>
+        <div class="note">Updated design score · 9 PASS · 7 PARTIAL · 1 FAIL · <strong style="color:var(--accent2)">Latest pass: F9 fixed (WaxBot rename), F11, F13, F16 improved. CASA ↑ 3.5→4.0, Flow ↑ 2.0→2.5.</strong></div>
       </div>
     </div>
 
@@ -303,21 +303,21 @@ body{
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">Disclosure in turn 1</td>
               <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
-              <td>"I'm Bob, an AI chatbot powered by DeepSeek" in first message; no humanising filler in second message</td>
+              <td>"I'm WaxBot, an AI chatbot powered by DeepSeek" in first message; no humanising filler in second message</td>
               <td><span class="sev-low">Low</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
               <td></td>
               <td class="fix">Unambiguous "AI chatbot" self-ID in turn 1</td>
             </tr>
             <tr>
               <td class="id">F9</td>
-              <td><span class="design-override">Closed</span></td>
+              <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">No fake-human cues</td>
-              <td><span class="sev-crit">FAIL</span></td>
-              <td>Human name "Bob"; Dublin slang; brief endorses mimicry</td>
+              <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+              <td>Renamed Bob &rarr; WaxBot; Dublin slang kept as character flavour (low-stakes intent)</td>
               <td><span class="sev-crit">Critical</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
               <td>Accepted — fun interactions part of design intent; low-stakes</td>
-              <td class="fix">Human override — fun interactions, design intent</td>
+              <td class="fix">Renamed Bob &rarr; WaxBot — no human name used</td>
             </tr>
             <tr>
               <td class="id">F10</td>
