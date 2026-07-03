@@ -96,8 +96,9 @@ body{
 .sub-tab{padding:7px 16px 5px;font-size:0.65rem;font-weight:600;cursor:pointer;border:1.5px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:transparent;color:var(--text-dim);transition:all .15s;font-family:inherit;position:relative;top:1.5px}
 .sub-tab.active{background:rgba(255,255,255,0.03);color:var(--accent2);border-color:var(--border);top:1.5px}
 .sub-tab:hover:not(.active){color:var(--text)}
-.sub-content{display:none;border:1.5px solid var(--border);border-radius:0 6px 6px 6px;padding:12px;margin-bottom:14px;min-height:120px}
-.sub-content.active{display:block}.sub-content:not(.active){display:none}
+.sub-content{display:none;border:1.5px solid var(--border);border-radius:0 6px 6px 6px;padding:12px;margin-bottom:14px}
+.sub-content.active{display:block}
+.sub-wrap{position:relative;min-height:140px}
 </style>
 </head>
 <body>
@@ -150,6 +151,7 @@ body{
         <button class="sub-tab" onclick="switchSubTab('casa')">CASA</button>
         <button class="sub-tab" onclick="switchSubTab('flow')">Flow Anatomy</button>
       </div>
+      <div class="sub-wrap">
       <div id="sub-taxonomy" class="sub-content active">
         <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. Bob is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
       </div>
@@ -158,6 +160,7 @@ body{
       </div>
       <div id="sub-flow" class="sub-content">
         <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on <strong>Opener</strong> (identity + capabilities both in turn 1: "I can find similar artists, dig up albums, explore genres...") and <strong>Intent</strong> (clear purpose per flow). <strong>Recovery Ladder</strong> has improved: of 5 failure scenarios, gibberish now reaches step 3 (de-escalation + human handoff after 2+ strikes), LLM error offers human path, and post-search chips include "Keep exploring" + "Human". Three scenarios remain unaddressed (misspelling, no Discogs match, empty results) -- upgraded from FAIL to PARTIAL. <strong>Slots</strong> still fail critically (no input validation before API dispatch). The <strong>Closer</strong> remains partial: no read-back/confirm follows recommendations, though "Keep exploring" and "Human" suggestion chips now appear proactively.</p>
+      </div>
       </div>
 
       <div class="bug-table-wrap" style="margin-top:20px">
