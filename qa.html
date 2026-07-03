@@ -94,7 +94,7 @@ body{
   .page{padding:40px 16px 60px}
 }
 .design-override{color:#fff;background:#E67E22;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap;display:inline-block;width:56px;text-align:center;text-transform:uppercase}
-.sub-tab{padding:8px 18px 6px;font-size:1.5rem;font-weight:400;cursor:pointer;border:1.5px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:transparent;color:var(--text-dim);transition:all .15s;font-family:inherit;position:relative;top:1.5px}
+.sub-tab{padding:8px 14px 6px;font-size:1.1rem;font-weight:400;cursor:pointer;border:1.5px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:transparent;color:var(--text-dim);transition:all .15s;font-family:inherit;position:relative;top:1.5px;white-space:nowrap}
 .sub-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);top:1.5px}
 .sub-tab:hover:not(.active){color:var(--text)}
 .sub-content{display:none;border:1.5px solid var(--accent);border-radius:0 6px 6px 6px;padding:12px;margin-bottom:14px}
@@ -152,7 +152,7 @@ body{
       <h2>Academic framework assessment &mdash; Design Score: 3.5 / 5.0 &mdash; Grade B-</h2>
       <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>four academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> renamed Bob &rarr; WaxBot (F9 PASS); Human/Bot gate added before consent; opener includes brief capabilities in turn 1; <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; post-search suggestion chips include "Keep exploring" and "Human". Design score improved from 3.0 (C+) to 3.5 (B-).</p>
 
-      <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:0">
+      <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:0;flex-wrap:wrap">
         <button class="sub-tab active" onclick="switchSubTab('taxonomy')">Taxonomy</button>
         <button class="sub-tab" onclick="switchSubTab('casa')">CASA</button>
         <button class="sub-tab" onclick="switchSubTab('flow')">Flow Anatomy</button>
