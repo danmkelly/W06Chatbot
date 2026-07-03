@@ -21,10 +21,10 @@ body{
 .sidebar-cta{display:block;text-align:center;padding:20px 24px;border-radius:12px;text-decoration:none;font-weight:800;margin-bottom:16px;transition:all .2s;box-shadow:0 8px 30px rgba(0,0,0,0.3)}
 .sidebar-cta-bob{background:linear-gradient(-45deg,var(--accent),#C0392B,#E85D3F,#D14A30,#E85D3F);background-size:400% 400%;color:#fff;animation:wave-cta 2.5s ease infinite}
 .sidebar-cta-bob:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.5)}
-.sidebar-cta-qa{background:linear-gradient(135deg,#1A3A34,#2A5A4E);color:var(--accent2);border:2px solid rgba(74,158,142,0.3)}
+.sidebar-cta-qa{background:linear-gradient(135deg,#1A3A34,#2A5A4E);color:#fff;border:2px solid rgba(74,158,142,0.3)}
 .sidebar-cta-qa:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(74,158,142,0.3);border-color:var(--accent2)}
-.sidebar-cta .cta-main{font-size:1rem;display:block;margin-bottom:4px}
-.sidebar-cta .cta-sub{font-size:0.65rem;opacity:0.75;font-weight:500;margin-top:4px}
+.sidebar-cta .cta-main{font-size:1.05rem;display:block;margin-bottom:4px;color:#fff}
+.sidebar-cta .cta-sub{font-size:0.7rem;opacity:0.85;font-weight:500;margin-top:4px;color:#fff}
 .sidebar-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:10px}
 
 /* Hero */
@@ -276,17 +276,15 @@ body{
   <div class="page-sidebar">
     <div class="sidebar-label">Jump to action</div>
 
-    <a class="sidebar-cta sidebar-cta-bob" href="index.html">
-      <span class="cta-main">&#127925; Chat with Bob</span>
-      <span class="cta-sub">The working chatbot — try it now. No login needed.</span>
-    </a>
-
     <a class="sidebar-cta sidebar-cta-qa" href="qa.html">
       <span class="cta-main">&#128269; QA Dashboard</span>
       <span class="cta-sub">Academic design review: 3.0/5 (C+). 18 findings tracked.</span>
     </a>
 
-    <p style="text-align:center;font-size:0.6rem;color:var(--text-dim);margin-top:8px">Fully functional with LLM, catalogue search, and marketplace integration.</p>
+    <a class="sidebar-cta sidebar-cta-bob" href="index.html">
+      <span class="cta-main">&#127925; Chat with Bob</span>
+      <span class="cta-sub">The working chatbot — try it now. No login needed.</span>
+    </a>
   </div>
 </div>
 
