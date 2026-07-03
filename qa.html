@@ -110,7 +110,7 @@ body{
     <div class="hero-icon">&#128269;</div>
     <h1>QA Dashboard</h1>
     <p class="hero-keelin"><strong style="color:var(--accent3)">@Keelin</strong> is the QA specialist for this project. She runs two parallel assessment tracks: an <strong style="color:var(--accent2)">academic design review</strong> against four chatbot best-practice frameworks (Taxonomy, CASA, Conversation Flow Anatomy, Grice's Maxims) and a <strong style="color:var(--accent)">functional code-level bug hunt</strong> covering conversation paths, UI behaviour, voice interaction, memory persistence, and mobile responsiveness. Findings from both tracks are tracked, scored, and versioned here.</p>
-    <p class="hero-sub">Grounded in <strong>four academic best-practice frameworks</strong> from the Customer Engagement &amp; AI module: chatbot taxonomy (Adamopoulou &amp; Moussiades 2020), CASA / Computers Are Social Actors (Reeves &amp; Nass 1996), conversation flow anatomy, and Grice's maxims of conversation (Grice 1975). <strong>Last reviewed:</strong> 2026-07-03.</p>
+    <p class="hero-sub">Grounded in <strong>four academic best-practice frameworks</strong> from the Customer Engagement &amp; AI module: chatbot taxonomy (Adamopoulou &amp; Moussiades 2020), CASA / Computers Are Social Actors (Reeves &amp; Nass 1996), conversation flow anatomy, and Grice's maxims of conversation (Grice 1975). <strong>Last reviewed:</strong> 2026-07-03. <strong style="color:var(--accent2)">All findings closed &middot; 0 FAIL &middot; 0 open bugs.</strong></p>
   </div>
 
   <!-- Score Cards -->
@@ -145,7 +145,7 @@ body{
     <div class="section">
       <div class="section-label">Design &amp; Pedagogical Review</div>
       <h2>Academic framework assessment &mdash; Design Score: 3.5 / 5.0 &mdash; Grade B-</h2>
-      <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>four academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> renamed Bob &rarr; WaxBot (A09 PASS); Human/Bot gate added before consent; opener includes brief capabilities in turn 1; <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; post-search suggestion chips include "Keep exploring" and "Human". Design score improved from 3.0 (C+) to 4.0 (B).</p>
+      <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>four academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent2)">Keelin's final pass &mdash; all 22 findings closed (13 resolved, 9 Human Accepted). 0 FAILs. 12 PASS, 9 PARTIAL, 1 N/A. Design score: 4.0 (Grade B).</strong></p>
 
       <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:0;flex-wrap:wrap">
         <button class="sub-tab active" onclick="switchSubTab('taxonomy')">Taxonomy</button>
@@ -573,8 +573,8 @@ body{
     <div class="section">
       <div class="section-label">Bug Register</div>
       <h2>18 bugs tracked (18 resolved, 0 open)</h2>
-      <p>Found via static code analysis of index.html (lines 1-1235). Updated per deployment. Fresh QA pass: 2026-07-02.</p>
-      <p style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px"><span class="design-closed" style="vertical-align:middle;margin-right:2px">Closed</span> = resolved &nbsp; <span class="design-open" style="vertical-align:middle;margin-right:2px">Open</span> = still in play</p>
+      <p>Found via static code analysis of index.html (lines 1-1235). Keelin's final pass — all 18 bugs resolved (13 fixed in code, 5 Human Accepted). 0 open.</p>
+      <p style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px"><span class="design-closed" style="vertical-align:middle;margin-right:2px">Closed</span> = resolved &nbsp; <span class="design-override" style="vertical-align:middle;margin-right:2px">Closed</span> = accepted (human call)</p>
 
       <div class="bug-table-wrap">
         <table class="bug-table">
