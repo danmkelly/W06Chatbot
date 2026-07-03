@@ -95,7 +95,7 @@ body{
 }
 .design-override{color:#fff;background:#E67E22;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap;display:inline-block;width:56px;text-align:center;text-transform:uppercase}
 .sub-tab{padding:8px 18px 6px;font-size:1.5rem;font-weight:400;cursor:pointer;border:1.5px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:transparent;color:var(--text-dim);transition:all .15s;font-family:inherit;position:relative;top:1.5px}
-.sub-tab.active{background:var(--surface);color:var(--accent2);border-color:var(--accent);top:1.5px}
+.sub-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);top:1.5px}
 .sub-tab:hover:not(.active){color:var(--text)}
 .sub-content{display:none;border:1.5px solid var(--accent);border-radius:0 6px 6px 6px;padding:12px;margin-bottom:14px}
 .sub-content.active{display:block}
@@ -166,6 +166,43 @@ body{
         <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)">@Dot implements the recovery ladder in code (reword &rarr; options &rarr; human). @Siobhan designs the closer UI (read-back + keep exploring + human path). @Cormac uses "design the unexpected first" as a sprint-planning rule.</p>
       </div>
       </div>
+    </div>
+
+    <!-- Academic Scoring Rubric -->
+    <div class="section">
+      <div class="section-label">Academic Scoring Rubric</div>
+      <h2>Design quality score: 3.0 / 5.0 &mdash; Grade C+</h2>
+      <p>Weighted across the three academic frameworks. Scores are versioned and tracked per deployment.</p>
+
+      <div class="scorecard">
+        <div class="sc-item">
+          <span class="sc-value">3.5</span>
+          <span class="sc-label">Taxonomy</span>
+          <span class="sc-detail">33% weight<br>4 PASS, 2 PARTIAL, 1 N/A across F1–F7</span>
+        </div>
+        <div class="sc-item">
+          <span class="sc-value">3.5</span>
+          <span class="sc-label">CASA</span>
+          <span class="sc-detail">33% weight<br>2 PASS, 2 PARTIAL, 1 FAIL across F8–F12</span>
+        </div>
+        <div class="sc-item">
+          <span class="sc-value">2.5</span>
+          <span class="sc-label">Flow Anatomy</span>
+          <span class="sc-detail">33% weight<br>2 PASS, 4 PARTIAL, 1 FAIL across F13–F18</span>
+        </div>
+      </div>
+
+      <div class="overall-score">
+        <span class="big">3.0</span><span class="grade">C+</span>
+        <div class="note">Updated design score · 8 PASS · 8 PARTIAL · 2 FAIL · <strong style="color:var(--accent2)">Latest pass: F11, F13, F16 improved. CASA ↑ 3.0→3.5, Flow ↑ 2.0→2.5.</strong></div>
+      </div>
+    </div>
+
+    <!-- Design Findings -->
+    <div class="section">
+      <div class="section-label">Design Findings</div>
+      <h2>18 findings tracked</h2>
+      <p>Grounded in three academic best-practice frameworks from the Customer Engagement &amp; AI module. Findings numbered F1–F18, scored PASS/PARTIAL/FAIL/N/A.</p>
 
       <div class="bug-table-wrap" style="margin-top:20px">
         <table class="bug-table">
@@ -383,46 +420,6 @@ body{
             </tr>
           </tbody>
         </table>
-      </div>
-
-      <div class="overall-score" style="margin-top:20px">
-        <span class="big">3.0</span><span class="grade">C+</span>
-        <div class="note">Design quality score &middot; 7 PASS &middot; 8 PARTIAL &middot; 2 FAIL &middot; 1 N/A &middot; <strong style="color:var(--accent2)">Latest pass: F11, F13, F16 improved. Gibberish de-escalation + human handoff added. Opener now includes capabilities in turn 1. Post-search chips offer "Keep exploring" + "Human". Score up from 2.7 (C).</strong></div>
-      </div>
-
-      <h3 style="margin-top:20px">Change log</h3>
-      <p style="font-size:0.78rem;color:var(--text-dim);line-height:1.7">
-        <strong style="color:var(--accent)">2026-07-02 (final review after recovery ladder + opener deployment):</strong> F11 (frustration handling) upgraded FAIL &rarr; PARTIAL. <code>gibberishCount</code> counter now tracks consecutive failures; after 2+ strikes, Bob shifts from cheerful to serious register ("I'm having trouble understanding...") and offers "Human" suggestion chip. LLM error fallback updated to include human path. F13 (opener) upgraded PARTIAL &rarr; PASS. Turn 1 now includes brief capabilities: "I can find similar artists, dig up albums, explore genres, and help you discover new music." Human handoff also disclosed in turn 1. F16 (recovery ladder) upgraded FAIL &rarr; PARTIAL. Gibberish now reaches step 3 of the ladder; LLM fallback offers human path; post-search suggestion chips now include "Keep exploring" and "Human". Three scenarios still unaddressed (misspelling, no Discogs match, empty results). F9 (fake-human cues) and F10 (register vs capability) remain with manual override: Closed, accepted as low-stakes design decisions. Overall design score improved from 2.7 (Grade C) to 3.0 (Grade C+). CASA scorecard improved from 3.0/5 to 3.5/5. Flow Anatomy scorecard improved from 2.0/5 to 2.5/5.
-      </p>
-    </div>
-
-    <!-- Academic Scoring Rubric -->
-    <div class="section">
-      <div class="section-label">Academic Scoring Rubric</div>
-      <h2>Design quality score: 3.0 / 5.0 &mdash; Grade C+</h2>
-      <p>Weighted across the three academic frameworks. Scores are versioned and tracked per deployment.</p>
-
-      <div class="scorecard">
-        <div class="sc-item">
-          <span class="sc-value">3.5</span>
-          <span class="sc-label">Taxonomy</span>
-          <span class="sc-detail">33% weight<br>4 PASS, 2 PARTIAL, 1 N/A across F1–F7</span>
-        </div>
-        <div class="sc-item">
-          <span class="sc-value">3.5</span>
-          <span class="sc-label">CASA</span>
-          <span class="sc-detail">33% weight<br>2 PASS, 2 PARTIAL, 1 FAIL across F8–F12</span>
-        </div>
-        <div class="sc-item">
-          <span class="sc-value">2.5</span>
-          <span class="sc-label">Flow Anatomy</span>
-          <span class="sc-detail">33% weight<br>2 PASS, 4 PARTIAL, 1 FAIL across F13–F18</span>
-        </div>
-      </div>
-
-      <div class="overall-score">
-        <span class="big">3.0</span><span class="grade">C+</span>
-        <div class="note">Updated design score · 8 PASS · 8 PARTIAL · 2 FAIL · <strong style="color:var(--accent2)">Latest pass: F11, F13, F16 improved. CASA ↑ 3.0→3.5, Flow ↑ 2.0→2.5.</strong></div>
       </div>
     </div>
 
