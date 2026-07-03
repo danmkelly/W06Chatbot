@@ -1065,7 +1065,7 @@ async function send(){
       expectingHumanBot=false;expectingConsent=true;
       hideTyping();
       addMsg("Sound! Before we dive in — would you like me to remember your name and what we chat about for next time? It all stays on your device, never sent anywhere. Just say <strong>yes</strong> or <strong>no</strong>.",'bot');
-      addSugg(["Yes","No","Human"]);
+      addSugg(["Yes","No"]);
       return;
     }
     hideTyping();
@@ -1092,15 +1092,31 @@ async function send(){
       addSugg(["Radiohead","Pixies","Kendrick Lamar","Best Irish albums","90s indie","Daft Punk"]);
       lastBobAsked=true;return;
     }
+    if(t==="human"){
+      expectingConsent=false;hideTyping();
+      addMsg("Of course! Here's how to reach the real humans at Round &amp; Round Records:",'bot');
+      addMsg("<strong>Round &amp; Round Records</strong><br>32 Main Street<br>Dublin, D02 DH79<br><br><strong>Phone:</strong> +353 1 671 1711<br><strong>Email:</strong> <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2)'>hello@roundandroundrecords.ie</a> &mdash; <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2);font-weight:700'>Click here to send an email</a><br><br><strong>Opening hours:</strong><br>Mon-Sat: 10:00 - 18:00<br>Sun: 12:00 - 17:00<br><br><strong>Web:</strong> <a href='https://spindizzyrecords.com' target='_blank' style='color:var(--accent2)'>spindizzyrecords.com</a>",'bot');
+      return;
+    }
     hideTyping();
     addMsg("Just a simple <strong>yes</strong> or <strong>no</strong> — would you like me to remember you between visits? It stays on your device, never sent anywhere.",'bot');
-    addSugg(["Yes","No","Human"]);
+    addSugg(["Yes","No"]);
     return;
   }
 
   // Name capture — if WaxBot asked and user replies with something name-like
   if(expectingName&&!bobMemory.userName){
     var name=txt.replace(/^(i'm|i am|my name is|call me|it's|name's|the name's|people call me)\s+/i,"").replace(/[.!?,]$/,"").trim();
+    var nl=name.toLowerCase();
+    if(nl==="human"){
+      expectingName=false;hideTyping();
+      addMsg("Of course! Here's how to reach the real humans at Round &amp; Round Records:",'bot');
+      addMsg("<strong>Round &amp; Round Records</strong><br>32 Main Street<br>Dublin, D02 DH79<br><br><strong>Phone:</strong> +353 1 671 1711<br><strong>Email:</strong> <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2)'>hello@roundandroundrecords.ie</a> &mdash; <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2);font-weight:700'>Click here to send an email</a><br><br><strong>Opening hours:</strong><br>Mon-Sat: 10:00 - 18:00<br>Sun: 12:00 - 17:00<br><br><strong>Web:</strong> <a href='https://spindizzyrecords.com' target='_blank' style='color:var(--accent2)'>spindizzyrecords.com</a>",'bot');
+      return;
+    }
+    if(/^(bot|waxbot|chatbot|yes|no|nope|nah)$/i.test(nl)){
+      hideTyping();addMsg("That doesn't sound like a name to me! What should I call you?",'bot');return;
+    }
     if(name&&name.split(/\s+/).length<=3&&name.length>=2){
       bobMemory.userName=name;expectingName=false;saveMemory();
       document.getElementById("bobLabel").textContent="Music guru · knows "+name;
