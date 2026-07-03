@@ -165,12 +165,12 @@ body{
             <td class="id">F5</td>
             <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
             <td class="desc">Channel parity (text + voice)</td>
-            <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-            <td>Voice STT bypasses gibberish validation that text path has</td>
+            <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+            <td>Voice STT calls <code>send()</code> which runs full gibberish validation; no gap</td>
             <td>[DESIGN/CODE]</td>
-            <td>BUG-005 (TTS); voice-STT validation gap is new</td>
+            <td>BUG-005 (TTS orphan state elsewhere)</td>
             <td></td>
-            <td><span class="design-open">Open</span></td>
+            <td><span class="design-closed">Closed</span></td>
           </tr>
           <tr>
             <td class="id">F6</td>
