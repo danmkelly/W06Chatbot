@@ -145,7 +145,7 @@ body{
     <div class="section">
       <div class="section-label">Design &amp; Pedagogical Review</div>
       <h2>Academic framework assessment &mdash; Design Score: 3.5 / 5.0 &mdash; Grade B-</h2>
-      <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>four academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> renamed Bob &rarr; WaxBot (F9 PASS); Human/Bot gate added before consent; opener includes brief capabilities in turn 1; <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; post-search suggestion chips include "Keep exploring" and "Human". Design score improved from 3.0 (C+) to 3.5 (B-).</p>
+      <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>four academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> renamed Bob &rarr; WaxBot (A09 PASS); Human/Bot gate added before consent; opener includes brief capabilities in turn 1; <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; post-search suggestion chips include "Keep exploring" and "Human". Design score improved from 3.0 (C+) to 4.0 (B).</p>
 
       <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:0;flex-wrap:wrap">
         <button class="sub-tab active" onclick="switchSubTab('taxonomy')">Taxonomy</button>
@@ -159,7 +159,7 @@ body{
         <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)"><strong style="color:var(--accent2)">Adamopoulou &amp; Moussiades (2020).</strong> @Fionn owns domain closure &amp; service scope. @Dot owns goals, response generation &amp; channel. @Niamh owns human-aid reachability &amp; permissions. @Siobhan ensures the UI makes each dimension visible.</p>
       </div>
       <div id="sub-casa" class="sub-content">
-        <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). WaxBot has made significant CASA improvements: (1) disclosure in turn 1 is explicit ("I'm WaxBot, an AI chatbot powered by DeepSeek") -- PASS; (2) explicit consent flow asks "Would you like me to remember your name... Yes or no?" BEFORE any localStorage write, and <code>saveMemory()</code> is guarded by <code>consent==="yes"</code> -- PASS; (3) frustration handling now has <code>gibberishCount</code> de-escalation: after 2+ consecutive gibberish inputs, WaxBot shifts to serious tone ("I'm having trouble understanding...") and actively offers human handoff with "Human" suggestion chip -- upgraded from FAIL to PARTIAL. Name changed from "Bob" to "WaxBot" to remove fake-human cue (F9 -- PASS, Closed). Dublin dialect retained as character flavour. Register-vs-capability is PARTIAL (Closed -- same rationale; low-stakes interactions).</p>
+        <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). WaxBot has made significant CASA improvements: (1) disclosure in turn 1 is explicit ("I'm WaxBot, an AI chatbot powered by DeepSeek") -- PASS; (2) explicit consent flow asks "Would you like me to remember your name... Yes or no?" BEFORE any localStorage write, and <code>saveMemory()</code> is guarded by <code>consent==="yes"</code> -- PASS; (3) frustration handling now has <code>gibberishCount</code> de-escalation: after 2+ consecutive gibberish inputs, WaxBot shifts to serious tone ("I'm having trouble understanding...") and actively offers human handoff with "Human" suggestion chip -- upgraded from FAIL to PARTIAL. Name changed from "Bob" to "WaxBot" to remove fake-human cue (A09 -- PASS, Closed). Dublin dialect retained as character flavour. Register-vs-capability is PARTIAL (Closed -- same rationale; low-stakes interactions).</p>
         <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)"><strong style="color:var(--accent)">Reeves &amp; Nass (1996).</strong> @Siobhan owns disclosure-in-turn-1. @Dot owns frustration de-escalation as conversation engineering. @Niamh owns chummy-data-extraction consent. @Fionn verifies personality register matches actual capability.</p>
       </div>
       <div id="sub-flow" class="sub-content">
@@ -184,28 +184,28 @@ body{
         <div class="sc-item">
           <span class="sc-value">3.5</span>
           <span class="sc-label">Taxonomy</span>
-          <span class="sc-detail">25% weight<br>4 PASS, 2 PARTIAL, 1 N/A across F1–F7</span>
+          <span class="sc-detail">25% weight<br>4 PASS, 2 PARTIAL, 1 N/A across A01–A07</span>
         </div>
         <div class="sc-item">
           <span class="sc-value">4.5</span>
           <span class="sc-label">CASA</span>
-          <span class="sc-detail">25% weight<br>4 PASS, 1 PARTIAL, 0 FAIL across F8–F12</span>
+          <span class="sc-detail">25% weight<br>4 PASS, 1 PARTIAL, 0 FAIL across A08–A12</span>
         </div>
         <div class="sc-item">
           <span class="sc-value">2.5</span>
           <span class="sc-label">Flow Anatomy</span>
-          <span class="sc-detail">25% weight<br>2 PASS, 3 PARTIAL, 1 FAIL across F13–F18</span>
+          <span class="sc-detail">25% weight<br>2 PASS, 3 PARTIAL, 1 FAIL across A13–A18</span>
         </div>
         <div class="sc-item">
           <span class="sc-value">3.0</span>
           <span class="sc-label">Grice</span>
-          <span class="sc-detail">25% weight<br>2 PASS, 2 PARTIAL, 0 FAIL across F19–F22</span>
+          <span class="sc-detail">25% weight<br>2 PASS, 2 PARTIAL, 0 FAIL across A19–A22</span>
         </div>
       </div>
 
       <div class="overall-score">
         <span class="big">4.0</span><span class="grade">B</span>
-        <div class="note">Updated design score · 12 PASS · 8 PARTIAL · 1 FAIL · <strong style="color:var(--accent2)">Latest pass: F11 3-step de-escalation ladder (auto human at 4+ strikes), Grice maxims added, F9 WaxBot rename. CASA ↑ 4.0→4.5.</strong></div>
+        <div class="note">Updated design score · 12 PASS · 8 PARTIAL · 1 FAIL · <strong style="color:var(--accent2)">Latest pass: A11 3-step de-escalation ladder (auto human at 4+ strikes), Grice maxims added, A09 WaxBot rename. CASA ↑ 4.0→4.5.</strong></div>
       </div>
     </div>
 
@@ -213,7 +213,7 @@ body{
     <div class="section">
       <div class="section-label">Design Findings</div>
       <h2>22 findings tracked</h2>
-      <p>Grounded in four academic best-practice frameworks from the Customer Engagement &amp; AI module. Findings numbered F1–F22, scored PASS/PARTIAL/FAIL/N/A.</p>
+      <p>Grounded in four academic best-practice frameworks from the Customer Engagement &amp; AI module. Findings numbered A01–A22, scored PASS/PARTIAL/FAIL/N/A.</p>
       <p style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px"><span class="design-closed" style="vertical-align:middle;margin-right:2px">Closed</span> = resolved &nbsp; <span class="design-override" style="vertical-align:middle;margin-right:2px">Closed</span> = accepted (human call) &nbsp; <span class="design-open" style="vertical-align:middle;margin-right:2px">Open</span> = still in play</p>
 
       <div class="bug-table-wrap" style="margin-top:20px">
@@ -233,7 +233,7 @@ body{
           </thead>
           <tbody>
             <tr>
-              <td class="id">F1</td>
+              <td class="id">A01</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Knowledge domain (closed vs open)</td>
@@ -244,7 +244,7 @@ body{
               <td class="fix">&mdash;</td>
             </tr>
             <tr>
-              <td class="id">F2</td>
+              <td class="id">A02</td>
               <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Service provided (interpersonal support)</td>
@@ -255,7 +255,7 @@ body{
               <td class="fix">Accepted for project scope — fun helper bot; warm tone is the product</td>
             </tr>
             <tr>
-              <td class="id">F3</td>
+              <td class="id">A03</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Goals (task-based vs chat-based)</td>
@@ -266,7 +266,7 @@ body{
               <td class="fix">&mdash;</td>
             </tr>
             <tr>
-              <td class="id">F4</td>
+              <td class="id">A04</td>
               <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Response generation (hybrid)</td>
@@ -277,7 +277,7 @@ body{
               <td class="fix">Accepted — factual album/artist data from real APIs; LLM text is opinion not fact</td>
             </tr>
             <tr>
-              <td class="id">F5</td>
+              <td class="id">A05</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Channel parity (text + voice)</td>
@@ -285,10 +285,10 @@ body{
               <td>Voice STT calls <code>send()</code> which runs full gibberish validation; no gap</td>
               <td><span class="sev-low">Low</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
               <td></td>
-              <td class="fix">Voice calls send() which runs gibberish validation — no gap (BUG-005: TTS orphan addressed separately)</td>
+              <td class="fix">Voice calls send() which runs gibberish validation — no gap (F05: TTS orphan addressed separately)</td>
             </tr>
             <tr>
-              <td class="id">F6</td>
+              <td class="id">A06</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Human-aid (reachable at every stage)</td>
@@ -299,7 +299,7 @@ body{
               <td class="fix">&mdash;</td>
             </tr>
             <tr>
-              <td class="id">F7</td>
+              <td class="id">A07</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Permissions</td>
@@ -310,7 +310,7 @@ body{
               <td class="fix">&mdash;</td>
             </tr>
             <tr>
-              <td class="id">F8</td>
+              <td class="id">A08</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">Disclosure in turn 1</td>
@@ -321,7 +321,7 @@ body{
               <td class="fix">Unambiguous "AI chatbot" self-ID in turn 1</td>
             </tr>
             <tr>
-              <td class="id">F9</td>
+              <td class="id">A09</td>
               <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">No fake-human cues</td>
@@ -332,18 +332,18 @@ body{
               <td class="fix">Renamed Bob &rarr; WaxBot — no human name used</td>
             </tr>
             <tr>
-              <td class="id">F10</td>
+              <td class="id">A10</td>
               <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">Register matches capability</td>
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
               <td>System prompt claims "know band histories, album lore" unverifiable</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
-              <td>Human Accepted — same rationale as F9; low-stakes, not overclaiming</td>
+              <td>Human Accepted — same rationale as A09; low-stakes, not overclaiming</td>
               <td class="fix">Human Accepted — same rationale</td>
             </tr>
             <tr>
-              <td class="id">F11</td>
+              <td class="id">A11</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">Frustration handling (de-escalation)</td>
@@ -354,7 +354,7 @@ body{
               <td class="fix">Full 3-step de-escalation ladder with auto-forced human handoff at step 3 (4+ strikes)</td>
             </tr>
             <tr>
-              <td class="id">F12</td>
+              <td class="id">A12</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">Chummy data extraction (localStorage)</td>
@@ -362,10 +362,10 @@ body{
               <td>Explicit consent: "yes or no?" before any write; saveMemory() guarded by consent==="yes"; if no, nothing stored; return visits with no consent reset all counters</td>
               <td><span class="sev-low">Low</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
               <td></td>
-              <td class="fix">Explicit consent flow ("Yes/No") before any localStorage write; saveMemory() guarded (see BUG-007)</td>
+              <td class="fix">Explicit consent flow ("Yes/No") before any localStorage write; saveMemory() guarded (see F07)</td>
             </tr>
             <tr>
-              <td class="id">F13</td>
+              <td class="id">A13</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">OPENER (identity + capability in turn 1)</td>
@@ -376,7 +376,7 @@ body{
               <td class="fix">Capabilities added to turn 1 ("find similar artists, dig up albums, explore genres...")</td>
             </tr>
             <tr>
-              <td class="id">F14</td>
+              <td class="id">A14</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">INTENT (one clear purpose per flow)</td>
@@ -387,7 +387,7 @@ body{
               <td class="fix">&mdash;</td>
             </tr>
             <tr>
-              <td class="id">F15</td>
+              <td class="id">A15</td>
               <td><span class="design-open">Open</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">SLOTS (validated with back/correction)</td>
@@ -398,7 +398,7 @@ body{
               <td class="fix">Not yet addressed</td>
             </tr>
             <tr>
-              <td class="id">F16</td>
+              <td class="id">A16</td>
               <td><span class="design-open">Open</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">RECOVERY LADDER (5 failure scenarios)</td>
@@ -406,10 +406,10 @@ body{
               <td>Gibberish reaches step 3 (2+ strikes → de-escalation + human chip); LLM fallback offers human path; post-search "Keep exploring" + "Human" chips. Misspelling, no Discogs, empty results still silent.</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
               <td></td>
-              <td class="fix">Gibberish reaches step 3; LLM fallback+post-search offer human path; "Keep exploring"/"Human" chips (see BUG-002, BUG-008, BUG-018)</td>
+              <td class="fix">Gibberish reaches step 3; LLM fallback+post-search offer human path; "Keep exploring"/"Human" chips (see F02, F08, F18)</td>
             </tr>
             <tr>
-              <td class="id">F17</td>
+              <td class="id">A17</td>
               <td><span class="design-open">Open</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">CLOSER (confirm + explore + human path)</td>
@@ -420,7 +420,7 @@ body{
               <td class="fix">"Keep exploring" + "Human" chips appear after successful search</td>
             </tr>
             <tr>
-              <td class="id">F18</td>
+              <td class="id">A18</td>
               <td><span class="design-open">Open</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">Design the unexpected first</td>
@@ -431,7 +431,7 @@ body{
               <td class="fix">Gibberish handled; empty input caught</td>
             </tr>
             <tr>
-              <td class="id">F19</td>
+              <td class="id">A19</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">Grice</td>
               <td class="desc">Quantity — response length appropriate</td>
@@ -442,7 +442,7 @@ body{
               <td class="fix">&mdash;</td>
             </tr>
             <tr>
-              <td class="id">F20</td>
+              <td class="id">A20</td>
               <td><span class="design-open">Open</span></td>
               <td style="color:var(--accent);font-weight:600">Grice</td>
               <td class="desc">Quality — truthfulness &amp; evidence</td>
@@ -453,7 +453,7 @@ body{
               <td class="fix">LLM claims unverified; no grounding layer present</td>
             </tr>
             <tr>
-              <td class="id">F21</td>
+              <td class="id">A21</td>
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">Grice</td>
               <td class="desc">Relation — relevance of responses</td>
@@ -464,7 +464,7 @@ body{
               <td class="fix">&mdash;</td>
             </tr>
             <tr>
-              <td class="id">F22</td>
+              <td class="id">A22</td>
               <td><span class="design-open">Open</span></td>
               <td style="color:var(--accent);font-weight:600">Grice</td>
               <td class="desc">Manner — clarity, brevity, orderliness</td>
@@ -573,143 +573,144 @@ body{
       <div class="section-label">Bug Register</div>
       <h2>18 bugs tracked (13 resolved, 5 open)</h2>
       <p>Found via static code analysis of index.html (lines 1-1235). Updated per deployment. Fresh QA pass: 2026-07-02.</p>
+      <p style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px"><span class="design-closed" style="vertical-align:middle;margin-right:2px">Closed</span> = resolved &nbsp; <span class="design-open" style="vertical-align:middle;margin-right:2px">Open</span> = still in play</p>
 
       <div class="bug-table-wrap">
         <table class="bug-table">
           <thead>
             <tr>
               <th>ID</th>
+              <th>Status</th>
               <th>Severity</th>
               <th>Description</th>
-              <th>Status</th>
               <th>How it was fixed</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td class="id">BUG-001</td>
+              <td class="id">F01</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-crit">Critical</span></td>
               <td class="desc">XSS: user input in innerHTML. <code>&lt;img src=x onerror=alert(1)&gt;</code> executes as JS.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">HTML-escape user messages in <code>addMsg()</code> with <code>.replace(/&amp;/g,...)</code> for <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>. Line 667.</td>
             </tr>
             <tr>
-              <td class="id">BUG-002</td>
+              <td class="id">F02</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-crit">Critical</span></td>
               <td class="desc">ReferenceError: <code>isRealArtist</code> and <code>isGenreQuery</code> never defined. Blocks all non-LLM fallback.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Removed undefined variable check. Replaced with guardless fallback message at line 1137.</td>
             </tr>
             <tr>
-              <td class="id">BUG-003</td>
+              <td class="id">F03</td>
+              <td><span class="design-open">Open</span></td>
               <td><span class="sev-high">High</span></td>
               <td class="desc"><code>enrichLinks</code> rewrites innerHTML of existing bot bubbles, breaking any non-inline DOM references.</td>
-              <td class="status-open">Open</td>
               <td class="fix">Use TreeWalker to wrap text nodes instead of reassigning innerHTML.</td>
             </tr>
             <tr>
-              <td class="id">BUG-004</td>
+              <td class="id">F04</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-high">High</span></td>
               <td class="desc">Race condition: stale <code>enrichAlbumBadges</code> updates old DOM after new search renders.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Generation counter (<code>enrichGen</code>) increments on each render; stale passes abort immediately.</td>
             </tr>
             <tr>
-              <td class="id">BUG-005</td>
+              <td class="id">F05</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-high">High</span></td>
               <td class="desc">TTS <code>speaking</code> class orphaned when voices never load (background tab, slow connection).</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">4-second timeout clears <code>speaking</code> class if <code>onvoiceschanged</code> never fires.</td>
             </tr>
             <tr>
-              <td class="id">BUG-006</td>
+              <td class="id">F06</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-med">Medium</span></td>
               <td class="desc">Mobile: nested <code>overflow-y:auto</code> on discovery + children creates scroll traps.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Set <code>overflow-y:hidden</code> on <code>.discovery</code> in mobile media query; children scroll independently.</td>
             </tr>
             <tr>
-              <td class="id">BUG-007</td>
+              <td class="id">F07</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-med">Medium</span></td>
               <td class="desc">"What I store" modal doesn't close on overlay click. Only "Got it" button works.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Added <code>onclick="if(event.target===this)this.classList.remove('open')"</code> to modal overlay HTML.</td>
             </tr>
             <tr>
-              <td class="id">BUG-008</td>
+              <td class="id">F08</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-med">Medium</span></td>
               <td class="desc"><code>goBack()</code> leaves typing indicator stuck on API error in nested <code>.then()</code> chain.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Added <code>.catch(function(){hideTyping()})</code> to every level of the promise chain; shows recovery message to user.</td>
             </tr>
             <tr>
-              <td class="id">BUG-009</td>
+              <td class="id">F09</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-med">Medium</span></td>
               <td class="desc"><code>checkDiscogs</code>: concurrent calls for same album bypass cache, causing duplicate API hits.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Added <code>discogsPending{}</code> promise cache; concurrent callers share single in-flight request.</td>
             </tr>
             <tr>
-              <td class="id">BUG-010</td>
+              <td class="id">F10</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-med">Medium</span></td>
               <td class="desc">Mobile: <code>clearMemory</code> references <code>mobile-open</code> class that is never set (dead code).</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Removed dead <code>mobile-open</code> class check entirely from <code>clearMemory()</code>.</td>
             </tr>
             <tr>
-              <td class="id">BUG-011</td>
+              <td class="id">F11</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-low">Low</span></td>
               <td class="desc"><code>simImageCache</code> + <code>discogsCache</code> never cleared: unbounded memory growth.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Added <code>simImageCache={};discogsCache={};</code> to <code>clearMemory()</code>.</td>
             </tr>
             <tr>
-              <td class="id">BUG-012</td>
+              <td class="id">F12</td>
+              <td><span class="design-open">Open</span></td>
               <td><span class="sev-low">Low</span></td>
               <td class="desc"><code>extractArtists</code> splits "Mumford and Sons" by "and", searching for "sons" as an artist.</td>
-              <td class="status-open">Open</td>
               <td class="fix">Try full phrase first; use LLM entity extraction before regex splitting.</td>
             </tr>
             <tr>
-              <td class="id">BUG-013</td>
+              <td class="id">F13</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-low">Low</span></td>
               <td class="desc">Gibberish detection flags lowercase "u2" (but not "U2"); short alphanumeric names catchable.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Added <code>&amp;&amp;!/^[a-z0-9]+$/i.test(txt)</code> — short alphanumeric names like "u2" or "m83" now pass.</td>
             </tr>
             <tr>
-              <td class="id">BUG-014</td>
+              <td class="id">F14</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-low">Low</span></td>
               <td class="desc"><code>addSugg</code> suggestion text not HTML-escaped (defense-in-depth gap in localStorage recall).</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">HTML-escaped suggestion text with <code>.replace(/&amp;/g...)</code> for <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>.</td>
             </tr>
             <tr>
-              <td class="id">BUG-015</td>
+              <td class="id">F15</td>
+              <td><span class="design-open">Open</span></td>
               <td><span class="sev-low">Low</span></td>
               <td class="desc"><code>enrichLinks</code> regex can match inside HTML attributes if LLM outputs markup.</td>
-              <td class="status-open">Open</td>
               <td class="fix">Walk text nodes with TreeWalker; only wrap names in text, not HTML.</td>
             </tr>
             <tr>
-              <td class="id">BUG-016</td>
+              <td class="id">F16</td>
+              <td><span class="design-open">Open</span></td>
               <td><span class="sev-low">Low</span></td>
               <td class="desc"><code>speechSynthesis.cancel()</code> cancels speech in all browser tabs, not just our utterances.</td>
-              <td class="status-open">Open</td>
               <td class="fix">Document limitation. Web Speech API shares across browsing context.</td>
             </tr>
             <tr>
-              <td class="id">BUG-017</td>
+              <td class="id">F17</td>
+              <td><span class="design-open">Open</span></td>
               <td><span class="sev-low">Low</span></td>
               <td class="desc"><code>renderDiscoveryTag</code> relies on caller for nav state; inconsistent with <code>renderDiscovery</code>.</td>
-              <td class="status-open">Open</td>
               <td class="fix">Make both render functions self-contained regarding navigation state.</td>
             </tr>
             <tr>
-              <td class="id">BUG-018</td>
+              <td class="id">F18</td>
+              <td><span class="design-closed">Closed</span></td>
               <td><span class="sev-med">Medium</span></td>
               <td class="desc">Silent LLM failure: when LLM keys are configured but API is unreachable or returns error, <code>chatLLM()</code> returns null and no error message is displayed to the user. User sees their message sent with no reply.</td>
-              <td class="status-fixed">Fixed</td>
               <td class="fix">Added <code>else{addMsg("Hmm, I'm having trouble connecting...")}</code> after line 1081 when LLM returns null despite keys being configured.</td>
             </tr>
           </tbody>
