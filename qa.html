@@ -130,12 +130,7 @@ body{
       <span class="sc-label">Bug Tracker</span>
       <span class="sc-detail">13 fixed, 4 open</span>
       </div>
-      <div id="sub-grice" class="sub-content">
-        <p>Tests WaxBot against Grice's four maxims of cooperative conversation (Grice 1975, <em>Logic &amp; Conversation</em>). An accurate bot can still feel wrong — three of these four are harness failures, not model failures: grounding, scoped actions, and a clean handoff are what hold a bot to Grice.</p>
-        <p style="margin-top:6px;font-size:0.72rem;color:var(--text-dim);line-height:1.5"><strong style="color:var(--accent)">Quantity</strong> — say as much as needed, and no more. System prompt limits responses to 2-5 sentences (PASS). <strong style="color:var(--accent)">Quality</strong> — only say what is true. No RAG verification; LLM claims about albums/artists unverified (PARTIAL). <strong style="color:var(--accent)">Relation</strong> — be relevant. Intent routing is clear; post-search chips stay on-topic (PASS). <strong style="color:var(--accent)">Manner</strong> — be clear, brief, and orderly. Responses are plain-language but prompt lacks explicit ordering rules (PARTIAL).</p>
-        <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)"><strong style="color:var(--accent3)">Grice (1975).</strong> @Dot owns Quantity &amp; Quality (response length, LLM grounding). @Siobhan owns Manner (clarity, brevity in UI). @Fionn owns Relation (domain-relevance guardrails). @Keelin cross-references Grice alongside Taxonomy, CASA, and Flow Anatomy.</p>
-      </div>
-      </div>
+    </div>
 
   <!-- Tab Bar -->
   <div class="tabs">
@@ -170,6 +165,11 @@ body{
       <div id="sub-flow" class="sub-content">
         <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. WaxBot passes on <strong>Opener</strong> (identity + capabilities both in turn 1: "I can find similar artists, dig up albums, explore genres...") and <strong>Intent</strong> (clear purpose per flow). <strong>Recovery Ladder</strong> has improved: of 5 failure scenarios, gibberish now reaches step 3 (de-escalation + human handoff after 2+ strikes), LLM error offers human path, and post-search chips include "Keep exploring" + "Human". Three scenarios remain unaddressed (misspelling, no Discogs match, empty results) -- upgraded from FAIL to PARTIAL. <strong>Slots</strong> still fail critically (no input validation before API dispatch). The <strong>Closer</strong> remains partial: no read-back/confirm follows recommendations, though "Keep exploring" and "Human" suggestion chips now appear proactively.</p>
         <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)">@Dot implements the recovery ladder in code (reword &rarr; options &rarr; human). @Siobhan designs the closer UI (read-back + keep exploring + human path). @Cormac uses "design the unexpected first" as a sprint-planning rule.</p>
+      </div>
+      <div id="sub-grice" class="sub-content">
+        <p>Tests WaxBot against Grice's four maxims of cooperative conversation (Grice 1975, <em>Logic &amp; Conversation</em>). An accurate bot can still feel wrong — three of these four are harness failures, not model failures: grounding, scoped actions, and a clean handoff are what hold a bot to Grice.</p>
+        <p style="margin-top:6px;font-size:0.72rem;color:var(--text-dim);line-height:1.5"><strong style="color:var(--accent)">Quantity</strong> — say as much as needed, and no more. System prompt limits responses to 2-5 sentences (PASS). <strong style="color:var(--accent)">Quality</strong> — only say what is true. No RAG verification; LLM claims about albums/artists unverified (PARTIAL). <strong style="color:var(--accent)">Relation</strong> — be relevant. Intent routing is clear; post-search chips stay on-topic (PASS). <strong style="color:var(--accent)">Manner</strong> — be clear, brief, and orderly. Responses are plain-language but prompt lacks explicit ordering rules (PARTIAL).</p>
+        <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)"><strong style="color:var(--accent3)">Grice (1975).</strong> @Dot owns Quantity &amp; Quality (response length, LLM grounding). @Siobhan owns Manner (clarity, brevity in UI). @Fionn owns Relation (domain-relevance guardrails). @Keelin cross-references Grice alongside Taxonomy, CASA, and Flow Anatomy.</p>
       </div>
       </div>
     </div>
