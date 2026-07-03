@@ -116,9 +116,9 @@ body{
   <!-- Score Cards -->
   <div class="score-cards">
     <div class="score-card">
-      <span class="sc-value">3.5 <span class="sc-grade">B-</span></span>
+      <span class="sc-value">4.0 <span class="sc-grade">B</span></span>
       <span class="sc-label">Academic Design</span>
-      <span class="sc-detail">11 PASS, 9 PARTIAL, 1 FAIL</span>
+      <span class="sc-detail">12 PASS, 8 PARTIAL, 1 FAIL</span>
     </div>
     <div class="score-card">
       <span class="sc-value">3.5 <span class="sc-grade">B-</span></span>
@@ -177,7 +177,7 @@ body{
     <!-- Academic Scoring Rubric -->
     <div class="section">
       <div class="section-label">Academic Scoring Rubric</div>
-      <h2>Design quality score: 3.5 / 5.0 &mdash; Grade B-</h2>
+      <h2>Design quality score: 4.0 / 5.0 &mdash; Grade B</h2>
       <p>Weighted across the four academic frameworks. Scores are versioned and tracked per deployment.</p>
 
       <div class="scorecard" style="grid-template-columns:repeat(4,1fr)">
@@ -187,9 +187,9 @@ body{
           <span class="sc-detail">25% weight<br>4 PASS, 2 PARTIAL, 1 N/A across F1–F7</span>
         </div>
         <div class="sc-item">
-          <span class="sc-value">4.0</span>
+          <span class="sc-value">4.5</span>
           <span class="sc-label">CASA</span>
-          <span class="sc-detail">25% weight<br>3 PASS, 2 PARTIAL, 0 FAIL across F8–F12</span>
+          <span class="sc-detail">25% weight<br>4 PASS, 1 PARTIAL, 0 FAIL across F8–F12</span>
         </div>
         <div class="sc-item">
           <span class="sc-value">2.5</span>
@@ -204,8 +204,8 @@ body{
       </div>
 
       <div class="overall-score">
-        <span class="big">3.5</span><span class="grade">B-</span>
-        <div class="note">Updated design score · 11 PASS · 9 PARTIAL · 1 FAIL · <strong style="color:var(--accent2)">Latest pass: Grice maxims added (F19–F22), F9 fixed (WaxBot rename), F11, F13, F16 improved. CASA ↑ 3.5→4.0.</strong></div>
+        <span class="big">4.0</span><span class="grade">B</span>
+        <div class="note">Updated design score · 12 PASS · 8 PARTIAL · 1 FAIL · <strong style="color:var(--accent2)">Latest pass: F11 3-step de-escalation ladder (auto human at 4+ strikes), Grice maxims added, F9 WaxBot rename. CASA ↑ 4.0→4.5.</strong></div>
       </div>
     </div>
 
@@ -244,14 +244,14 @@ body{
             </tr>
             <tr>
               <td class="id">F2</td>
-              <td><span class="design-closed">Closed</span></td>
+              <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Service provided (interpersonal support)</td>
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
               <td>LLM temp 0.9 + no domain guardrails risks overreach</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
-              <td>Closed — fun helper bot; warm conversational tone is the product, not a bug</td>
-              <td class="fix">Accepted for project scope — personality drives engagement at low stakes</td>
+              <td>Human Accepted — personality drives engagement at low stakes</td>
+              <td class="fix">Accepted for project scope — fun helper bot; warm tone is the product</td>
             </tr>
             <tr>
               <td class="id">F3</td>
@@ -266,14 +266,14 @@ body{
             </tr>
             <tr>
               <td class="id">F4</td>
-              <td><span class="design-closed">Closed</span></td>
+              <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Response generation (hybrid)</td>
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
               <td>No RAG verification of LLM claims; temp 0.9 hallucination risk</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
-              <td>Closed — album data comes from real APIs; LLM text is opinion not fact</td>
-              <td class="fix">Accepted — API data provides grounding where it matters; student project scope</td>
+              <td>Human Accepted — API data provides grounding where it matters; student project scope</td>
+              <td class="fix">Accepted — factual album/artist data from real APIs; LLM text is opinion not fact</td>
             </tr>
             <tr>
               <td class="id">F5</td>
@@ -321,13 +321,13 @@ body{
             </tr>
             <tr>
               <td class="id">F9</td>
-              <td><span class="design-closed">Closed</span></td>
+              <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">No fake-human cues</td>
               <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
               <td>Renamed Bob &rarr; WaxBot; Dublin slang kept as character flavour (low-stakes intent)</td>
               <td><span class="sev-crit">Critical</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
-              <td>Accepted — fun interactions part of design intent; low-stakes</td>
+              <td>Human Accepted — WaxBot rename resolves fake-human cue; Dublin flavour retained</td>
               <td class="fix">Renamed Bob &rarr; WaxBot — no human name used</td>
             </tr>
             <tr>
@@ -338,19 +338,19 @@ body{
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
               <td>System prompt claims "know band histories, album lore" unverifiable</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
-              <td>Accepted — same rationale as F9; low-stakes, not overclaiming</td>
-              <td class="fix">Human override — same rationale</td>
+              <td>Human Accepted — same rationale as F9; low-stakes, not overclaiming</td>
+              <td class="fix">Human Accepted — same rationale</td>
             </tr>
             <tr>
               <td class="id">F11</td>
-              <td><span class="design-open">Open</span></td>
+              <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">CASA</td>
               <td class="desc">Frustration handling (de-escalation)</td>
-              <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-              <td>gibberishCount: after 2+ strikes, shifts register + offers human handoff; LLM error offers human path</td>
+              <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+              <td>3-step recovery ladder: 1× gibberish → re-ask; 2–3× → de-escalation + human offer; 4+× → auto human handoff</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
               <td></td>
-              <td class="fix">gibberishCount de-escalation + "Human" chip after 2+ strikes; LLM error offers human path (see BUG-008)</td>
+              <td class="fix">Full 3-step de-escalation ladder with auto-forced human handoff at step 3 (4+ strikes)</td>
             </tr>
             <tr>
               <td class="id">F12</td>

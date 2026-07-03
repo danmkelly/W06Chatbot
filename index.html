@@ -1150,6 +1150,10 @@ async function send(){
   }
   if(isGibberish){
     hideTyping();gibberishCount++;
+    if(gibberishCount>=4){
+      addMsg("I'm still not getting it — let me hand you over to the team directly.",'bot');
+      showHumanContact();return;
+    }
     if(gibberishCount>=2){
       addMsg("I'm having trouble understanding. Let me hand you over — type <strong>human</strong> and I'll share our contact details straight away. Or try an artist name like Radiohead if you'd rather keep exploring.",'bot');
       addSugg(["Human","Radiohead","Pixies","Irish artists"]);
@@ -1160,6 +1164,11 @@ async function send(){
     return;
   }
   gibberishCount=0;
+
+  function showHumanContact(){
+    addMsg("Of course! Here's how to reach the real humans at Round &amp; Round Records:",'bot');
+    addMsg("<strong>Round &amp; Round Records</strong><br>32 Main Street<br>Dublin, D02 DH79<br><br><strong>Phone:</strong> +353 1 671 1711<br><strong>Email:</strong> <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2)'>hello@roundandroundrecords.ie</a> &mdash; <a href='mailto:hello@roundandroundrecords.ie' style='color:var(--accent2);font-weight:700'>Click here to send an email</a><br><br><strong>Opening hours:</strong><br>Mon-Sat: 10:00 - 18:00<br>Sun: 12:00 - 17:00<br><br><strong>Web:</strong> <a href='https://spindizzyrecords.com' target='_blank' style='color:var(--accent2)'>spindizzyrecords.com</a>",'bot');
+  }
 
   // "human" command: show contact details
   if(txt.toLowerCase()==="human"){
