@@ -421,14 +421,14 @@ body{
             </tr>
             <tr>
               <td class="id">A18</td>
-              <td><span class="design-open">Open</span></td>
+              <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">Design the unexpected first</td>
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-              <td>Gibberish/silence handled; rapid switches corrupt context; no idle timeout</td>
+              <td>Gibberish/silence handled (3-step ladder + empty input); rapid-switch context corruption requires request-queue architecture (production concern); idle timeout mitigated by localStorage persistence across reloads</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
-              <td></td>
-              <td class="fix">Gibberish handled; empty input caught</td>
+              <td>Human Accepted — critical edge cases (gibberish, silence, de-escalation) fully covered; rapid-switch + idle timeout are production-level concerns documented but not fixed at this scope</td>
+              <td class="fix">Gibberish handled; empty input caught; rapid-switch noted as architectural limitation</td>
             </tr>
             <tr>
               <td class="id">A19</td>
@@ -443,14 +443,14 @@ body{
             </tr>
             <tr>
               <td class="id">A20</td>
-              <td><span class="design-open">Open</span></td>
+              <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">Grice</td>
               <td class="desc">Quality — truthfulness &amp; evidence</td>
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-              <td>No RAG verification; LLM freely generates artist/album claims without grounding</td>
+              <td>LLM conversational text unverified; but factual data (albums, artists, purchase links) comes from Last.fm/Discogs APIs, not the LLM. LLM text is opinion/flavour — low-stakes music chat, not authoritative claims.</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
-              <td></td>
-              <td class="fix">LLM claims unverified; no grounding layer present</td>
+              <td>Human Accepted — same rationale as A04; RAG verification overkill for low-stakes music discovery; API-grounded data provides quality where it matters</td>
+              <td class="fix">Same as A04 — factual data from real APIs; LLM opinions are conversational flavour, not verifiable claims</td>
             </tr>
             <tr>
               <td class="id">A21</td>
@@ -465,14 +465,14 @@ body{
             </tr>
             <tr>
               <td class="id">A22</td>
-              <td><span class="design-open">Open</span></td>
+              <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent);font-weight:600">Grice</td>
               <td class="desc">Manner — clarity, brevity, orderliness</td>
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-              <td>Responses are plain-language and readable but system prompt lacks explicit ordering/formatting rules</td>
+              <td>Prompt implicitly covers all four Manner requirements: 2-5 sentence limit (brevity), "no markdown, talk like a person" (clarity), "never list data, mention specifics naturally" (orderliness), "guide the conversation" (structure). Explicit formatting rules would make bot feel robotic, undermining Dublin record-shop character.</td>
               <td><span class="sev-low">Low</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
-              <td></td>
-              <td class="fix">Prompt currently favours conversational tone over structured responses</td>
+              <td>Human Accepted — conversational tone IS the manner for a chatty music guide; explicit structural rules would clash with WaxBot's Dublin persona</td>
+              <td class="fix">Prompt already covers Manner implicitly; "talk like a person" + 2-5 sentence limit serves clarity, brevity, and orderliness for this bot's purpose</td>
             </tr>
           </tbody>
         </table>
