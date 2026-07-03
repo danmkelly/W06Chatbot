@@ -144,7 +144,7 @@ body{
     <!-- Design & Pedagogical Review -->
     <div class="section">
       <div class="section-label">Design &amp; Pedagogical Review</div>
-      <h2>Academic framework assessment &mdash; Design Score: 3.5 / 5.0 &mdash; Grade B-</h2>
+      <h2>Academic framework assessment &mdash; Design Score: 4.0 / 5.0 &mdash; Grade B</h2>
       <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>four academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent2)">Keelin's final pass &mdash; all 22 findings closed (13 resolved, 9 Human Accepted). 0 FAILs. 12 PASS, 9 PARTIAL, 1 N/A. Design score: 4.0 (Grade B).</strong></p>
 
       <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:0;flex-wrap:wrap">
@@ -491,34 +491,36 @@ body{
       <h2>Functional testing &mdash; Overall Score: 3.5 / 5.0 &mdash; Grade B-</h2>
       <p>All testing follows a <strong>real-user simulation</strong> model: tests are written as if a frustrated customer at 11pm on a Saturday is trying to use the bot. No test assumes a happy path. Every test includes a verification step that <strong>can be automated</strong> using a headless browser or simulated DOM interaction.</p>
 
-      <div class="func-tiles" style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:16px">
-        <div style="background:var(--surface);border:2px solid var(--accent);border-radius:8px;padding:16px;font-size:0.72rem">
-          <h3>Test categories</h3>
-          <p style="margin-bottom:10px">The <strong>61-case test plan</strong> (test-plan.md) covers 11 categories:</p>
-          <ul>
-            <li><strong>Greeting flow</strong> &mdash; first visit, return visit, name capture</li>
-            <li><strong>Artist search</strong> &mdash; single/multi artist, misspelled, gibberish</li>
-            <li><strong>Genre exploration</strong> &mdash; chips, tags, keyword search</li>
-            <li><strong>Discovery panel</strong> &mdash; hero, similar artists, albums, genres, bio expander</li>
-            <li><strong>Human handoff</strong> &mdash; contact details, address verification</li>
-            <li><strong>Memory/persistence</strong> &mdash; localStorage, clear, CLS command</li>
-            <li><strong>Voice STT</strong> &mdash; mic, transcription, auto-send</li>
-            <li><strong>Voice TTS</strong> &mdash; speaker icon, playback, cancel</li>
-            <li><strong>Mobile</strong> &mdash; breakpoints, layout, touch targets</li>
-            <li><strong>Error handling</strong> &mdash; API failure, gibberish, fallbacks</li>
-            <li><strong>UI elements</strong> &mdash; modals, buttons, badges, addresses</li>
-          </ul>
-        </div>
-        <div style="background:var(--surface);border:2px solid var(--accent);border-radius:8px;padding:16px;font-size:0.72rem">
-          <h3>Automated verification</h3>
-          <p>Each test case specifies <strong>what DOM element to check</strong>, <strong>what text to assert</strong>, and <strong>what network call to verify</strong>. Tests are designed to be run by a headless browser script (Puppeteer/Playwright) that:</p>
-          <ul>
-            <li>Sets the viewport to the target device width</li>
-            <li>Simulates clicks, typing, and voice input</li>
-            <li>Asserts DOM state after each interaction</li>
-            <li>Captures screenshots on failure</li>
-            <li>Logs console errors as test failures</li>
-          </ul>
+      <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:0;flex-wrap:wrap">
+        <button class="sub-tab active" onclick="switchFuncSubTab('categories')">Test Categories</button>
+        <button class="sub-tab" onclick="switchFuncSubTab('automation')">Automated Verification</button>
+      </div>
+      <div class="sub-wrap" style="min-height:200px">
+      <div id="func-sub-categories" class="sub-content active">
+        <p style="margin-bottom:10px">The <strong>61-case test plan</strong> (test-plan.md) covers 11 categories:</p>
+        <ul>
+          <li><strong>Greeting flow</strong> &mdash; first visit, return visit, name capture</li>
+          <li><strong>Artist search</strong> &mdash; single/multi artist, misspelled, gibberish</li>
+          <li><strong>Genre exploration</strong> &mdash; chips, tags, keyword search</li>
+          <li><strong>Discovery panel</strong> &mdash; hero, similar artists, albums, genres, bio expander</li>
+          <li><strong>Human handoff</strong> &mdash; contact details, address verification</li>
+          <li><strong>Memory/persistence</strong> &mdash; localStorage, clear, CLS command</li>
+          <li><strong>Voice STT</strong> &mdash; mic, transcription, auto-send</li>
+          <li><strong>Voice TTS</strong> &mdash; speaker icon, playback, cancel</li>
+          <li><strong>Mobile</strong> &mdash; breakpoints, layout, touch targets</li>
+          <li><strong>Error handling</strong> &mdash; API failure, gibberish, fallbacks</li>
+          <li><strong>UI elements</strong> &mdash; modals, buttons, badges, addresses</li>
+        </ul>
+      </div>
+      <div id="func-sub-automation" class="sub-content">
+        <p>Each test case specifies <strong>what DOM element to check</strong>, <strong>what text to assert</strong>, and <strong>what network call to verify</strong>. Tests are designed to be run by a headless browser script (Puppeteer/Playwright) that:</p>
+        <ul>
+          <li>Sets the viewport to the target device width</li>
+          <li>Simulates clicks, typing, and voice input</li>
+          <li>Asserts DOM state after each interaction</li>
+          <li>Captures screenshots on failure</li>
+          <li>Logs console errors as test failures</li>
+        </ul>
       </div>
       </div>
 
@@ -733,28 +735,36 @@ function switchTab(tab) {
   document.querySelector('.tab-btn[onclick*="'+tab+'"]').classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
 }
-function sizeSubWrap(){
-  var wrap=document.querySelector('.sub-wrap');
-  if(!wrap)return;
-  var contents=wrap.querySelectorAll('.sub-content');
-  var maxH=0;
-  contents.forEach(function(el){
-    var wasBlock=el.classList.contains('active');
-    el.classList.add('active');
-    var h=el.offsetHeight;
-    if(h>maxH)maxH=h;
-    if(!wasBlock)el.classList.remove('active');
-  });
-  wrap.style.minHeight=maxH+'px';
-}
 function switchSubTab(id){
-  document.querySelectorAll('.sub-tab').forEach(function(b){ b.classList.remove('active'); });
-  document.querySelectorAll('.sub-content').forEach(function(el){ el.classList.remove('active'); });
-  document.querySelector('.sub-tab[onclick*="'+id+'"]').classList.add('active');
+  var tab=document.getElementById('tab-academic');
+  tab.querySelectorAll('.sub-tab').forEach(function(b){ b.classList.remove('active'); });
+  tab.querySelectorAll('.sub-content').forEach(function(el){ el.classList.remove('active'); });
+  tab.querySelector('.sub-tab[onclick*="'+id+'"]').classList.add('active');
   document.getElementById('sub-'+id).classList.add('active');
 }
-window.addEventListener('DOMContentLoaded',sizeSubWrap);
-window.addEventListener('resize',sizeSubWrap);
+function switchFuncSubTab(id){
+  var tab=document.getElementById('tab-functional');
+  tab.querySelectorAll('.sub-tab').forEach(function(b){ b.classList.remove('active'); });
+  tab.querySelectorAll('.sub-content').forEach(function(el){ el.classList.remove('active'); });
+  tab.querySelector('.sub-tab[onclick*="'+id+'"]').classList.add('active');
+  document.getElementById('func-sub-'+id).classList.add('active');
+}
+function sizeAllSubWraps(){
+  document.querySelectorAll('.sub-wrap').forEach(function(wrap){
+    var contents=wrap.querySelectorAll('.sub-content');
+    var maxH=0;
+    contents.forEach(function(el){
+      var wasBlock=el.classList.contains('active');
+      el.classList.add('active');
+      var h=el.offsetHeight;
+      if(h>maxH)maxH=h;
+      if(!wasBlock)el.classList.remove('active');
+    });
+    wrap.style.minHeight=maxH+'px';
+  });
+}
+window.addEventListener('DOMContentLoaded',sizeAllSubWraps);
+window.addEventListener('resize',sizeAllSubWraps);
 </script>
 </body>
 </html>
