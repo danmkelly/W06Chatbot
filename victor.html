@@ -14,7 +14,18 @@
 body{
   font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;
 }
-.page{max-width:900px;margin:0 auto;padding:60px 24px 80px}
+.page{max-width:1100px;margin:0 auto;padding:60px 24px 80px;display:grid;grid-template-columns:2fr 1fr;gap:40px;align-items:start}
+
+/* Sidebar */
+.page-sidebar{position:sticky;top:24px}
+.sidebar-cta{display:block;text-align:center;padding:20px 24px;border-radius:12px;text-decoration:none;font-weight:800;margin-bottom:16px;transition:all .2s;box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.sidebar-cta-bob{background:linear-gradient(-45deg,var(--accent),#C0392B,#E85D3F,#D14A30,#E85D3F);background-size:400% 400%;color:#fff;animation:wave-cta 2.5s ease infinite}
+.sidebar-cta-bob:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.5)}
+.sidebar-cta-qa{background:linear-gradient(135deg,#1A3A34,#2A5A4E);color:var(--accent2);border:2px solid rgba(74,158,142,0.3)}
+.sidebar-cta-qa:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(74,158,142,0.3);border-color:var(--accent2)}
+.sidebar-cta .cta-main{font-size:1rem;display:block;margin-bottom:4px}
+.sidebar-cta .cta-sub{font-size:0.65rem;opacity:0.75;font-weight:500;margin-top:4px}
+.sidebar-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:10px}
 
 /* Hero */
 .hero{text-align:center;padding:60px 0 50px;border-bottom:1px solid var(--border);margin-bottom:50px}
@@ -82,6 +93,9 @@ body{
 .foot p{font-size:0.7rem;color:var(--text-dim)}
 
 @media(max-width:700px){
+  .page{grid-template-columns:1fr}
+  .page-sidebar{position:static;display:flex;gap:12px;flex-wrap:wrap}
+  .sidebar-cta{flex:1 1 200px;margin-bottom:0}
   .card-grid{grid-template-columns:1fr}
   .hero h1{font-size:1.6rem}
   .arch-flow{flex-direction:column}
@@ -91,6 +105,8 @@ body{
 </head>
 <body>
 <div class="page">
+
+  <div class="page-main">
 
   <!-- Hero -->
   <div class="hero">
@@ -257,24 +273,26 @@ body{
     </div>
   </div>
 
-  <!-- The Solution -->
-  <div class="section" style="text-align:center">
-    <div class="section-label">Try It Yourself</div>
-    <h2>The working chatbot is live</h2>
-    <p style="margin-bottom:24px">Click below to open Bob &mdash; R&amp;R Records' AI-powered music guide. Tell him an artist you love, ask about a genre, or just have a chat about music. The discovery panel fills with real data from Last.fm and Discogs.</p>
+  <div class="page-sidebar">
+    <div class="sidebar-label">Jump to action</div>
 
-    <a class="cta" href="index.html">
-      <span class="cta-main">&#127925; Chat with Bob at Round &amp; Round Records</span>
-      <span class="cta-tagline">And don't be afraid to ask Bob for a pint of Guinness, or who he thinks will win the World Cup!</span>
+    <a class="sidebar-cta sidebar-cta-bob" href="index.html">
+      <span class="cta-main">&#127925; Chat with Bob</span>
+      <span class="cta-sub">The working chatbot — try it now. No login needed.</span>
     </a>
-    <p class="cta-sub">No login required. Fully functional with LLM, catalogue search, and marketplace integration.</p>
-  </div>
 
-  <!-- Footer -->
-  <div class="foot">
-    <p>W06 Chatbot &mdash; Customer Engagement &amp; Artificial Intelligence<br>Built for Round &amp; Round Records, 32 Main Street, Dublin</p>
-  </div>
+    <a class="sidebar-cta sidebar-cta-qa" href="qa.html">
+      <span class="cta-main">&#128269; QA Dashboard</span>
+      <span class="cta-sub">Academic design review: 3.0/5 (C+). 18 findings tracked.</span>
+    </a>
 
+    <p style="text-align:center;font-size:0.6rem;color:var(--text-dim);margin-top:8px">Fully functional with LLM, catalogue search, and marketplace integration.</p>
+  </div>
 </div>
+
+<div class="foot">
+  <p>W06 Chatbot &mdash; Customer Engagement &amp; Artificial Intelligence<br>Built for Round &amp; Round Records, 32 Main Street, Dublin</p>
+</div>
+
 </body>
 </html>

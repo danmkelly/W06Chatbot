@@ -93,6 +93,11 @@ body{
   .page{padding:40px 16px 60px}
 }
 .design-override{color:#fff;background:#E67E22;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;white-space:nowrap;display:inline-block;width:56px;text-align:center;text-transform:uppercase}
+.sub-tab{padding:5px 14px;border-radius:14px;font-size:0.65rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-dim);transition:all .15s;font-family:inherit}
+.sub-tab.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.sub-tab:hover:not(.active){color:var(--text);border-color:var(--text-dim)}
+.sub-content{display:none}
+.sub-content.active{display:block}
 </style>
 </head>
 <body>
@@ -140,14 +145,20 @@ body{
       <h2>Academic framework assessment &mdash; Design Score: 3.0 / 5.0 &mdash; Grade C+</h2>
       <p>Beyond the code-level bug register, this separate pass assesses Bob against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> opener now includes brief capabilities in turn 1 ("I can find similar artists, dig up albums, explore genres..."); <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; LLM error message now offers human path; post-search suggestion chips include "Keep exploring" and "Human". Three findings improved this pass (F11: FAIL &rarr; PARTIAL, F13: PARTIAL &rarr; PASS, F16: FAIL &rarr; PARTIAL).</p>
 
-      <h3>Framework 1: Seven-Dimension Chatbot Taxonomy (Adamopoulou &amp; Moussiades 2020)</h3>
-      <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. Bob is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
-
-      <h3>Framework 2: CASA &mdash; Computers Are Social Actors (Reeves &amp; Nass 1996)</h3>
-      <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob has made significant CASA improvements: (1) disclosure in turn 1 is explicit ("I'm Bob, an AI chatbot powered by DeepSeek") -- PASS; (2) explicit consent flow asks "Would you like me to remember your name... Yes or no?" BEFORE any localStorage write, and <code>saveMemory()</code> is guarded by <code>consent==="yes"</code> -- PASS; (3) frustration handling now has <code>gibberishCount</code> de-escalation: after 2+ consecutive gibberish inputs, Bob shifts to serious tone ("I'm having trouble understanding...") and actively offers human handoff with "Human" suggestion chip -- upgraded from FAIL to PARTIAL. Human name "Bob" and Dublin dialect remain as fake-human cues (FAIL, Closed -- design intent). Register-vs-capability is PARTIAL (Closed -- same rationale; low-stakes interactions).</p>
-
-      <h3>Framework 3: Conversation Flow Anatomy</h3>
-      <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on <strong>Opener</strong> (identity + capabilities both in turn 1: "I can find similar artists, dig up albums, explore genres...") and <strong>Intent</strong> (clear purpose per flow). <strong>Recovery Ladder</strong> has improved: of 5 failure scenarios, gibberish now reaches step 3 (de-escalation + human handoff after 2+ strikes), LLM error offers human path, and post-search chips include "Keep exploring" + "Human". Three scenarios remain unaddressed (misspelling, no Discogs match, empty results) -- upgraded from FAIL to PARTIAL. <strong>Slots</strong> still fail critically (no input validation before API dispatch). The <strong>Closer</strong> remains partial: no read-back/confirm follows recommendations, though "Keep exploring" and "Human" suggestion chips now appear proactively.</p>
+      <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:14px">
+        <button class="sub-tab active" onclick="switchSubTab('taxonomy')">Taxonomy</button>
+        <button class="sub-tab" onclick="switchSubTab('casa')">CASA</button>
+        <button class="sub-tab" onclick="switchSubTab('flow')">Flow Anatomy</button>
+      </div>
+      <div id="sub-taxonomy" class="sub-content active">
+        <p>Classifies chatbots across 7 dimensions: knowledge domain, service provided, goals, response generation, communication channel, human-aid, and permissions. Bob is rated as a closed-domain (music), task-based (discovery &rarr; purchase), hybrid-generation (LLM + retrieval + regex), text+voice bot with always-available human handoff. Key gaps: LLM hallucination risk (no RAG verification), voice path lacks parity with text input validation.</p>
+      </div>
+      <div id="sub-casa" class="sub-content">
+        <p>Assesses whether the bot is CASA-AWARE (ethical, transparent) or CASA-BLIND (exploitative, deceptive). Bob has made significant CASA improvements: (1) disclosure in turn 1 is explicit ("I'm Bob, an AI chatbot powered by DeepSeek") -- PASS; (2) explicit consent flow asks "Would you like me to remember your name... Yes or no?" BEFORE any localStorage write, and <code>saveMemory()</code> is guarded by <code>consent==="yes"</code> -- PASS; (3) frustration handling now has <code>gibberishCount</code> de-escalation: after 2+ consecutive gibberish inputs, Bob shifts to serious tone ("I'm having trouble understanding...") and actively offers human handoff with "Human" suggestion chip -- upgraded from FAIL to PARTIAL. Human name "Bob" and Dublin dialect remain as fake-human cues (FAIL, Closed -- design intent). Register-vs-capability is PARTIAL (Closed -- same rationale; low-stakes interactions).</p>
+      </div>
+      <div id="sub-flow" class="sub-content">
+        <p>Evaluates the structural completeness of Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer. Bob passes on <strong>Opener</strong> (identity + capabilities both in turn 1: "I can find similar artists, dig up albums, explore genres...") and <strong>Intent</strong> (clear purpose per flow). <strong>Recovery Ladder</strong> has improved: of 5 failure scenarios, gibberish now reaches step 3 (de-escalation + human handoff after 2+ strikes), LLM error offers human path, and post-search chips include "Keep exploring" + "Human". Three scenarios remain unaddressed (misspelling, no Discogs match, empty results) -- upgraded from FAIL to PARTIAL. <strong>Slots</strong> still fail critically (no input validation before API dispatch). The <strong>Closer</strong> remains partial: no read-back/confirm follows recommendations, though "Keep exploring" and "Human" suggestion chips now appear proactively.</p>
+      </div>
 
       <div class="bug-table-wrap" style="margin-top:20px">
         <table class="bug-table">
@@ -647,6 +658,12 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-content').forEach(function(el){ el.classList.remove('active'); });
   document.querySelector('.tab-btn[onclick*="'+tab+'"]').classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
+}
+function switchSubTab(id){
+  document.querySelectorAll('.sub-tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.sub-content').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelector('.sub-tab[onclick*="'+id+'"]').classList.add('active');
+  document.getElementById('sub-'+id).classList.add('active');
 }
 </script>
 </body>
