@@ -1204,6 +1204,16 @@ async function send(){
     ents.forEach(function(a){var lower=a.toLowerCase();if(artists.indexOf(lower)===-1)artists.push(lower)});
   }
 
+  // Slot validation — low-confidence? confirm before API dispatch
+  var lowConfidence=!artists.length&&!tag;
+  var looksLikeQuery=/(artist|band|album|song|track|record|vinyl|genre|music|listen|recommend|suggest|similar|like|favourite|favorite|into|explore|discover|search|find|show|play|who|what)/i.test(txt);
+  if(lowConfidence&&txt.length<25&&!looksLikeQuery){
+    hideTyping();
+    addMsg("Not sure what to dig into there — give me an artist name, a genre, or tell me what you're in the mood for!",'bot');
+    addSugg(["Radiohead","Irish artists","90s indie","Jazz","Electronic","Human"]);
+    return;
+  }
+
   // Show loading if we're about to search
   if(artists.length||(tag&&!searchedAny))document.getElementById("discLoading").classList.add("active");
 

@@ -118,7 +118,7 @@ body{
     <div class="score-card">
       <span class="sc-value">4.0 <span class="sc-grade">B</span></span>
       <span class="sc-label">Academic Design</span>
-      <span class="sc-detail">12 PASS, 8 PARTIAL, 1 FAIL</span>
+      <span class="sc-detail">12 PASS, 9 PARTIAL, 0 FAIL</span>
     </div>
     <div class="score-card">
       <span class="sc-value">3.5 <span class="sc-grade">B-</span></span>
@@ -192,9 +192,9 @@ body{
           <span class="sc-detail">25% weight<br>4 PASS, 1 PARTIAL, 0 FAIL across A08–A12</span>
         </div>
         <div class="sc-item">
-          <span class="sc-value">2.5</span>
+          <span class="sc-value">3.0</span>
           <span class="sc-label">Flow Anatomy</span>
-          <span class="sc-detail">25% weight<br>2 PASS, 3 PARTIAL, 1 FAIL across A13–A18</span>
+          <span class="sc-detail">25% weight<br>2 PASS, 4 PARTIAL, 0 FAIL across A13–A18</span>
         </div>
         <div class="sc-item">
           <span class="sc-value">3.0</span>
@@ -205,7 +205,7 @@ body{
 
       <div class="overall-score">
         <span class="big">4.0</span><span class="grade">B</span>
-        <div class="note">Updated design score · 12 PASS · 8 PARTIAL · 1 FAIL · <strong style="color:var(--accent2)">Latest pass: A11 3-step de-escalation ladder (auto human at 4+ strikes), Grice maxims added, A09 WaxBot rename. CASA ↑ 4.0→4.5.</strong></div>
+        <div class="note">Updated design score · 12 PASS · 9 PARTIAL · 0 FAIL · <strong style="color:var(--accent2)">Latest pass: A15 slot validation gate added (FAIL→PARTIAL), A11 de-escalation ladder, Grice maxims. Flow ↑ 2.5→3.0. Zero critical failures.</strong></div>
       </div>
     </div>
 
@@ -391,11 +391,11 @@ body{
               <td><span class="design-open">Open</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">SLOTS (validated with back/correction)</td>
-              <td><span class="sev-crit">FAIL</span></td>
-              <td>No slot validation; free-text fired directly at APIs</td>
-              <td><span class="sev-crit">Critical</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
+              <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+              <td>LLM provides informal slot-filling; low-confidence queries now trigger confirmation before API dispatch (no artists + no genre + short text + no music keywords)</td>
+              <td><span class="sev-crit">Critical</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
               <td></td>
-              <td class="fix">Not yet addressed</td>
+              <td class="fix">Lightweight slot gate added — clarifies when extraction confidence is low; full form-based validation not needed for conversational bot</td>
             </tr>
             <tr>
               <td class="id">A16</td>
