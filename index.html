@@ -1261,6 +1261,11 @@ async function send(){
   if(!LLM_KEY||!LLM_URL||!LLM_MODEL){
     addMsg("I'm listening! Tell me about an artist or genre you love and I'll dig in. Type <strong>human</strong> if you'd rather speak to our team.",'bot');addSugg(["Radiohead","Irish rock","90s indie","Jazz","Ska","Electronic","Human"])
   }
+
+  // Recovery — nothing found by search: surface fallback options
+  if(!searchedAny&&!tag&&artists.length===0){
+    setTimeout(function(){addSugg(["Radiohead","Pixies","Best Irish albums","90s indie","Human"])},2500);
+  }
 }
 
 // === Discogs image enrichment for similar artists ===

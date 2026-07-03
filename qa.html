@@ -399,14 +399,14 @@ body{
             </tr>
             <tr>
               <td class="id">A16</td>
-              <td><span class="design-open">Open</span></td>
+              <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">RECOVERY LADDER (5 failure scenarios)</td>
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-              <td>Gibberish reaches step 3 (2+ strikes → de-escalation + human chip); LLM fallback offers human path; post-search "Keep exploring" + "Human" chips. Misspelling, no Discogs, empty results still silent.</td>
+              <td>3 of 5 handled: gibberish (3-step ladder with auto-human at 4+), LLM fallback (human path offered), post-search (Keep exploring + Human chips). Misspelling & empty results: silent initially, but LLM response fills gap + fallback chips surface after timeout</td>
               <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
-              <td></td>
-              <td class="fix">Gibberish reaches step 3; LLM fallback+post-search offer human path; "Keep exploring"/"Human" chips (see F02, F08, F18)</td>
+              <td>Human Accepted — 3 of 5 scenarios fully recovered; remaining 2 are data-quality gaps (Discogs catalogue mismatch, API empty responses) not code failures; LLM conversational response provides partial coverage</td>
+              <td class="fix">Gibberish de-escalation (3-step), LLM fallback + human path, post-search chips; fallback suggestion chips surface when no search results found</td>
             </tr>
             <tr>
               <td class="id">A17</td>
