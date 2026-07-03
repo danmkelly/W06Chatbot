@@ -492,7 +492,7 @@ body{
     </div>
     <div class="chat-msgs" id="chatMessages"></div>
     <div class="chat-input-wrap">
-      <input class="chat-input" id="chatInput" placeholder="Tell Bob about an artist or genre you love..." autofocus>
+      <input class="chat-input" id="chatInput" placeholder="Ask Bob about an artist or genre..." autofocus>
       <button class="chat-mic" id="chatMic" aria-label="Voice input" title="Talk to Bob">&#127908;</button>
       <button class="chat-send" id="chatSend" aria-label="Send">&#8594;</button>
     </div>
@@ -1071,7 +1071,7 @@ async function send(){
     }
     hideTyping();
     addMsg("Just a simple <strong>yes</strong> or <strong>no</strong> — would you like me to remember you between visits? It stays on your device, never sent anywhere.",'bot');
-    addSugg(["Yes","No"]);
+    addSugg(["Yes","No","Human"]);
     return;
   }
 
@@ -1281,7 +1281,7 @@ chatInput.addEventListener("keydown",function(e){if(e.key==="Enter")send()});
     setTimeout(function(){
       expectingConsent=true;
       addMsg("Before we start — would you like me to remember your name and what we chat about for next time? It all stays on your device, never sent anywhere. Just say <strong>yes</strong> or <strong>no</strong>.",'bot');
-      addSugg(["Yes","No"]);
+      addSugg(["Yes","No","Human"]);
     },1200);
   }
 })();
