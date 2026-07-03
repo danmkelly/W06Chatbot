@@ -17,8 +17,8 @@ body{
 .page{max-width:1100px;margin:0 auto;padding:60px 24px 80px;display:grid;grid-template-columns:2fr 1fr;gap:40px;align-items:start}
 
 /* Sidebar */
-.page-sidebar{position:sticky;top:24px}
-.sidebar-cta{display:block;text-align:center;padding:20px 24px;border-radius:12px;text-decoration:none;font-weight:800;margin-bottom:16px;transition:all .2s;box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.page-sidebar{position:sticky;top:24px;display:flex;flex-direction:column;gap:16px}
+.sidebar-cta{display:flex;flex-direction:column;justify-content:center;text-align:center;padding:20px 24px;border-radius:12px;text-decoration:none;font-weight:800;transition:all .2s;box-shadow:0 8px 30px rgba(0,0,0,0.3);flex:1}
 .sidebar-cta-bob{background:linear-gradient(-45deg,var(--accent),#C0392B,#E85D3F,#D14A30,#E85D3F);background-size:400% 400%;color:#fff;animation:wave-cta 2.5s ease infinite}
 .sidebar-cta-bob:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(232,93,63,0.5)}
 .sidebar-cta-qa{background:linear-gradient(135deg,#1A3A34,#2A5A4E);color:#fff;border:2px solid rgba(74,158,142,0.3)}
@@ -92,8 +92,8 @@ body{
 
 @media(max-width:700px){
   .page{grid-template-columns:1fr}
-  .page-sidebar{position:static;display:flex;gap:12px;flex-wrap:wrap}
-  .sidebar-cta{flex:1 1 200px;margin-bottom:0}
+  .page-sidebar{position:static;display:flex;flex-direction:row;gap:12px;flex-wrap:wrap}
+  .sidebar-cta{flex:1 1 200px}
   .card-grid{grid-template-columns:1fr}
   .hero h1{font-size:1.6rem}
   .arch-flow{flex-direction:column}
@@ -278,6 +278,7 @@ body{
 
     <a class="sidebar-cta sidebar-cta-qa" href="qa.html">
       <span class="cta-main">&#128269; QA Dashboard</span>
+      <span class="cta-sub">Academic design review: 3.0/5 (C+). 18 findings tracked.</span>
     </a>
 
     <a class="sidebar-cta sidebar-cta-bob" href="index.html">
