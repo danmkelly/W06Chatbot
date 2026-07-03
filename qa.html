@@ -109,16 +109,16 @@ body{
   <div class="hero">
     <div class="hero-icon">&#128269;</div>
     <h1>QA Dashboard</h1>
-    <p class="hero-keelin"><strong style="color:var(--accent3)">@Keelin</strong> is the QA specialist for this project. She runs two parallel assessment tracks: an <strong style="color:var(--accent2)">academic design review</strong> against three chatbot best-practice frameworks (Taxonomy, CASA, Conversation Flow Anatomy) and a <strong style="color:var(--accent)">functional code-level bug hunt</strong> covering conversation paths, UI behaviour, voice interaction, memory persistence, and mobile responsiveness. Findings from both tracks are tracked, scored, and versioned here.</p>
-    <p class="hero-sub">Grounded in <strong>three academic best-practice frameworks</strong> from the Customer Engagement &amp; AI module: chatbot taxonomy (Adamopoulou &amp; Moussiades 2020), CASA / Computers Are Social Actors (Reeves &amp; Nass 1996), and conversation flow anatomy. <strong>Last reviewed:</strong> 2026-07-02.</p>
+    <p class="hero-keelin"><strong style="color:var(--accent3)">@Keelin</strong> is the QA specialist for this project. She runs two parallel assessment tracks: an <strong style="color:var(--accent2)">academic design review</strong> against four chatbot best-practice frameworks (Taxonomy, CASA, Conversation Flow Anatomy, Grice's Maxims) and a <strong style="color:var(--accent)">functional code-level bug hunt</strong> covering conversation paths, UI behaviour, voice interaction, memory persistence, and mobile responsiveness. Findings from both tracks are tracked, scored, and versioned here.</p>
+    <p class="hero-sub">Grounded in <strong>four academic best-practice frameworks</strong> from the Customer Engagement &amp; AI module: chatbot taxonomy (Adamopoulou &amp; Moussiades 2020), CASA / Computers Are Social Actors (Reeves &amp; Nass 1996), conversation flow anatomy, and Grice's maxims of conversation (Grice 1975). <strong>Last reviewed:</strong> 2026-07-03.</p>
   </div>
 
   <!-- Score Cards -->
   <div class="score-cards">
     <div class="score-card">
-      <span class="sc-value">3.2 <span class="sc-grade">C+</span></span>
+      <span class="sc-value">3.5 <span class="sc-grade">B-</span></span>
       <span class="sc-label">Academic Design</span>
-      <span class="sc-detail">9 PASS, 7 PARTIAL, 1 FAIL</span>
+      <span class="sc-detail">11 PASS, 9 PARTIAL, 1 FAIL</span>
     </div>
     <div class="score-card">
       <span class="sc-value">3.5 <span class="sc-grade">B-</span></span>
@@ -129,8 +129,13 @@ body{
       <span class="sc-value">17</span>
       <span class="sc-label">Bug Tracker</span>
       <span class="sc-detail">13 fixed, 4 open</span>
-    </div>
-  </div>
+      </div>
+      <div id="sub-grice" class="sub-content">
+        <p>Tests WaxBot against Grice's four maxims of cooperative conversation (Grice 1975, <em>Logic &amp; Conversation</em>). An accurate bot can still feel wrong — three of these four are harness failures, not model failures: grounding, scoped actions, and a clean handoff are what hold a bot to Grice.</p>
+        <p style="margin-top:6px;font-size:0.72rem;color:var(--text-dim);line-height:1.5"><strong style="color:var(--accent)">Quantity</strong> — say as much as needed, and no more. System prompt limits responses to 2-5 sentences (PASS). <strong style="color:var(--accent)">Quality</strong> — only say what is true. No RAG verification; LLM claims about albums/artists unverified (PARTIAL). <strong style="color:var(--accent)">Relation</strong> — be relevant. Intent routing is clear; post-search chips stay on-topic (PASS). <strong style="color:var(--accent)">Manner</strong> — be clear, brief, and orderly. Responses are plain-language but prompt lacks explicit ordering rules (PARTIAL).</p>
+        <p style="margin-top:8px;font-size:0.72rem;color:var(--text-dim)"><strong style="color:var(--accent3)">Grice (1975).</strong> @Dot owns Quantity &amp; Quality (response length, LLM grounding). @Siobhan owns Manner (clarity, brevity in UI). @Fionn owns Relation (domain-relevance guardrails). @Keelin cross-references Grice alongside Taxonomy, CASA, and Flow Anatomy.</p>
+      </div>
+      </div>
 
   <!-- Tab Bar -->
   <div class="tabs">
@@ -145,12 +150,13 @@ body{
     <div class="section">
       <div class="section-label">Design &amp; Pedagogical Review</div>
       <h2>Academic framework assessment &mdash; Design Score: 3.5 / 5.0 &mdash; Grade B-</h2>
-      <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>three academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> renamed Bob &rarr; WaxBot (F9 PASS); Human/Bot gate added before consent; opener includes brief capabilities in turn 1; <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; post-search suggestion chips include "Keep exploring" and "Human". Design score improved from 3.0 (C+) to 3.5 (B-).</p>
+      <p>Beyond the code-level bug register, this separate pass assesses WaxBot against <strong>four academic frameworks</strong> from the Customer Engagement &amp; AI module. The review judges whether the bot is <em>designed well as a conversational agent</em>, not just whether it runs without errors. Full analysis in <a href="design-review.md" style="color:var(--accent2)">design-review.md</a>. <strong style="color:var(--accent)">Latest changes deployed:</strong> renamed Bob &rarr; WaxBot (F9 PASS); Human/Bot gate added before consent; opener includes brief capabilities in turn 1; <code>gibberishCount</code> counter with de-escalation after 2+ strikes + human handoff; post-search suggestion chips include "Keep exploring" and "Human". Design score improved from 3.0 (C+) to 3.5 (B-).</p>
 
       <div class="sub-tabs" style="display:flex;gap:6px;margin-bottom:0">
         <button class="sub-tab active" onclick="switchSubTab('taxonomy')">Taxonomy</button>
         <button class="sub-tab" onclick="switchSubTab('casa')">CASA</button>
         <button class="sub-tab" onclick="switchSubTab('flow')">Flow Anatomy</button>
+        <button class="sub-tab" onclick="switchSubTab('grice')">Grice</button>
       </div>
       <div class="sub-wrap">
       <div id="sub-taxonomy" class="sub-content active">
@@ -172,37 +178,42 @@ body{
     <div class="section">
       <div class="section-label">Academic Scoring Rubric</div>
       <h2>Design quality score: 3.5 / 5.0 &mdash; Grade B-</h2>
-      <p>Weighted across the three academic frameworks. Scores are versioned and tracked per deployment.</p>
+      <p>Weighted across the four academic frameworks. Scores are versioned and tracked per deployment.</p>
 
-      <div class="scorecard">
+      <div class="scorecard" style="grid-template-columns:repeat(4,1fr)">
         <div class="sc-item">
           <span class="sc-value">3.5</span>
           <span class="sc-label">Taxonomy</span>
-          <span class="sc-detail">33% weight<br>4 PASS, 2 PARTIAL, 1 N/A across F1–F7</span>
+          <span class="sc-detail">25% weight<br>4 PASS, 2 PARTIAL, 1 N/A across F1–F7</span>
         </div>
         <div class="sc-item">
           <span class="sc-value">4.0</span>
           <span class="sc-label">CASA</span>
-          <span class="sc-detail">33% weight<br>3 PASS, 2 PARTIAL, 0 FAIL across F8–F12</span>
+          <span class="sc-detail">25% weight<br>3 PASS, 2 PARTIAL, 0 FAIL across F8–F12</span>
         </div>
         <div class="sc-item">
           <span class="sc-value">2.5</span>
           <span class="sc-label">Flow Anatomy</span>
-          <span class="sc-detail">33% weight<br>2 PASS, 4 PARTIAL, 1 FAIL across F13–F18</span>
+          <span class="sc-detail">25% weight<br>2 PASS, 4 PARTIAL, 1 FAIL across F13–F18</span>
+        </div>
+        <div class="sc-item">
+          <span class="sc-value">3.0</span>
+          <span class="sc-label">Grice</span>
+          <span class="sc-detail">25% weight<br>2 PASS, 2 PARTIAL, 0 FAIL across F19–F22</span>
         </div>
       </div>
 
       <div class="overall-score">
         <span class="big">3.5</span><span class="grade">B-</span>
-        <div class="note">Updated design score · 9 PASS · 7 PARTIAL · 1 FAIL · <strong style="color:var(--accent2)">Latest pass: F9 fixed (WaxBot rename), F11, F13, F16 improved. CASA ↑ 3.5→4.0, Flow ↑ 2.0→2.5.</strong></div>
+        <div class="note">Updated design score · 11 PASS · 9 PARTIAL · 1 FAIL · <strong style="color:var(--accent2)">Latest pass: Grice maxims added (F19–F22), F9 fixed (WaxBot rename), F11, F13, F16 improved. CASA ↑ 3.5→4.0.</strong></div>
       </div>
     </div>
 
     <!-- Design Findings -->
     <div class="section">
       <div class="section-label">Design Findings</div>
-      <h2>18 findings tracked</h2>
-      <p>Grounded in three academic best-practice frameworks from the Customer Engagement &amp; AI module. Findings numbered F1–F18, scored PASS/PARTIAL/FAIL/N/A.</p>
+      <h2>22 findings tracked</h2>
+      <p>Grounded in four academic best-practice frameworks from the Customer Engagement &amp; AI module. Findings numbered F1–F22, scored PASS/PARTIAL/FAIL/N/A.</p>
 
       <div class="bug-table-wrap" style="margin-top:20px">
         <table class="bug-table">
@@ -291,7 +302,7 @@ body{
               <td><span class="design-closed">Closed</span></td>
               <td style="color:var(--accent2);font-weight:600">Taxonomy</td>
               <td class="desc">Permissions</td>
-              <td><span style="background:#555;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem">N/A</span></td>
+              <td><span style="background:#555;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.6rem;display:inline-block;width:56px;text-align:center;text-transform:uppercase">N/A</span></td>
               <td>Commercial single-owner; no relevant dimension</td>
               <td><span class="sev-low">Low</span></td>
               <td></td>
@@ -418,6 +429,50 @@ body{
               <td></td>
               <td class="fix">Gibberish handled; empty input caught</td>
             </tr>
+            <tr>
+              <td class="id">F19</td>
+              <td><span class="design-open">Open</span></td>
+              <td style="color:var(--accent);font-weight:600">Grice</td>
+              <td class="desc">Quantity — response length appropriate</td>
+              <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+              <td>System prompt limits responses to 2–5 sentences; no verbosity observed</td>
+              <td><span class="sev-low">Low</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
+              <td></td>
+              <td class="fix">&mdash;</td>
+            </tr>
+            <tr>
+              <td class="id">F20</td>
+              <td><span class="design-open">Open</span></td>
+              <td style="color:var(--accent);font-weight:600">Grice</td>
+              <td class="desc">Quality — truthfulness &amp; evidence</td>
+              <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+              <td>No RAG verification; LLM freely generates artist/album claims without grounding</td>
+              <td><span class="sev-med">Medium</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
+              <td></td>
+              <td class="fix">LLM claims unverified; no grounding layer present</td>
+            </tr>
+            <tr>
+              <td class="id">F21</td>
+              <td><span class="design-closed">Closed</span></td>
+              <td style="color:var(--accent);font-weight:600">Grice</td>
+              <td class="desc">Relation — relevance of responses</td>
+              <td><span class="sev-med" style="background:var(--accent2)">PASS</span></td>
+              <td>Intent routing is clear (artist search, genre explore, human handoff); post-search chips stay on-topic</td>
+              <td><span class="sev-low">Low</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
+              <td></td>
+              <td class="fix">&mdash;</td>
+            </tr>
+            <tr>
+              <td class="id">F22</td>
+              <td><span class="design-open">Open</span></td>
+              <td style="color:var(--accent);font-weight:600">Grice</td>
+              <td class="desc">Manner — clarity, brevity, orderliness</td>
+              <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
+              <td>Responses are plain-language and readable but system prompt lacks explicit ordering/formatting rules</td>
+              <td><span class="sev-low">Low</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN]</span></td>
+              <td></td>
+              <td class="fix">Prompt currently favours conversational tone over structured responses</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -462,8 +517,9 @@ body{
             <li>Captures screenshots on failure</li>
             <li>Logs console errors as test failures</li>
           </ul>
-        </div>
       </div>
+      </div>
+
     </div>
 
     <!-- Functional Scoring Rubric -->
