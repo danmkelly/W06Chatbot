@@ -388,14 +388,14 @@ body{
             </tr>
             <tr>
               <td class="id">A15</td>
-              <td><span class="design-open">Open</span></td>
+              <td><span class="design-override">Closed</span></td>
               <td style="color:var(--accent3);font-weight:600">Flow</td>
               <td class="desc">SLOTS (validated with back/correction)</td>
               <td><span class="sev-med" style="background:var(--accent3);color:#000">PARTIAL</span></td>
-              <td>LLM provides informal slot-filling; low-confidence queries now trigger confirmation before API dispatch (no artists + no genre + short text + no music keywords)</td>
+              <td>LLM provides informal slot-filling; low-confidence gate confirms before API dispatch</td>
               <td><span class="sev-crit">Critical</span><br><span style="font-size:0.5rem;color:var(--text-dim)">[DESIGN/CODE]</span></td>
-              <td></td>
-              <td class="fix">Lightweight slot gate added — clarifies when extraction confidence is low; full form-based validation not needed for conversational bot</td>
+              <td>Human Accepted — conversational bot uses LLM as de facto slot-filler; lightweight gate catches ambiguous input; full form-based validation overkill for this scope</td>
+              <td class="fix">Low-confidence gate added: no artists + no genre + short text + no music keywords → clarifies before API dispatch</td>
             </tr>
             <tr>
               <td class="id">A16</td>
