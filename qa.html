@@ -96,8 +96,8 @@ body{
 .sub-tab{padding:7px 16px 5px;font-size:0.65rem;font-weight:600;cursor:pointer;border:1.5px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:transparent;color:var(--text-dim);transition:all .15s;font-family:inherit;position:relative;top:1.5px}
 .sub-tab.active{background:rgba(255,255,255,0.03);color:var(--accent2);border-color:var(--border);top:1.5px}
 .sub-tab:hover:not(.active){color:var(--text)}
-.sub-content{display:none;border:1.5px solid var(--border);border-radius:0 6px 6px 6px;padding:12px;margin-bottom:14px}
-.sub-content.active{display:block}
+.sub-content{display:none;border:1.5px solid var(--border);border-radius:0 6px 6px 6px;padding:12px;margin-bottom:14px;min-height:120px}
+.sub-content.active{display:block}.sub-content:not(.active){display:none}
 </style>
 </head>
 <body>
