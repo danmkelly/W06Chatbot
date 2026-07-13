@@ -1,0 +1,10 @@
+# R&R Records Chatbot - Cloudflare Worker config
+name = "rr-records-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Deploy with: npx wrangler deploy
+# Set secrets:
+#   npx wrangler secret put LLM_KEY
+#   npx wrangler secret put LFM_KEY
+#   npx wrangler secret put DGS_KEY

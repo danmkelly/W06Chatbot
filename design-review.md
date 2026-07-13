@@ -1,0 +1,151 @@
+# Design & Pedagogical Review -- Bob the Chatbot
+
+**Reviewer:** @Keelin (QA specialist)
+**Date:** 2026-07-02 (final review after recovery ladder + opener deployment)
+**Frameworks applied:** Adamopoulou & Moussiades (2020) Seven-Dimension Chatbot Taxonomy; Reeves & Nass (1996) CASA; Conversation Flow Anatomy (Opener / Intent / Slots / Recovery / Closer / Unexpected)
+
+---
+
+## 1. Scored Findings Table
+
+| # | Framework | Item | Score (PASS/PARTIAL/FAIL) | Evidence | Severity [DESIGN]/[CODE] | Overlap with bugs | Manual Override | Closed |
+|---|-----------|------|--------------------------|----------|--------------------------|----------------------|-----------------|----------|
+| F1 | Taxonomy | Knowledge domain -- closed vs open | PASS | Domain is music (closed); easter eggs (Guinness, World Cup) are deliberate per victor.html brief, not accidental drift. | [DESIGN] | None | | |
+| F2 | Taxonomy | Service provided -- interpersonal support | PARTIAL | Positioned as a "music guide" with Discogs purchase path; but LLM temperature 0.9 + no domain guardrails in `BOB_VOICE` (line 940) risks drift into general chat/emotional support. | [DESIGN] | None | | |
+| F3 | Taxonomy | Goals -- task-based vs chat-based | PASS | Flows resolve to action: artist search leads to discovery panel with Discogs "Buy Now" badges; genre exploration produces clickable chips. Conversational LLM serves the task-based goal. | [DESIGN] | None | | |
+| F4 | Taxonomy | Response generation -- hybrid (LLM+retrieval+regex) | PARTIAL | Hybrid architecture confirmed: LLM for conversation, Last.fm for panel data, regex fallback in `extractArtists()` (line ~900). Hallucination hot-spot: no RAG verification of LLM claims against Last.fm/Discogs ground truth; `chatLLM` temperature 0.9. | [DESIGN] | BUG-012 (regex brittleness) but hallucination gap is new | | |
+| F5 | Taxonomy | Communication channel -- text+voice parity | PARTIAL | Text path has gibberish detection (lines 1088-1113); voice STT transcription bypasses those checks entirely before `send()`. TTS orphan state documented in BUG-005. Not parity. | [DESIGN/CODE] | BUG-005 (TTS) but voice-STT validation gap is new | | |
+| F6 | Taxonomy | Human-aid -- reachable at every stage | PASS | "Prefer a real human?" bar is always visible in `.chat-human-ramp`. Typing "human" returns full contact details (lines 1117-1122). Reachable from any conversation state. | [DESIGN] | None | | |
+| F7 | Taxonomy | Permissions | N/A | Commercial single-owner context; no relevant permission dimension. | -- | None | | |
+| F8 | CASA | Disclosure in turn 1 | PASS | First spoken message (live line 1269): "Hey! I'm Bob, an AI chatbot powered by DeepSeek." Unambiguous self-identification as "AI chatbot". Second message is consent question, not humanising filler. No "friendly colleague" ambiguity from prior version. | [DESIGN] | None | | |
+| F9 | CASA | No fake-human cues | FAIL | Human name "Bob"; Dublin dialect. The victor.html brief explicitly endorses mimicry. | [DESIGN] | None | Accepted — fun interactions part of design intent; low-stakes | Closed |
+| F10 | CASA | Register matches capability | PARTIAL | LLM cannot guarantee factual accuracy; no RAG grounding. | [DESIGN] | None | Accepted — same rationale as F9; low-stakes interactions, not overclaiming | Closed |
+| F11 | CASA | Frustration handling -- de-escalation on failure | PARTIAL | `gibberishCount` counter added. After 2+ consecutive gibberish inputs, Bob shifts register from cheerful to serious ("I'm having trouble understanding. Let me hand you over — type human...") and actively offers human handoff with "Human" suggestion chip. LLM error fallback now includes human path: "...type human to reach our team directly." Repeats cheerful template only on first strike; de-escalates on second. | [DESIGN/CODE] | BUG-008 (typing stuck on goBack) -- adds conversation-design dimension | | |
+| F12 | CASA | Chummy data extraction -- localStorage disclosed BEFORE collection | PASS | Explicit consent flow implemented (live lines 1269-1274, 1052-1073). Turn 2 asks: "Would you like me to remember your name... yes or no?" `saveMemory()` guarded by `consent==="yes"` (line 594). No localStorage write before consent. If user says no, nothing stored. On return visit with no consent, all counters reset (lines 588-590). Consent disclosure happens before any persistence. | [DESIGN/CODE] | Previously linked to BUG-007 (modal overlay); now resolved by consent flow | | |
+| F13 | Flow Anatomy | OPENER -- identity + capability in turn 1 | PASS | Turn 1 (live): "Hey! I'm Bob, an AI chatbot... I can find similar artists, dig up albums, explore genres, and help you discover new music." Identity AND capabilities now disclosed in the very first conversational turn. Human handoff path also present in turn 1 ("Type human any time to reach our team directly"). No deferral to consent resolution. | [DESIGN] | None | | |
+| F14 | Flow Anatomy | INTENT -- one clear purpose per flow | PASS | Three distinct flows: artist search (discovery panel with Discogs purchase), genre exploration (tag artists/albums), human handoff (contact details). LLM chattiness augments but does not derail these paths. | [DESIGN] | None | | |
+| F15 | Flow Anatomy | SLOTS -- validated one at a time with back/correction | FAIL | No slot-filling dialogue at all. User free-text is accepted verbatim and fired at APIs (lines 1141-1171). No "Did you mean...?" confirmation before searching. `goBack()` (line 1004) navigates discovery history, not input correction. | [DESIGN] | None | | |
+| F16 | Flow Anatomy | RECOVERY LADDER -- 5 failure scenarios | PARTIAL | **Gibberish** (live): after 2+ consecutive strikes, reaches step 3 (de-escalation register shift + "Human" suggestion chip offered). First strike reaches step 2 (suggestion chips). **LLM timeout**: fallback now includes human path ("...type human to reach our team directly."). **After successful search**: suggestion chips now include "Keep exploring" and "Human" (live, 3s delay). **Misspelling**: still no recovery at all. **No Discogs match**: still silent. **Empty Last.fm**: still renders empty sections with zero user notification. Of 5 scenarios: gibberish now reaches step 3; LLM fallback reaches step 2 with human path; 3 remain unaddressed. | [DESIGN/CODE] | BUG-002 (fallback), BUG-008 (typing on error), BUG-018 (silent LLM failure now partially resolved) -- adds structural recovery ladder analysis | | |
+| F17 | Flow Anatomy | CLOSER -- read-back/confirm + keep exploring + human path | PARTIAL | No explicit read-back/confirm after recommendation. "Keep exploring" is implicit via persistent discovery panel (similar artists, genre chips all clickable). Human path is always visible via the "Prefer a real human?" bar but is never proactively offered as a next step by the bot. | [DESIGN] | None | | |
+| F18 | Flow Anatomy | Design the unexpected first | PARTIAL | Gibberish handled (lines 1088-1113). Silence/empty input caught (`if(!txt)return` line 1047). But: rapid topic switches pollute `conv[]` context (no AbortController on fetch); mid-flow corrections unsupported; no idle-timeout re-engagement. | [DESIGN] | None | | |
+
+### Summary counts
+
+| Score | Count |
+|-------|-------|
+| PASS | 7 |
+| PARTIAL | 8 |
+| FAIL | 2 |
+| N/A | 1 |
+
+---
+
+## 2. Biggest Risk to Trust (Reeves & Nass CASA)
+
+Two previous trust gaps have been closed since the prior review: pre-consent localStorage tracking (F12, resolved via explicit consent flow) and the completely non-functional recovery ladder (F16, partially resolved via `gibberishCount` de-escalation, LLM fallback human path, and post-search "Human" suggestion chips). The bot now de-escalates from cheerful to serious after repeated failures and offers the human handoff in the gibberish and LLM-error paths.
+
+**The biggest remaining risk to trust** is the combination of **absent slot validation** (F15) and the **still-incomplete recovery ladder** (F16). While gibberish and LLM errors now escalate correctly, three of five failure scenarios (misspelling, no Discogs match, empty Last.fm results) still fail silently with zero user feedback. When a user types a misspelled artist name, the discovery panel renders empty sections with no notification that the search yielded nothing. The user is left guessing whether the bot understood them or whether the artist simply has no data. Combined with zero slot validation (no "Did you mean...?" confirmation), a user who makes a single typo has no recovery path at all.
+
+**Secondary risk**: Slot validation (F15) remains completely absent. Users can type ambiguous or misspelled queries that produce poor or zero results with no clarification dialogue. This is now the most impactful single gap because it sits upstream of every other recovery scenario: if input were validated before dispatch, many recovery-ladder failures would be prevented at the source.
+
+**Comparison to prior review**: The previous review identified the broken recovery ladder as the primary risk. That has been partially addressed: the gibberish path now reaches step 3, and the LLM fallback offers human handoff. The open issue is now narrower and more defined: three failure scenarios (misspelling, no Discogs, empty results) need the same treatment that gibberish and LLM errors already received. The bot is converging toward a working recovery ladder; it just is not there yet for all paths.
+
+---
+
+## 3. Priority Fixes (ranked by impact)
+
+### P1 -- HIGH: Recovery ladder -- acknowledge remaining failure modes with human handoff
+
+**Impact:** 3 of 5 failure scenarios still dead-end silently (misspelling, no Discogs match, empty results). The gibberish and LLM-error paths are now resolved; the remaining gaps are specific and surgical.
+
+**File:** `index.html`
+**Lines:** After search loop (empty results), `enrichAlbumBadges` (no Discogs match)
+
+**Changes:**
+
+For empty search results (after search loop):
+```
+// ADD after the searchedAny check:
+if(!searchedAny && artists.length > 0){
+  addMsg("I looked for that but couldn't find any matches in the catalogue. Want to try a different artist, or <strong>type 'human'</strong> to ask our team?",'bot');
+  addSugg(["Radiohead","Pixies","Kendrick Lamar"]);
+}
+```
+
+For no-Discogs-match notification:
+```
+// Add counter in enrichAlbumBadges; if totalChecked > 0 && totalMatched === 0:
+// Append a chat message notifying the user and offering human handoff.
+```
+
+For misspelling: add a "Did you mean...?" step after low-confidence Last.fm results.
+
+### P2 -- HIGH: Add voice-STT validation parity
+
+**Impact:** Voice users currently bypass all gibberish/validation checks. A voice user sending transcribed noise gets the same treatment as a deliberate text query.
+
+**File:** `index.html`
+**Line:** Speech recognition result handler
+**Change:** After STT produces final transcript, pass it through the same gibberish detection before `send()`:
+
+```
+chatInput.value=transcript;
+if(e.results[0].isFinal){
+  micBtn.classList.remove("listening");
+  // Re-validate transcribed text before sending
+  if(!validateInput(transcript)){
+    addMsg("I didn't quite catch that! Give me an artist name to explore...",'bot');
+    addSugg(["Radiohead","Pixies","Jazz","Irish artists","90s indie"]);
+    return;
+  }
+  spokeLast=true;send();
+}
+```
+
+### P3 -- HIGH: Slot validation before search
+
+**Impact:** Users typing ambiguous input get poor/no results with no clarification step. A "Did you mean...?" pattern would improve accuracy and trust.
+
+**File:** `index.html`
+**Line:** ~1141-1151 (before artist search loop)
+**Change:** Add a confirmation step for ambiguous or single-word queries.
+
+### P4 -- MEDIUM: Closer read-back/confirm step
+
+**Impact:** Users complete a search but aren't guided to next actions. A structured closer improves task completion.
+
+**File:** `index.html`
+**Line:** `BOB_VOICE` system prompt (line ~940) and after LLM reply
+**Change:** Add closer instruction to system prompt: "After making recommendations, offer the next step naturally: 'Want me to dig deeper into any of these, or shall I get a real human to help you find a copy?'"
+
+### P5 -- RESOLVED: De-escalation register shift on repeated failures
+
+**Status:** Deployed. `gibberishCount` counter now tracks consecutive failures. After 2+ strikes, Bob shifts from cheerful to serious register and actively offers human handoff via suggestion chip. LLM fallback now includes "...type human to reach our team directly."
+
+### P6 -- LOW: Request cancellation on rapid topic switches
+
+**Impact:** Fast users can corrupt conversation context. AbortController would prevent stale requests from polluting state.
+
+**File:** `index.html`
+**Line:** ~939 (fetch in chatLLM) and ~1109 (fetch in search loop)
+**Change:** Add `AbortController` per search session, abort on new `send()`.
+
+---
+
+## 4. Design Quality Scorecard
+
+| Category | Score | Weight | Notes |
+|----------|-------|--------|-------|
+| CASA Compliance (Reeves & Nass) | 3.5 / 5 | 35% | Disclosure explicit (PASS); consent flow implemented (PASS); fake-human cues closed with override (FAIL); register closed with override (PARTIAL); frustration handling improved with `gibberishCount` de-escalation + LLM human path (PARTIAL). Two findings now have manual overrides accepted. |
+| Conversation Flow Anatomy | 2.5 / 5 | 35% | Opener now PASS (capabilities in turn 1); recovery ladder improved (gibberish reaches step 3, LLM fallback has human path, post-search "Human" + "Keep exploring" chips); slots still absent; closer still partial. Two grades improved since last review. |
+| Taxonomy Coherence (Adamopoulou & Moussiades) | 3.0 / 5 | 30% | Domain, goals, and human-aid are well-defined; response gen and channel parity have gaps. Unchanged by consent flow. |
+
+### **Overall Design Quality Score: 3.0 / 5 -- Grade C+**
+
+This latest deployment addresses three findings that were dragging the score down: F13 (opener) now includes capability disclosure in turn 1 (PARTIAL → PASS), F11 (frustration handling) now has `gibberishCount` de-escalation with human handoff (FAIL → PARTIAL), and F16 (recovery ladder) now reaches step 3 for gibberish, offers human path from LLM errors, and adds "Keep exploring" + "Human" suggestion chips after successful searches (FAIL → PARTIAL).
+
+The consent flow (F12) from the prior deployment remains the single most impactful change: it closed the pre-consent localStorage gap. Together with the explicit disclosure (F8), the bot is now solidly CASA-aware on data ethics.
+
+The remaining gaps are narrower and more surgical than before: slot validation (F15) is still completely absent, and three of five recovery-ladder scenarios (misspelling, no Discogs match, empty results) still fail silently. Both manual-override findings (F9, F10) are closed as accepted design decisions.
+
+**Key finding**: Bob has graduated from ethically suspect (pre-consent data collection) and structurally broken (zero recovery ladder) to ethically sound and partially resilient. Three findings improved this pass (F11, F13, F16). The remaining issues are engineering gaps, not design philosophy gaps: the bot knows what it should do on failure, it just does not do it for every failure mode yet.
