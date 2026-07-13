@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keeping API Keys Safe with Cloudflare Workers</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --card-bg: #16213e;
+      --text: #e0e0e0;
+      --accent: #f6821f;
+      --accent2: #5dade2;
+      --code-bg: #0d1117;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 2.2rem; color: var(--accent); margin-bottom: 0.5rem; }
+    h2 { font-size: 1.5rem; color: var(--accent2); margin-top: 2.5rem; margin-bottom: 0.8rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.3rem; }
+    h3 { color: #f0c040; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    p { margin-bottom: 1rem; }
+    .card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid #2a3a5c;
+    }
+    code {
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.9em;
+    }
+    pre {
+      background: var(--code-bg);
+      border-radius: 8px;
+      padding: 1.2rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.85em;
+      border: 1px solid #2a3a5c;
+    }
+    ol, ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.5rem; }
+    .step { color: var(--accent); font-weight: bold; }
+    .prompt-box {
+      background: #0d3320;
+      border: 2px solid #2ecc71;
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-top: 1rem;
+    }
+    .prompt-box code { background: transparent; }
+    .note {
+      background: #2c2010;
+      border-left: 4px solid var(--accent);
+      padding: 0.8rem 1rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Keeping API Keys Safe with Cloudflare Workers</h1>
+<p>The R&R Records AI chatbot connects to three third-party APIs: DeepSeek (LLM), Last.fm (music data), and Discogs (release info). Here is how Cloudflare keeps those keys secure at every step.</p>
+
+<div class="card">
+  <h2>1. Description — How Cloudflare Protects the Keys</h2>
+
+  <p>The browser-based chatbot needs to call DeepSeek, Last.fm, and Discogs APIs, but <strong>embedding API keys in client-side JavaScript would expose them</strong> to anyone inspecting the page source or Network tab. Instead, a <strong>Cloudflare Worker</strong> acts as a secure proxy layer between the browser and the third-party APIs.</p>
+
+  <h3>How the proxy pattern works</h3>
+  <ol>
+    <li>The frontend (static HTML/JS) makes a request to the Worker at a path like <code>/api/llm</code> — with <strong>no API key</strong> anywhere in the request.</li>
+    <li>The Cloudflare Worker receives the request on Cloudflare's edge network.</li>
+    <li>The Worker reads the API key from <strong>Cloudflare Secrets</strong> (encrypted environment variables) via <code>env.LLM_KEY</code>.</li>
+    <li>The Worker <strong>injects the key server-side</strong> into the Authorization header or query string and forwards the request to the real API (DeepSeek, Last.fm, or Discogs).</li>
+    <li>The API response flows back through the Worker to the browser. The browser <strong>never sees the keys</strong> — not in source code, not in the Network tab, not in git history.</li>
+  </ol>
+
+  <h3>Three layers of protection</h3>
+  <ul>
+    <li><strong>Encryption at rest:</strong> <code>wrangler secret put</code> encrypts the value before storing it in Cloudflare's infrastructure.</li>
+    <li><strong>Server-side only:</strong> Secrets are injected into the Worker's <code>env</code> object at runtime — never transmitted to the client.</li>
+    <li><strong>Git safety:</strong> The <code>config.js</code> file (used for local development) is in <code>.gitignore</code>. Only <code>config.example.js</code> with placeholder values is committed.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>2. Instructions — How to Set This Up Yourself</h2>
+
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>A Cloudflare account (free tier works)</li>
+    <li>Node.js and npm installed</li>
+    <li>API keys for the services you want to proxy</li>
+  </ul>
+
+  <h3>Step <span class="step">A</span> — Create the Worker file</h3>
+  <p>Create <code>worker.js</code> with routes that proxy to each API:</p>
+  <pre>export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
+    // CORS headers for your frontend
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers });
+    }
+
+    try {
+      let response;
+
+      if (url.pathname === "/api/llm") {
+        const body = await request.json();
+        response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${env.LLM_KEY}`,
+          },
+          body: JSON.stringify(body),
+        });
+      } else if (url.pathname === "/api/lastfm") {
+        const params = url.searchParams.toString();
+        const lfmUrl = `https://ws.audioscrobbler.com/2.0/?${params}&api_key=${env.LFM_KEY}&format=json`;
+        response = await fetch(lfmUrl);
+      } else if (url.pathname === "/api/discogs") {
+        const q = url.searchParams.get("q") || "";
+        const type = url.searchParams.get("type") || "release";
+        const dgsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=${type}&token=${env.DGS_KEY}`;
+        response = await fetch(dgsUrl, {
+          headers: { "User-Agent": "MyApp/1.0" }
+        });
+      } else {
+        return new Response("Not found", { status: 404, headers });
+      }
+
+      // Forward response with CORS
+      const resHeaders = new Headers(response.headers);
+      Object.entries(headers).forEach(([k, v]) => resHeaders.set(k, v));
+      return new Response(response.body, {
+        status: response.status, headers: resHeaders,
+      });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500,
+        headers: { ...headers, "Content-Type": "application/json" },
+      });
+    }
+  },
+};</pre>
+
+  <h3>Step <span class="step">B</span> — Create wrangler.toml</h3>
+  <pre>name = "my-api-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"</pre>
+
+  <h3>Step <span class="step">C</span> — Log in and store secrets</h3>
+  <pre>npx wrangler login          # Opens browser, log into Cloudflare
+npx wrangler secret put LLM_KEY     # Paste your DeepSeek/OpenAI key
+npx wrangler secret put LFM_KEY     # Paste your Last.fm key
+npx wrangler secret put DGS_KEY     # Paste your Discogs token</pre>
+
+  <div class="note">
+    <strong>Note:</strong> Each <code>wrangler secret put</code> command prompts you to paste the value. The value is encrypted and never displayed back. You can verify secrets exist with <code>npx wrangler secret list</code> (shows names only, not values).
+  </div>
+
+  <h3>Step <span class="step">D</span> — Deploy</h3>
+  <pre>npx wrangler deploy</pre>
+  <p>This will print a URL like <code>https://my-api-proxy.yourusername.workers.dev</code>. Save this — it is your proxy endpoint.</p>
+
+  <h3>Step <span class="step">E</span> — Wire your frontend to the proxy</h3>
+  <p>In your browser-side JavaScript, replace direct API calls with calls to your Worker:</p>
+  <pre>// Instead of calling DeepSeek directly with your key:
+// ❌ fetch("https://api.deepseek.com/...", {
+//      headers: { "Authorization": "Bearer sk-..." }
+//    })
+
+// ✅ Call your Worker — no key needed in the browser:
+fetch("https://my-api-proxy.yourusername.workers.dev/api/llm", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ model: "deepseek-chat", messages: [...] })
+})</pre>
+
+  <h3>Step <span class="step">F</span> — Gitignore your local config</h3>
+  <p>Create a <code>config.example.js</code> with placeholder values that you <em>do</em> commit, and add the real <code>config.js</code> to <code>.gitignore</code>.</p>
+</div>
+
+<div class="card">
+  <h2>3. The OpenCode Prompt</h2>
+  <p>Give this exact prompt to OpenCode to have it build the whole thing for you:</p>
+
+  <div class="prompt-box">
+    <code>I have a frontend chatbot that calls DeepSeek, Last.fm, and Discogs APIs directly from the browser, which exposes my API keys. Create a Cloudflare Worker that acts as a secure proxy — the worker should receive requests from the browser at /api/llm, /api/lastfm, and /api/discogs, inject the API keys server-side from Cloudflare secrets, and forward the responses back with CORS headers. Then give me the wrangler commands to deploy it and store the secrets.</code>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Deployed URL</h2>
+  <p>The live proxy for this project is running at:</p>
+  <pre>https://rr-records-proxy.dan-m-kelly.workers.dev</pre>
+</div>
+
+</body>
+</html>
